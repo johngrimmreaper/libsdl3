@@ -39,7 +39,6 @@
 #define SDL_sscanf SDL_sscanf_REAL
 #define SDL_snprintf SDL_snprintf_REAL
 #define SDL_CreateThread SDL_CreateThread_REAL
-#define SDL_RWFromFP SDL_RWFromFP_REAL
 #define SDL_RegisterApp SDL_RegisterApp_REAL
 #define SDL_UnregisterApp SDL_UnregisterApp_REAL
 #define SDL_Direct3D9GetAdapterIndex SDL_Direct3D9GetAdapterIndex_REAL
@@ -203,14 +202,12 @@
 #define SDL_JoystickGetAttached SDL_JoystickGetAttached_REAL
 #define SDL_JoystickInstanceID SDL_JoystickInstanceID_REAL
 #define SDL_JoystickNumAxes SDL_JoystickNumAxes_REAL
-#define SDL_JoystickNumBalls SDL_JoystickNumBalls_REAL
 #define SDL_JoystickNumHats SDL_JoystickNumHats_REAL
 #define SDL_JoystickNumButtons SDL_JoystickNumButtons_REAL
 #define SDL_JoystickUpdate SDL_JoystickUpdate_REAL
 #define SDL_JoystickEventState SDL_JoystickEventState_REAL
 #define SDL_JoystickGetAxis SDL_JoystickGetAxis_REAL
 #define SDL_JoystickGetHat SDL_JoystickGetHat_REAL
-#define SDL_JoystickGetBall SDL_JoystickGetBall_REAL
 #define SDL_JoystickGetButton SDL_JoystickGetButton_REAL
 #define SDL_JoystickClose SDL_JoystickClose_REAL
 #define SDL_GetKeyboardFocus SDL_GetKeyboardFocus_REAL
@@ -287,7 +284,6 @@
 #define SDL_MapRGBA SDL_MapRGBA_REAL
 #define SDL_GetRGB SDL_GetRGB_REAL
 #define SDL_GetRGBA SDL_GetRGBA_REAL
-#define SDL_CalculateGammaRamp SDL_CalculateGammaRamp_REAL
 #define SDL_GetPlatform SDL_GetPlatform_REAL
 #define SDL_GetPowerInfo SDL_GetPowerInfo_REAL
 #define SDL_HasIntersection SDL_HasIntersection_REAL
@@ -439,8 +435,6 @@
 #define SDL_iconv_close SDL_iconv_close_REAL
 #define SDL_iconv SDL_iconv_REAL
 #define SDL_iconv_string SDL_iconv_string_REAL
-#define SDL_CreateRGBSurface SDL_CreateRGBSurface_REAL
-#define SDL_CreateRGBSurfaceFrom SDL_CreateRGBSurfaceFrom_REAL
 #define SDL_FreeSurface SDL_FreeSurface_REAL
 #define SDL_SetSurfacePalette SDL_SetSurfacePalette_REAL
 #define SDL_LockSurface SDL_LockSurface_REAL
@@ -468,7 +462,6 @@
 #define SDL_SoftStretch SDL_SoftStretch_REAL
 #define SDL_UpperBlitScaled SDL_UpperBlitScaled_REAL
 #define SDL_LowerBlitScaled SDL_LowerBlitScaled_REAL
-#define SDL_GetWindowWMInfo SDL_GetWindowWMInfo_REAL
 #define SDL_GetThreadName SDL_GetThreadName_REAL
 #define SDL_ThreadID SDL_ThreadID_REAL
 #define SDL_GetThreadID SDL_GetThreadID_REAL
@@ -490,7 +483,6 @@
 #define SDL_GetTouchFinger SDL_GetTouchFinger_REAL
 #define SDL_GetVersion SDL_GetVersion_REAL
 #define SDL_GetRevision SDL_GetRevision_REAL
-#define SDL_GetRevisionNumber SDL_GetRevisionNumber_REAL
 #define SDL_GetNumVideoDrivers SDL_GetNumVideoDrivers_REAL
 #define SDL_GetVideoDriver SDL_GetVideoDriver_REAL
 #define SDL_VideoInit SDL_VideoInit_REAL
@@ -540,10 +532,6 @@
 #define SDL_UpdateWindowSurfaceRects SDL_UpdateWindowSurfaceRects_REAL
 #define SDL_SetWindowGrab SDL_SetWindowGrab_REAL
 #define SDL_GetWindowGrab SDL_GetWindowGrab_REAL
-#define SDL_SetWindowBrightness SDL_SetWindowBrightness_REAL
-#define SDL_GetWindowBrightness SDL_GetWindowBrightness_REAL
-#define SDL_SetWindowGammaRamp SDL_SetWindowGammaRamp_REAL
-#define SDL_GetWindowGammaRamp SDL_GetWindowGammaRamp_REAL
 #define SDL_DestroyWindow SDL_DestroyWindow_REAL
 #define SDL_IsScreenSaverEnabled SDL_IsScreenSaverEnabled_REAL
 #define SDL_EnableScreenSaver SDL_EnableScreenSaver_REAL
@@ -600,8 +588,8 @@
 #define SDL_RenderGetIntegerScale SDL_RenderGetIntegerScale_REAL
 #define SDL_DequeueAudio SDL_DequeueAudio_REAL
 #define SDL_SetWindowResizable SDL_SetWindowResizable_REAL
-#define SDL_CreateRGBSurfaceWithFormat SDL_CreateRGBSurfaceWithFormat_REAL
-#define SDL_CreateRGBSurfaceWithFormatFrom SDL_CreateRGBSurfaceWithFormatFrom_REAL
+#define SDL_CreateSurface SDL_CreateSurface_REAL
+#define SDL_CreateSurfaceFrom SDL_CreateSurfaceFrom_REAL
 #define SDL_GetHintBoolean SDL_GetHintBoolean_REAL
 #define SDL_JoystickGetDeviceVendor SDL_JoystickGetDeviceVendor_REAL
 #define SDL_JoystickGetDeviceProduct SDL_JoystickGetDeviceProduct_REAL
@@ -819,7 +807,6 @@
 #define SDL_asprintf SDL_asprintf_REAL
 #define SDL_vasprintf SDL_vasprintf_REAL
 #define SDL_GetWindowICCProfile SDL_GetWindowICCProfile_REAL
-#define SDL_GetTicks64 SDL_GetTicks64_REAL
 #define SDL_LinuxSetThreadPriorityAndPolicy SDL_LinuxSetThreadPriorityAndPolicy_REAL
 #define SDL_GameControllerGetAppleSFSymbolsNameForButton SDL_GameControllerGetAppleSFSymbolsNameForButton_REAL
 #define SDL_GameControllerGetAppleSFSymbolsNameForAxis SDL_GameControllerGetAppleSFSymbolsNameForAxis_REAL
@@ -889,7 +876,16 @@
 #define SDL_SetPrimarySelectionText SDL_SetPrimarySelectionText_REAL
 #define SDL_GetPrimarySelectionText SDL_GetPrimarySelectionText_REAL
 #define SDL_HasPrimarySelectionText SDL_HasPrimarySelectionText_REAL
-#define SDL_GameControllerGetSensorDataWithTimestamp SDL_GameControllerGetSensorDataWithTimestamp_REAL
-#define SDL_SensorGetDataWithTimestamp SDL_SensorGetDataWithTimestamp_REAL
 #define SDL_ResetHints SDL_ResetHints_REAL
 #define SDL_strcasestr SDL_strcasestr_REAL
+#define SDL_EGL_GetProcAddress SDL_EGL_GetProcAddress_REAL
+#define SDL_EGL_GetCurrentEGLDisplay SDL_EGL_GetCurrentEGLDisplay_REAL
+#define SDL_EGL_GetCurrentEGLConfig SDL_EGL_GetCurrentEGLConfig_REAL
+#define SDL_EGL_GetWindowEGLSurface SDL_EGL_GetWindowEGLSurface_REAL
+#define SDL_EGL_SetEGLAttributeCallbacks SDL_EGL_SetEGLAttributeCallbacks_REAL
+#define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
+#define SDL_GetWindowWMInfo SDL_GetWindowWMInfo_REAL
+#define SDL_memset4 SDL_memset4_REAL
+#define SDL_GetTicksNS SDL_GetTicksNS_REAL
+#define SDL_DelayNS SDL_DelayNS_REAL
+#define SDL_GetEventState SDL_GetEventState_REAL

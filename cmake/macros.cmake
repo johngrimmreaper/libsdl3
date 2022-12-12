@@ -29,7 +29,7 @@ ENDMACRO()
 
 # Message Output
 macro(MESSAGE_WARN _TEXT)
-  message(STATUS "*** WARNING: ${_TEXT}")
+  message(WARNING "${_TEXT}")
 endmacro()
 
 macro(MESSAGE_ERROR _TEXT)
@@ -78,7 +78,7 @@ macro(LISTTOSTR _LIST _OUTPUT)
   endforeach()
 endmacro()
 
-macro(LISTTOSTRREV _LIST _OUTPUT)
+function(LISTTOSTRREV _LIST _OUTPUT)
   if(${ARGC} EQUAL 3)
     # prefix for each element
     set(_LPREFIX ${ARGV2})
@@ -87,12 +87,14 @@ macro(LISTTOSTRREV _LIST _OUTPUT)
   endif()
   # Do not use string(REPLACE ";" " ") here to avoid messing up list
   # entries
+  set(res)
   foreach(_ITEM ${${_LIST}})
-    set(${_OUTPUT} "${_LPREFIX}${_ITEM} ${${_OUTPUT}}")
+    set(res "${res} ${_LPREFIX}${_ITEM}")
   endforeach()
-endmacro()
+  set($_OUTPUT} "${res}" PARENT_SCOPE)
+endfunction()
 
-if(CMAKE_VERSION VERSION_LESS 3.16.0 OR SDL2_SUBPROJECT)
+if(CMAKE_VERSION VERSION_LESS 3.16.0 OR SDL3_SUBPROJECT)
   # - CMake versions <3.16 do not support the OBJC language
   # - When SDL is built as a subproject and when the main project does not enable OBJC,
   #   CMake fails due to missing internal CMake variables (CMAKE_OBJC_COMPILE_OBJECT)
@@ -108,6 +110,26 @@ else()
   if (APPLE)
       enable_language(OBJC)
   endif()
+endif()
+
+if(CMAKE_VERSION VERSION_LESS 3.18)
+  function(check_linker_flag LANG FLAG VAR)
+    cmake_push_check_state()
+    list(APPEND CMAKE_REQUIRED_LINK_OPTIONS ${FLAG} )
+    if(LANG STREQUAL "C")
+      include(CheckCSourceCompiles)
+      check_c_source_compiles("int main(int argc,char*argv[]){(void)argc;(void)argv;return 0;}" ${VAR} FAIL_REGEX "warning")
+    elseif(LANG STREQUAL "CXX")
+      include(CheckCXXSourceCompiles)
+      check_cxx_source_compiles("int main(int argc,char*argv[]){(void)argc;(void)argv;return 0;}" ${VAR} FAIL_REGEX "warning")
+    else()
+      message(FATAL_ERROR "Unsupported language: ${LANG}")
+    endif()
+    cmake_pop_check_state()
+  endfunction()
+else()
+  cmake_policy(SET CMP0057 NEW)  # Support new if() IN_LIST operator. (used inside check_linker_flag, used in CMake 3.18)
+  include(CheckLinkerFlag)
 endif()
 
 if(APPLE)

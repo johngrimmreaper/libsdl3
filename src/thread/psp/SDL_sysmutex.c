@@ -18,13 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_THREAD_PSP
 
 /* An implementation of mutexes using semaphores */
 
-#include "SDL_thread.h"
 #include "SDL_systhread_c.h"
 
 #include <pspthreadman.h>
@@ -45,7 +44,7 @@ SDL_CreateMutex(void)
     SceInt32 res = 0;
 
     /* Allocate mutex memory */
-    mutex = (SDL_mutex *) SDL_malloc(sizeof(*mutex));
+    mutex = (SDL_mutex *)SDL_malloc(sizeof(*mutex));
     if (mutex) {
 
         res = sceKernelCreateLwMutex(
@@ -53,8 +52,7 @@ SDL_CreateMutex(void)
             "SDL mutex",
             SCE_KERNEL_MUTEX_ATTR_RECURSIVE,
             0,
-            NULL
-        );
+            NULL);
 
         if (res < 0) {
             SDL_SetError("Error trying to create mutex: %lx", res);
@@ -66,8 +64,7 @@ SDL_CreateMutex(void)
 }
 
 /* Free the mutex */
-void
-SDL_DestroyMutex(SDL_mutex * mutex)
+void SDL_DestroyMutex(SDL_mutex *mutex)
 {
     if (mutex) {
         sceKernelDeleteLwMutex(&mutex->lock);
@@ -76,8 +73,7 @@ SDL_DestroyMutex(SDL_mutex * mutex)
 }
 
 /* Try to lock the mutex */
-int
-SDL_TryLockMutex(SDL_mutex * mutex)
+int SDL_TryLockMutex(SDL_mutex *mutex)
 {
 #if SDL_THREADS_DISABLED
     return 0;
@@ -89,25 +85,23 @@ SDL_TryLockMutex(SDL_mutex * mutex)
 
     res = sceKernelTryLockLwMutex(&mutex->lock, 1);
     switch (res) {
-        case SCE_KERNEL_ERROR_OK:
-            return 0;
-            break;
-        case SCE_KERNEL_ERROR_WAIT_TIMEOUT:
-            return SDL_MUTEX_TIMEDOUT;
-            break;
-        default:
-            return SDL_SetError("Error trying to lock mutex: %lx", res);
-            break;
+    case SCE_KERNEL_ERROR_OK:
+        return 0;
+        break;
+    case SCE_KERNEL_ERROR_WAIT_TIMEOUT:
+        return SDL_MUTEX_TIMEDOUT;
+        break;
+    default:
+        return SDL_SetError("Error trying to lock mutex: %lx", res);
+        break;
     }
 
     return -1;
 #endif /* SDL_THREADS_DISABLED */
 }
 
-
 /* Lock the mutex */
-int
-SDL_mutexP(SDL_mutex * mutex)
+int SDL_mutexP(SDL_mutex *mutex)
 {
 #if SDL_THREADS_DISABLED
     return 0;
@@ -127,8 +121,7 @@ SDL_mutexP(SDL_mutex * mutex)
 }
 
 /* Unlock the mutex */
-int
-SDL_mutexV(SDL_mutex * mutex)
+int SDL_mutexV(SDL_mutex *mutex)
 {
 #if SDL_THREADS_DISABLED
     return 0;

@@ -18,12 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
-#include "../../SDL_internal.h"
+#include <SDL3/SDL.h>
 
 #ifdef __3DS__
 
-#include "SDL_main.h"
 #include <3ds.h>
 
 #ifdef main
@@ -33,8 +31,7 @@
 SDL_FORCE_INLINE void N3DS_Init(void);
 SDL_FORCE_INLINE void N3DS_Quit(void);
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int result;
     N3DS_Init();

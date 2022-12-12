@@ -19,7 +19,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #include "SDL_sandbox.h"
 
@@ -33,9 +33,7 @@ SDL_Sandbox SDL_DetectSandbox(void)
 
     /* For Snap, we check multiple variables because they might be set for
      * unrelated reasons. This is the same thing WebKitGTK does. */
-    if (SDL_getenv("SNAP") != NULL
-        && SDL_getenv("SNAP_NAME") != NULL
-        && SDL_getenv("SNAP_REVISION") != NULL) {
+    if (SDL_getenv("SNAP") != NULL && SDL_getenv("SNAP_NAME") != NULL && SDL_getenv("SNAP_REVISION") != NULL) {
         return SDL_SANDBOX_SNAP;
     }
 

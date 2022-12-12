@@ -61,8 +61,8 @@ build_cmake_projects() {
             -DSDL_STATIC=ON \
             -DSDL_STATIC_PIC=ON \
             -DSDL_TEST=ON \
-            -DSDL2_DISABLE_SDL2MAIN=OFF \
-            -DSDL2_DISABLE_INSTALL=OFF \
+            -DSDL3_DISABLE_SDL3MAIN=OFF \
+            -DSDL3_DISABLE_INSTALL=OFF \
             -DCMAKE_INSTALL_PREFIX="${build_root}/build_${android_abi}/prefix" \
             -DCMAKE_INSTALL_INCLUDEDIR=include \
             -DCMAKE_INSTALL_LIBDIR=lib \
@@ -204,8 +204,6 @@ create_shared_sdl_module() {
 EOF
         mkdir -p "${sdl_moduleworkdir}/include"
         cp -r "${abi_build_prefix}/include/SDL${sdl_major}/"* "${sdl_moduleworkdir}/include/"
-        rm "${sdl_moduleworkdir}/include/SDL_config.h"
-        cp "$sdl_root/include/SDL_config.h" "$sdl_root/include/SDL_config_android.h" "${sdl_moduleworkdir}/include/"
 
         abi_sdllibdir="${sdl_moduleworkdir}/libs/android.${android_abi}"
         mkdir -p "${abi_sdllibdir}"
@@ -238,8 +236,6 @@ create_static_sdl_module() {
 EOF
         mkdir -p "${sdl_moduleworkdir}/include"
         cp -r "${abi_build_prefix}/include/SDL${sdl_major}/"* "${sdl_moduleworkdir}/include"
-        rm "${sdl_moduleworkdir}/include/SDL_config.h"
-        cp "$sdl_root/include/SDL_config.h" "$sdl_root/include/SDL_config_android.h" "${sdl_moduleworkdir}/include/"
 
         abi_sdllibdir="${sdl_moduleworkdir}/libs/android.${android_abi}"
         mkdir -p "${abi_sdllibdir}"

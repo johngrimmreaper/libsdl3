@@ -9,8 +9,7 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <stdio.h>
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 static void
 print_devices(int iscapture)
@@ -21,18 +20,19 @@ print_devices(int iscapture)
 
     SDL_Log("Found %d %s device%s:\n", n, typestr, n != 1 ? "s" : "");
 
-    if (n == -1)
+    if (n == -1) {
         SDL_Log("  Driver can't detect specific %s devices.\n\n", typestr);
-    else if (n == 0)
+    } else if (n == 0) {
         SDL_Log("  No %s devices found.\n\n", typestr);
-    else {
+    } else {
         int i;
         for (i = 0; i < n; i++) {
             const char *name = SDL_GetAudioDeviceName(i, iscapture);
-            if (name != NULL)
+            if (name != NULL) {
                 SDL_Log("  %d: %s\n", i, name);
-            else
+            } else {
                 SDL_Log("  %d Error: %s\n", i, SDL_GetError());
+            }
 
             if (SDL_GetAudioDeviceSpec(i, iscapture, &spec) == 0) {
                 SDL_Log("     Sample Rate: %d\n", spec.freq);
@@ -44,8 +44,7 @@ print_devices(int iscapture)
     }
 }
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     char *deviceName = NULL;
     SDL_AudioSpec spec;
@@ -57,7 +56,7 @@ main(int argc, char **argv)
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return (1);
+        return 1;
     }
 
     /* Print available audio drivers */
@@ -70,7 +69,7 @@ main(int argc, char **argv)
         for (i = 0; i < n; ++i) {
             SDL_Log("  %d: %s\n", i, SDL_GetAudioDriver(i));
         }
-        SDL_Log("Select a driver with the SDL_AUDIODRIVER environment variable.\n");
+        SDL_Log("Select a driver with the SDL_AUDIO_DRIVER environment variable.\n");
     }
 
     SDL_Log("Using audio driver: %s\n\n", SDL_GetCurrentAudioDriver());
@@ -98,7 +97,8 @@ main(int argc, char **argv)
         SDL_Log("SDL_AudioFormat: %X\n", spec.format);
     }
 
-
     SDL_Quit();
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */
