@@ -51,12 +51,14 @@ endif
 override_dh_auto_configure:
 	dh_auto_configure -- $(confflags)
 
-override_dh_auto_build-indep:
+override_dh_auto_build:
+ifneq ($(filter %-doc,$(built_binaries)),)
 	sed -e 's/FULL_PATH_NAMES *=.*/FULL_PATH_NAMES = NO/' < docs/doxyfile > debian/Doxyfile
 	cd docs && doxygen ../debian/Doxyfile
 	# useless files
 	find docs/output -name "*.md5" -delete
 	find docs/output -type d -empty -delete
+endif
 
 override_dh_auto_clean-indep:
 	dh_auto_clean
