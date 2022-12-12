@@ -68,7 +68,7 @@ Description: Simple DirectMedia Layer, version 3
  .
  This version of SDL is under development and its API and ABI are not stable.
  Use libsdl2-dev for new programs until a stable release of SDL 3 has
- been made.
+ been made: the first stable release is expected to be versioned as 3.2.0.
 
 Package: libsdl3-dev
 Section: libdevel
@@ -112,7 +112,7 @@ Description: Simple DirectMedia Layer, version 3 development files
  .
  This version of SDL is under development and its API and ABI are not stable.
  Use libsdl2-dev for new programs until a stable release of SDL 3 has
- been made.
+ been made: the first stable release is expected to be versioned as 3.2.0.
  .
  This package contains the files needed to compile and link programs which
  use SDL.
