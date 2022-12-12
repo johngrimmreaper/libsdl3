@@ -2,8 +2,8 @@
  * Joystick test suite
  */
 
-#include "SDL.h"
-#include "SDL_test.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_test.h>
 #include "../src/joystick/usb_ids.h"
 
 /* ================= Test Case Implementation ================== */
@@ -47,7 +47,6 @@ TestVirtualJoystick(void *arg)
             SDLTest_AssertCheck(SDL_JoystickGetSerial(joystick) == NULL, "SDL_JoystickGetSerial()");
             SDLTest_AssertCheck(SDL_JoystickGetType(joystick) == desc.type, "SDL_JoystickGetType()");
             SDLTest_AssertCheck(SDL_JoystickNumAxes(joystick) == desc.naxes, "SDL_JoystickNumAxes()");
-            SDLTest_AssertCheck(SDL_JoystickNumBalls(joystick) == 0, "SDL_JoystickNumBalls()");
             SDLTest_AssertCheck(SDL_JoystickNumHats(joystick) == desc.nhats, "SDL_JoystickNumHats()");
             SDLTest_AssertCheck(SDL_JoystickNumButtons(joystick) == desc.nbuttons, "SDL_JoystickNumButtons()");
 
@@ -72,11 +71,12 @@ TestVirtualJoystick(void *arg)
 /* ================= Test References ================== */
 
 /* Joystick routine test cases */
-static const SDLTest_TestCaseReference joystickTest1 =
-        { (SDLTest_TestCaseFp)TestVirtualJoystick, "TestVirtualJoystick", "Test virtual joystick functionality", TEST_ENABLED };
+static const SDLTest_TestCaseReference joystickTest1 = {
+    (SDLTest_TestCaseFp)TestVirtualJoystick, "TestVirtualJoystick", "Test virtual joystick functionality", TEST_ENABLED
+};
 
 /* Sequence of Joystick routine test cases */
-static const SDLTest_TestCaseReference *joystickTests[] =  {
+static const SDLTest_TestCaseReference *joystickTests[] = {
     &joystickTest1,
     NULL
 };
@@ -88,3 +88,5 @@ SDLTest_TestSuiteReference joystickTestSuite = {
     joystickTests,
     NULL
 };
+
+/* vi: set ts=4 sw=4 expandtab: */

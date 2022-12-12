@@ -11,9 +11,8 @@
 */
 /* Simple program:  Create a native window and attach an SDL renderer */
 
-#include <stdio.h>
 #include <stdlib.h> /* for srand() */
-#include <time.h> /* for time() */
+#include <time.h>   /* for time() */
 
 #include "testnative.h"
 #include "testutils.h"
@@ -33,9 +32,6 @@ static NativeWindowFactory *factories[] = {
 #ifdef TEST_NATIVE_COCOA
     &CocoaWindowFactory,
 #endif
-#ifdef TEST_NATIVE_OS2
-    &OS2WindowFactory,
-#endif
     NULL
 };
 static NativeWindowFactory *factory = NULL;
@@ -47,14 +43,13 @@ static void
 quit(int rc)
 {
     SDL_VideoQuit();
-    if (native_window) {
+    if (native_window != NULL && factory != NULL) {
         factory->DestroyNativeWindow(native_window);
     }
     exit(rc);
 }
 
-void
-MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
+void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
 {
     int sprite_w, sprite_h;
     int i;
@@ -92,8 +87,7 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
     SDL_RenderPresent(renderer);
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i, done;
     const char *driver;
@@ -109,7 +103,7 @@ main(int argc, char *argv[])
 
     if (SDL_VideoInit(NULL) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video: %s\n",
-                SDL_GetError());
+                     SDL_GetError());
         exit(1);
     }
     driver = SDL_GetCurrentVideoDriver();
@@ -121,19 +115,19 @@ main(int argc, char *argv[])
             break;
         }
     }
-    if (!factory) {
+    if (factory == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find native window code for %s driver\n",
-                driver);
+                     driver);
         quit(2);
     }
     SDL_Log("Creating native window for %s driver\n", driver);
     native_window = factory->CreateNativeWindow(WINDOW_W, WINDOW_H);
-    if (!native_window) {
+    if (native_window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create native window\n");
         quit(3);
     }
     window = SDL_CreateWindowFrom(native_window);
-    if (!window) {
+    if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create SDL window: %s\n", SDL_GetError());
         quit(4);
     }
@@ -141,7 +135,7 @@ main(int argc, char *argv[])
 
     /* Create the renderer */
     renderer = SDL_CreateRenderer(window, -1, 0);
-    if (!renderer) {
+    if (renderer == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         quit(5);
     }
@@ -151,16 +145,16 @@ main(int argc, char *argv[])
     SDL_RenderClear(renderer);
 
     sprite = LoadTexture(renderer, "icon.bmp", SDL_TRUE, NULL, NULL);
-    if (!sprite) {
+    if (sprite == NULL) {
         quit(6);
     }
 
     /* Allocate memory for the sprite info */
     SDL_GetWindowSize(window, &window_w, &window_h);
     SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
-    positions = (SDL_Rect *) SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
-    velocities = (SDL_Rect *) SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
-    if (!positions || !velocities) {
+    positions = (SDL_Rect *)SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
+    velocities = (SDL_Rect *)SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
+    if (positions == NULL || velocities == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
     }

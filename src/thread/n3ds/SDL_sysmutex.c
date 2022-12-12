@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_THREAD_N3DS
 
@@ -33,7 +33,7 @@ SDL_CreateMutex(void)
     SDL_mutex *mutex;
 
     /* Allocate mutex memory */
-    mutex = (SDL_mutex *) SDL_malloc(sizeof(*mutex));
+    mutex = (SDL_mutex *)SDL_malloc(sizeof(*mutex));
     if (mutex) {
         RecursiveLock_Init(&mutex->lock);
     } else {
@@ -43,8 +43,7 @@ SDL_CreateMutex(void)
 }
 
 /* Free the mutex */
-void
-SDL_DestroyMutex(SDL_mutex *mutex)
+void SDL_DestroyMutex(SDL_mutex *mutex)
 {
     if (mutex) {
         SDL_free(mutex);
@@ -52,11 +51,10 @@ SDL_DestroyMutex(SDL_mutex *mutex)
 }
 
 /* Lock the mutex */
-int
-SDL_LockMutex(SDL_mutex *mutex)
+int SDL_LockMutex(SDL_mutex *mutex)
 {
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     RecursiveLock_Lock(&mutex->lock);
@@ -65,22 +63,20 @@ SDL_LockMutex(SDL_mutex *mutex)
 }
 
 /* try Lock the mutex */
-int
-SDL_TryLockMutex(SDL_mutex *mutex)
+int SDL_TryLockMutex(SDL_mutex *mutex)
 {
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     return RecursiveLock_TryLock(&mutex->lock);
 }
 
 /* Unlock the mutex */
-int
-SDL_mutexV(SDL_mutex *mutex)
+int SDL_mutexV(SDL_mutex *mutex)
 {
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     RecursiveLock_Unlock(&mutex->lock);
