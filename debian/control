@@ -41,6 +41,7 @@ Build-Depends:
  libxt-dev,
  libxv-dev,
  libxxf86vm-dev,
+ ninja-build,
  pkg-config,
  wayland-protocols
 Build-Depends-Indep:
