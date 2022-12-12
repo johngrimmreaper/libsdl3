@@ -63,8 +63,7 @@ ifneq ($(filter %-doc,$(built_binaries)),)
 	find docs/output -type d -empty -delete
 endif
 
-override_dh_auto_clean-indep:
-	dh_auto_clean
+execute_after_dh_auto_clean-indep:
 	rm -f debian/Doxyfile
 	rm -rf docs/output
 
