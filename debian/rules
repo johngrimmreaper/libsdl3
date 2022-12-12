@@ -8,7 +8,6 @@ include /usr/share/dpkg/default.mk
 
 confflags = \
 	-DSDL_ALSA_SHARED=OFF \
-	-DSDL_INSTALL_TESTS=ON \
 	-DSDL_JACK=OFF \
 	-DSDL_JACK_SHARED=OFF \
 	-DSDL_KMSDRM_SHARED=OFF \
@@ -29,6 +28,10 @@ confflags = \
 	-DSDL_X11=ON \
 	-DSDL_X11_SHARED=OFF \
 	$(NULL)
+
+ifneq ($(filter %-tests,$(built_binaries)),)
+  confflags += -DSDL_INSTALL_TESTS=ON
+endif
 
 ifeq ($(DEB_HOST_ARCH_CPU),powerpc)
   confflags += -DSDL_ALTIVEC=OFF
