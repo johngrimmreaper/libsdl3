@@ -5,6 +5,6 @@ cmake_minimum_required(VERSION 3.13)
 
 project(Test LANGUAGES CXX)
 
-find_package(SDL2 CONFIG REQUIRED)
+find_package(SDL3 CONFIG REQUIRED)
 add_executable(program test.cpp)
-target_link_libraries(program PRIVATE SDL2::SDL2 SDL2::SDL2main)
+target_link_libraries(program PRIVATE SDL3::SDL3 SDL3::SDL3_main)

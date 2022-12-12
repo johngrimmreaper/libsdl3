@@ -2,7 +2,7 @@
 // SPDX-License-Identifer: Zlib
 
 #include <iostream>
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 int main()
 {

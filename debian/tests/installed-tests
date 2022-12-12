@@ -2,7 +2,7 @@
 
 set -eu
 
-namespace=SDL2/
+namespace=SDL3/
 
 if [ -z "${HOME-}" ] || ! [ -w "${HOME}" ]; then
     export HOME="${AUTOPKGTEST_TMP}"

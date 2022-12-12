@@ -1,0 +1,2 @@
+libSDL3.so.0 libsdl3-0 #MINVER#
+* Build-Depends-Package: libsdl3-dev

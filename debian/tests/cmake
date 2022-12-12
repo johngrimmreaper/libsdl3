@@ -41,15 +41,6 @@ make -C "$WORKDIR/example" VERBOSE=1
 "$WORKDIR/example/hello"
 make -C "$WORKDIR/example" VERBOSE=1 clean
 
-mkdir "$WORKDIR/findsdl2"
-(
-    cd "$WORKDIR/findsdl2"
-    cmake $CCFILE "$srcdir/debian/tests/cmake-findsdl2"
-)
-make -C "$WORKDIR/findsdl2" VERBOSE=1
-"$WORKDIR/findsdl2/hello"
-make -C "$WORKDIR/findsdl2" VERBOSE=1 clean
-
 mkdir "$WORKDIR/main"
 (
     cd "$WORKDIR/main"

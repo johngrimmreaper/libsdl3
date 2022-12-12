@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.13)
 project(Hello)
 
-find_package(SDL2 REQUIRED)
+find_package(SDL3 REQUIRED)
 
 add_executable(hello hello.c)
-target_link_libraries(hello SDL2::SDL2-static)
+target_link_libraries(hello SDL3::SDL3-static)
