@@ -132,6 +132,7 @@ Description: Reference manual for SDL 3
 Package: libsdl3-tests
 Section: misc
 Architecture: any
+Build-Profiles: <!noinsttest>
 Depends:
  ${misc:Depends},
  ${shlibs:Depends}
