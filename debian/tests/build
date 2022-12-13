@@ -49,14 +49,14 @@ for cc in "${CROSS_COMPILE}gcc" clang; do
         ;;
     esac
 
-    exe="use-${cc}-${mode}"
+    exe="use-${cc}"
 
     # Deliberately word-splitting cflags, pkg-config output
     # shellcheck disable=SC2046,SC2086
     "$cc" $cflags -o "${exe}" use-sdl.c $("${CROSS_COMPILE}pkg-config" --cflags --libs sdl3)
 
-    echo "build (with $cc, $mode): OK"
+    echo "build (with $cc): OK"
     [ -x "${exe}" ]
     ./"${exe}"
-    echo "run (with $cc, $mode): OK"
+    echo "run (with $cc): OK"
 done
