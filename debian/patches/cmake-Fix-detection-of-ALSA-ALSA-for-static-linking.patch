@@ -1,0 +1,28 @@
+From: Simon McVittie <smcv@collabora.com>
+Date: Tue, 13 Dec 2022 12:02:47 +0000
+Subject: cmake: Fix detection of ALSA::ALSA for static linking
+
+This was still conditional on whether SDL2::SDL2-static exists, but
+it's now SDL3 that matters.
+
+Bug: https://github.com/libsdl-org/SDL/issues/6801
+Fixes: 9eb4d1f "cmake: use FindALSA.cmake to find ALSA libraries"
+Signed-off-by: Simon McVittie <smcv@collabora.com>
+Forwarded: https://github.com/libsdl-org/SDL/pull/6802
+---
+ SDL3Config.cmake.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/SDL3Config.cmake.in b/SDL3Config.cmake.in
+index 75fcdf2..c7cff29 100644
+--- a/SDL3Config.cmake.in
++++ b/SDL3Config.cmake.in
+@@ -34,7 +34,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/sdlfind.cmake")
+ 
+ set(SDL_ALSA @SDL_ALSA@)
+ set(SDL_ALSA_SHARED @SDL_ALSA_SHARED@)
+-if(SDL_ALSA AND NOT SDL_ALSA_SHARED AND TARGET SDL2::SDL2-static)
++if(SDL_ALSA AND NOT SDL_ALSA_SHARED AND TARGET SDL3::SDL3-static)
+   sdlFindALSA()
+ endif()
+ unset(SDL_ALSA)
