@@ -21,12 +21,23 @@ else
     CCFILE=
 fi
 
+invoke_cmake () {
+    if cmake $CCFILE "$@"; then
+        return 0
+    fi
+
+    tail -v -n +0 CMakeCache.txt || :
+    tail -v -n +0 CMakeFiles/CMakeOutput.log || :
+    tail -v -n +0 CMakeFiles/CMakeError.log || :
+    return 1
+}
+
 srcdir="$(pwd)"
 
 mkdir "$WORKDIR/targets"
 (
     cd "$WORKDIR/targets"
-    cmake $CCFILE "$srcdir/debian/tests/cmake-targets"
+    invoke_cmake "$srcdir/debian/tests/cmake-targets"
 )
 make -C "$WORKDIR/targets" VERBOSE=1
 "$WORKDIR/targets/hello"
@@ -35,7 +46,7 @@ make -C "$WORKDIR/targets" VERBOSE=1 clean
 mkdir "$WORKDIR/example"
 (
     cd "$WORKDIR/example"
-    cmake $CCFILE "$srcdir/debian/tests/cmake-example"
+    invoke_cmake "$srcdir/debian/tests/cmake-example"
 )
 make -C "$WORKDIR/example" VERBOSE=1
 "$WORKDIR/example/hello"
@@ -44,7 +55,7 @@ make -C "$WORKDIR/example" VERBOSE=1 clean
 mkdir "$WORKDIR/main"
 (
     cd "$WORKDIR/main"
-    cmake $CCFILE "$srcdir/debian/tests/cmake-main"
+    invoke_cmake "$srcdir/debian/tests/cmake-main"
 )
 make -C "$WORKDIR/main" VERBOSE=1
 (
@@ -57,7 +68,7 @@ make -C "$WORKDIR/main" VERBOSE=1 clean
 mkdir "$WORKDIR/static"
 (
     cd "$WORKDIR/static"
-    cmake $CCFILE "$srcdir/debian/tests/cmake-static"
+    invoke_cmake "$srcdir/debian/tests/cmake-static"
 )
 make -C "$WORKDIR/static" VERBOSE=1
 "$WORKDIR/static/hello"
