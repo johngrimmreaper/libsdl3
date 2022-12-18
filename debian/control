@@ -1,4 +1,4 @@
-Source: sdl3
+Source: libsdl3
 Priority: optional
 Section: libs
 Maintainer: Debian SDL packages maintainers <pkg-sdl-maintainers@lists.alioth.debian.org>
@@ -47,8 +47,8 @@ Build-Depends:
 Build-Depends-Indep:
  graphviz <!nodoc>,
  doxygen <!nodoc>,
-Vcs-Git: https://salsa.debian.org/sdl-team/sdl3.git
-Vcs-Browser: https://salsa.debian.org/sdl-team/sdl3
+Vcs-Git: https://salsa.debian.org/sdl-team/libsdl3.git
+Vcs-Browser: https://salsa.debian.org/sdl-team/libsdl3
 Homepage: https://www.libsdl.org/
 Rules-Requires-Root: no
 
