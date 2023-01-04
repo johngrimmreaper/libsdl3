@@ -1,4 +1,4 @@
-libsdl3 (3~git20221212+dfsg-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20230103+dfsg-1) UNRELEASED; urgency=medium
 
   * New upstream major version with incompatible API and ABI
 
