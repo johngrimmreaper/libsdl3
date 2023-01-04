@@ -26,7 +26,7 @@
 
 
 /* For application signature. */
-#include "../../main/haiku/SDL_BeApp.h"
+#include "../../core/haiku/SDL_BeApp.h"
 
 #include <Alert.h>
 #include <Application.h>
@@ -396,5 +396,3 @@ HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
-
-/* vi: set ts=4 sw=4 expandtab: */

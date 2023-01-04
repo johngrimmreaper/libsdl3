@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include <SDL3/SDL_test_common.h>
+#include <SDL3/SDL_main.h>
 
 #if defined(__IOS__) || defined(__ANDROID__)
 #define HAVE_OPENGLES
@@ -282,26 +283,21 @@ int main(int argc, char *argv[])
         /* Check for events */
         ++frames;
         while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-            case SDL_WINDOWEVENT:
-                switch (event.window.event) {
-                case SDL_WINDOWEVENT_RESIZED:
-                    for (i = 0; i < state->num_windows; ++i) {
-                        if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
-                            status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
-                            if (status) {
-                                SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
-                                break;
-                            }
-                            /* Change view port to the new window dimensions */
-                            glViewport(0, 0, event.window.data1, event.window.data2);
-                            /* Update window content */
-                            Render();
-                            SDL_GL_SwapWindow(state->windows[i]);
+            if (event.type == SDL_WINDOWEVENT_RESIZED) {
+                for (i = 0; i < state->num_windows; ++i) {
+                    if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
+                        status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
+                        if (status) {
+                            SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
                             break;
                         }
+                        /* Change view port to the new window dimensions */
+                        glViewport(0, 0, event.window.data1, event.window.data2);
+                        /* Update window content */
+                        Render();
+                        SDL_GL_SwapWindow(state->windows[i]);
+                        break;
                     }
-                    break;
                 }
             }
             SDLTest_CommonEvent(state, &event, &done);
@@ -343,5 +339,3 @@ int main(int argc, char *argv[])
 }
 
 #endif /* HAVE_OPENGLES */
-
-/* vi: set ts=4 sw=4 expandtab: */

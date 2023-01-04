@@ -1029,7 +1029,7 @@ void D3D11_Trim(SDL_Renderer *renderer)
 
 static void D3D11_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
-    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+    if (event->type == SDL_WINDOWEVENT_SIZE_CHANGED) {
         D3D11_UpdateForWindowSizeChange(renderer);
     }
 }
@@ -2417,7 +2417,7 @@ SDL_RenderDriver D3D11_RenderDriver = {
 #if defined(__WIN32__) || defined(__WINGDK__)
 /* This function needs to always exist on Windows, for the Dynamic API. */
 ID3D11Device *
-SDL_RenderGetD3D11Device(SDL_Renderer *renderer)
+SDL_GetRenderD3D11Device(SDL_Renderer *renderer)
 {
     ID3D11Device *device = NULL;
 
@@ -2439,5 +2439,3 @@ SDL_RenderGetD3D11Device(SDL_Renderer *renderer)
     return device;
 }
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -31,6 +31,9 @@
 #endif
 
 #include <SDL3/SDL.h>
+#define SDL_MAIN_NOIMPL /* don't drag in header-only implementation of SDL_main */
+#include <SDL3/SDL_main.h>
+
 
 /* These headers have system specific definitions, so aren't included above */
 #include <SDL3/SDL_syswm.h>
@@ -364,7 +367,7 @@ SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
 #include <windows.h>
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
-    HANDLE lib = LoadLibraryA(fname);
+    HMODULE lib = LoadLibraryA(fname);
     void *retval = NULL;
     if (lib) {
         retval = GetProcAddress(lib, sym);
@@ -484,5 +487,3 @@ static void SDL_InitDynamicAPI(void)
 }
 
 #endif /* SDL_DYNAMIC_API */
-
-/* vi: set ts=4 sw=4 expandtab: */

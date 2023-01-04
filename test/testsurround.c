@@ -12,6 +12,7 @@
 
 /* Program to test surround sound audio channels */
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 static int total_channels;
 static int active_channel;
@@ -199,5 +200,3 @@ int main(int argc, char *argv[])
     SDL_Quit();
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

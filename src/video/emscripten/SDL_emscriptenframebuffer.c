@@ -36,7 +36,7 @@ int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format
     /* Free the old framebuffer surface */
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     surface = data->surface;
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 
     /* Create a new one */
     SDL_GetWindowSize(window, &w, &h);
@@ -97,7 +97,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect
             SDL3.data8 = new Uint8Array(data.buffer);
             SDL3.data32Data = data;
         }
-        var data32 = SDL2.data32;
+        var data32 = SDL3.data32;
         num = data32.length;
         // logically we need to do
         //      while (dst < num) {
@@ -154,10 +154,8 @@ void Emscripten_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
-    SDL_FreeSurface(data->surface);
+    SDL_DestroySurface(data->surface);
     data->surface = NULL;
 }
 
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
-
-/* vi: set ts=4 sw=4 expandtab: */

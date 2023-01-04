@@ -16,6 +16,7 @@
 #include <stdio.h>
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 typedef int (*fntype)(const char *);
 
@@ -75,5 +76,3 @@ int main(int argc, char *argv[])
     SDL_Quit();
     return retval;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

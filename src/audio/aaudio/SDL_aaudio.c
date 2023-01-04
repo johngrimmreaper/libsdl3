@@ -99,6 +99,11 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
 
     ctx.AAudioStreamBuilder_setSampleRate(ctx.builder, this->spec.freq);
     ctx.AAudioStreamBuilder_setChannelCount(ctx.builder, this->spec.channels);
+    if(devname != NULL) {
+        int aaudio_device_id = SDL_atoi(devname);
+        LOGI("Opening device id %d", aaudio_device_id);
+        ctx.AAudioStreamBuilder_setDeviceId(ctx.builder, aaudio_device_id);
+    }
     {
         aaudio_direction_t direction = (iscapture ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
         ctx.AAudioStreamBuilder_setDirection(ctx.builder, direction);
@@ -298,17 +303,19 @@ static SDL_bool aaudio_Init(SDL_AudioDriverImpl *impl)
         goto failure;
     }
 
+    impl->DetectDevices = Android_DetectDevices;
     impl->Deinitialize = aaudio_Deinitialize;
     impl->OpenDevice = aaudio_OpenDevice;
     impl->CloseDevice = aaudio_CloseDevice;
     impl->PlayDevice = aaudio_PlayDevice;
     impl->GetDeviceBuf = aaudio_GetDeviceBuf;
     impl->CaptureFromDevice = aaudio_CaptureFromDevice;
+    impl->AllowsArbitraryDeviceNames = SDL_TRUE;
 
     /* and the capabilities */
     impl->HasCaptureSupport = SDL_TRUE;
-    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
-    impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
+    impl->OnlyHasDefaultOutputDevice = SDL_FALSE;
+    impl->OnlyHasDefaultCaptureDevice = SDL_FALSE;
 
     /* this audio target is available. */
     LOGI("SDL aaudio_Init OK");
@@ -452,5 +459,3 @@ SDL_bool aaudio_DetectBrokenPlayState(void)
 }
 
 #endif /* SDL_AUDIO_DRIVER_AAUDIO */
-
-/* vi: set ts=4 sw=4 expandtab: */

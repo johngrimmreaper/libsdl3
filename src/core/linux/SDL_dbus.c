@@ -51,6 +51,7 @@ static int LoadDBUSSyms(void)
     SDL_DBUS_SYM(connection_send);
     SDL_DBUS_SYM(connection_send_with_reply_and_block);
     SDL_DBUS_SYM(connection_close);
+    SDL_DBUS_SYM(connection_ref);
     SDL_DBUS_SYM(connection_unref);
     SDL_DBUS_SYM(connection_flush);
     SDL_DBUS_SYM(connection_read_write);
@@ -498,5 +499,3 @@ SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
     return SDL_TRUE;
 }
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

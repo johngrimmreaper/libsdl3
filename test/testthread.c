@@ -16,6 +16,7 @@
 #include <signal.h>
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 static SDL_TLSID tls;
 static int alive = 0;
@@ -136,5 +137,3 @@ int main(int argc, char *argv[])
     SDL_Quit(); /* Never reached */
     return 0;   /* Never reached */
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

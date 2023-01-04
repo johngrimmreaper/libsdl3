@@ -101,7 +101,7 @@ static int SDL_android_priority[SDL_NUM_LOG_PRIORITIES] = {
 };
 #endif /* __ANDROID__ */
 
-void SDL_LogInit(void)
+void SDL_InitLog(void)
 {
     if (log_function_mutex == NULL) {
         /* if this fails we'll try to continue without it. */
@@ -109,7 +109,7 @@ void SDL_LogInit(void)
     }
 }
 
-void SDL_LogQuit(void)
+void SDL_QuitLog(void)
 {
     SDL_LogResetPriorities();
     if (log_function_mutex) {
@@ -333,15 +333,9 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va
         }
     }
 
-    if (log_function_mutex) {
-        SDL_LockMutex(log_function_mutex);
-    }
-
+    SDL_LockMutex(log_function_mutex);
     SDL_log_function(SDL_log_userdata, category, priority, message);
-
-    if (log_function_mutex) {
-        SDL_UnlockMutex(log_function_mutex);
-    }
+    SDL_UnlockMutex(log_function_mutex);
 
     /* Free only if dynamically allocated */
     if (message != stack_buf) {
@@ -507,5 +501,3 @@ void SDL_LogSetOutputFunction(SDL_LogOutputFunction callback, void *userdata)
     SDL_log_function = callback;
     SDL_log_userdata = userdata;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

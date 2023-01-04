@@ -28,14 +28,14 @@
 #ifndef SDL_blendmode_h_
 #define SDL_blendmode_h_
 
-#include <SDL3/begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- *  \brief The blend mode used in SDL_RenderCopy() and drawing operations.
+ *  \brief The blend mode used in SDL_RenderTexture() and drawing operations.
  */
 typedef enum
 {
@@ -191,8 +191,6 @@ extern DECLSPEC SDL_BlendMode SDLCALL SDL_ComposeCustomBlendMode(SDL_BlendFactor
 #ifdef __cplusplus
 }
 #endif
-#include <SDL3/close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_blendmode_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

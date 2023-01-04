@@ -1377,7 +1377,7 @@ static HRESULT D3D12_UpdateForWindowSizeChange(SDL_Renderer *renderer)
 
 static void D3D12_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
-    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+    if (event->type == SDL_WINDOWEVENT_SIZE_CHANGED) {
         D3D12_UpdateForWindowSizeChange(renderer);
     }
 }
@@ -3078,5 +3078,3 @@ extern "C"
     return device;
 }
 #endif /* defined(__WIN32__) || defined(__GDK__) */
-
-/* vi: set ts=4 sw=4 expandtab: */

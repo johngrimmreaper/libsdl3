@@ -3132,7 +3132,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
     const Uint32 charHeight = FONT_CHARACTER_SIZE;
     const Uint32 charSize = FONT_CHARACTER_SIZE;
     SDL_Rect srect;
-    SDL_Rect drect;
+    SDL_FRect drect;
     int result;
     Uint32 ix, iy;
     const unsigned char *charpos;
@@ -3155,10 +3155,10 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
     /*
      * Setup destination rectangle
      */
-    drect.x = x;
-    drect.y = y;
-    drect.w = charWidth;
-    drect.h = charHeight;
+    drect.x = (float)x;
+    drect.y = (float)y;
+    drect.w = (float)charWidth;
+    drect.h = (float)charHeight;
 
     /* Character index in cache */
     ci = c;
@@ -3213,7 +3213,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
 
         /* Convert temp surface into texture */
         cache->charTextureCache[ci] = SDL_CreateTextureFromSurface(renderer, character);
-        SDL_FreeSurface(character);
+        SDL_DestroySurface(character);
 
         /*
          * Check pointer
@@ -3234,7 +3234,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
     /*
      * Draw texture onto destination
      */
-    result |= SDL_RenderCopy(renderer, cache->charTextureCache[ci], &srect, &drect);
+    result |= SDL_RenderTexture(renderer, cache->charTextureCache[ci], &srect, &drect);
 
     return result;
 }
@@ -3487,5 +3487,3 @@ void SDLTest_CleanupTextDrawing(void)
 
     SDLTest_CharTextureCacheList = NULL;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

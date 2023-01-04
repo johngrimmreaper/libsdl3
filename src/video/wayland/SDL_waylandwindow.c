@@ -127,7 +127,7 @@ SDL_FORCE_INLINE SDL_bool FullscreenModeEmulation(SDL_Window *window)
            ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP);
 }
 
-static SDL_bool NeedViewport(SDL_Window *window)
+static SDL_bool WindowNeedsViewport(SDL_Window *window)
 {
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *video = wind->waylandData;
@@ -161,7 +161,7 @@ static void GetBufferSize(SDL_Window *window, int *width, int *height)
 
     if (FullscreenModeEmulation(window)) {
         GetFullScreenDimensions(window, NULL, NULL, &buf_width, &buf_height);
-    } else if (NeedViewport(window)) {
+    } else if (WindowNeedsViewport(window)) {
         /* Round fractional backbuffer sizes halfway away from zero. */
         buf_width = (int)SDL_lroundf(window->w * data->scale_factor);
         buf_height = (int)SDL_lroundf(window->h * data->scale_factor);
@@ -233,7 +233,7 @@ static void ConfigureWindowGeometry(SDL_Window *window)
                                      0, 0);
     }
 
-    if (FullscreenModeEmulation(window) && NeedViewport(window)) {
+    if (FullscreenModeEmulation(window) && WindowNeedsViewport(window)) {
         int fs_width, fs_height;
         const int output_width = data->fs_output_width ? data->fs_output_width : output->width;
         const int output_height = data->fs_output_height ? data->fs_output_height : output->height;
@@ -258,7 +258,7 @@ static void ConfigureWindowGeometry(SDL_Window *window)
         window_size_changed = data->window_width != window->w || data->window_height != window->h;
 
         if (window_size_changed || drawable_size_changed) {
-            if (NeedViewport(window)) {
+            if (WindowNeedsViewport(window)) {
                 wl_surface_set_buffer_scale(data->surface, 1);
                 SetDrawSurfaceViewport(window, data->drawable_width, data->drawable_height, window->w, window->h);
             } else {
@@ -277,10 +277,16 @@ static void ConfigureWindowGeometry(SDL_Window *window)
     }
 
     /*
-     * The opaque and pointer confinement regions only need to be recalculated
-     * if the output size has changed.
+     * The surface geometry, opaque region and pointer confinement region only
+     * need to be recalculated if the output size has changed.
      */
     if (window_size_changed) {
+        /* libdecor does this internally on frame commits, so it's only needed for xdg surfaces. */
+        if (data->shell_surface_type != WAYLAND_SURFACE_LIBDECOR &&
+            viddata->shell.xdg && data->shell_surface.xdg.surface != NULL) {
+            xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0, data->window_width, data->window_height);
+        }
+
         if (!viddata->egl_transparency_enabled) {
             region = wl_compositor_create_region(viddata->compositor);
             wl_region_add(region, 0, 0,
@@ -1317,6 +1323,9 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
                                                      &decoration_listener,
                                                      window);
         }
+
+        /* Set the geometry */
+        xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0, data->window_width, data->window_height);
     } else {
         /* Nothing to see here, just commit. */
         wl_surface_commit(data->surface);
@@ -2233,5 +2242,3 @@ void Wayland_QuitWin(SDL_VideoData *data)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
-
-/* vi: set ts=4 sw=4 expandtab: */

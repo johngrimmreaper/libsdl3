@@ -110,7 +110,7 @@ struct SDL_Window
 };
 #define FULLSCREEN_VISIBLE(W)                \
     (((W)->flags & SDL_WINDOW_FULLSCREEN) && \
-     ((W)->flags & SDL_WINDOW_SHOWN) &&      \
+     !((W)->flags & SDL_WINDOW_HIDDEN) &&      \
      !((W)->flags & SDL_WINDOW_MINIMIZED))
 
 /*
@@ -271,7 +271,7 @@ struct SDL_VideoDevice
     void (*GL_GetDrawableSize)(_THIS, SDL_Window *window, int *w, int *h);
     SDL_EGLSurface (*GL_GetEGLSurface)(_THIS, SDL_Window *window);
     int (*GL_SetSwapInterval)(_THIS, int interval);
-    int (*GL_GetSwapInterval)(_THIS);
+    int (*GL_GetSwapInterval)(_THIS, int *interval);
     int (*GL_SwapWindow)(_THIS, SDL_Window *window);
     void (*GL_DeleteContext)(_THIS, SDL_GLContext context);
     void (*GL_DefaultProfileConfig)(_THIS, int *mask, int *major, int *minor);
@@ -513,10 +513,6 @@ extern float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vin
 
 extern void SDL_ToggleDragAndDropSupport(void);
 
-extern int SDL_GetPointDisplayIndex(const SDL_Point *point);
-
-extern int SDL_GL_SwapWindowWithResult(SDL_Window *window);
+extern int SDL_GetDisplayIndexForPoint(const SDL_Point *point);
 
 #endif /* SDL_sysvideo_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
