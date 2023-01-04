@@ -20,20 +20,25 @@ Copyright:
  2012-2018 RISC OS Open Ltd
  2018-2019 EXL
  2020-2022 Valve Corporation
+ 2019-2022 Collabora Ltd.
 License: zlib/libpng and zlib-libpng-like-permissive
 
 Files: include/SDL3/SDL_egl.h
-       include/SDL3/SDL_opengl_glext.h
-       include/SDL3/SDL_opengles2_khrplatform.h
-Copyright: 1997-2021 Sam Lantinga
-           2008-2014 The Khronos Group Inc.
-License: zlib/libpng and Expat-like and Apache-2.0
+Copyright: 1997-2022 Sam Lantinga
+           2008-2018 The Khronos Group Inc.
+License: zlib/libpng and Expat-like
 
-Files: include/SDL3/SDL_opengles2_gl2.h
-       include/SDL3/SDL_opengles2_gl2ext.h
-       include/SDL3/SDL_opengles2_gl2platform.h
-Copyright: 1997-2016 Sam Lantinga <slouken@libsdl.org>
-License: SGI-Free-Software-License-B
+Files:
+ include/SDL3/SDL_opengl_glext.h
+ include/SDL3/SDL_opengles2_gl2.h
+ include/SDL3/SDL_opengles2_gl2ext.h
+ include/SDL3/SDL_opengles2_khrplatform.h
+ src/video/khronos/GLES2/gl2.h
+ src/video/khronos/GLES2/gl2_ext.h
+ src/video/khronos/KHR/khrplatform.h
+
+Copyright: 2013-2020 The Khronos Group Inc.
+License: Expat and Expat-like
 
 Files: include/SDL3/SDL_hidapi.h
        src/hidapi/*
@@ -45,15 +50,6 @@ License: BSD-3-clause or GPL-3 or hidapi-orig, and zlib/libpng
 Files: src/libm/*
 Copyright: 1993 by Sun Microsystems, Inc. All rights reserved.
 License: SunPro
-
-Files: src/main/windows/SDL_windows_main.c
-Copyright: 1998 Sam Lantinga
-License: PublicDomain_Sam_Lantinga
-Comment: SDL_main.c, placed in the public domain by Sam Lantinga  4/13/98
-
-Files: src/main/winrt/SDL_winrt_main_NonXAML.cpp
-Copyright: 2014 David Ludwig
-License: PublicDomain_David_Ludwig
 
 Files: test/main.cpp
 Copyright: none
@@ -84,7 +80,7 @@ License: Mozilla-permissive and Expat and zlib/libpng
 
 Files: src/video/khronos/vulkan/*.h
 Copyright:
- 2014-2020 The Khronos Group Inc.
+ 2013-2022 The Khronos Group Inc.
  2015-2017 Valve Corporation
  2015-2017 LunarG, Inc.
 License: Apache-2.0
@@ -93,6 +89,10 @@ Files: src/video/haiku/SDL_bkeyboard.cc
        src/video/haiku/SDL_bkeyboard.h
 Copyright: 1997-2012 Sam Lantinga
 License: LGPL-2.1+
+
+Files: src/video/yuv2rgb/*
+Copyright: 2016 Adrien Descamps
+License: BSD-3-clause
 
 Files: test/testautomation_*
 Copyright: Edgar Simo "bobbens"
@@ -123,12 +123,19 @@ Files: wayland-protocols/*.xml
 Copyright:
  2008-2011 Kristian Høgsberg
  2010-2013 Intel Corporation
- 2012-2016 Collabora, Ltd.
+ 2012-2017 Collabora, Ltd.
+ 2013 Rafael Antognolli
+ 2013 Jasper St. Pierre
+ 2014 Jonas Ådahl
  2014 Stephen "Lyude" Chandler Paul
  2015-2016 Jan Arne Petersen
- 2015 Samsung Electronics Co., Ltd
+ 2015-2017 Samsung Electronics Co., Ltd
  2015-2018 Red Hat, Inc.
  2018 Purism SPC
+ 2018 Simon Ser
+ 2020 Aleix Pol Gonzalez
+ 2020 Carlos Garnacho
+ 2022 Kenny Levinsen
 License: Expat and MIT-open-group
 
 Files: debian/*
@@ -147,35 +154,6 @@ Copyright: 2015-2020, Gianfranco Costamagna <locutusofborg@debian.org>
            2018-2023, Simon McVittie
            2022-2023, Collabora Ltd.
 License: LGPL-2.1+
-
-License: SGI-Free-Software-License-B
- SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008)
- Copyright (C) 1991-2000 Silicon Graphics, Inc. All Rights Reserved.
- .
- Permission is hereby granted, free of charge, to any person obtaining a
- copy of this software and associated documentation files (the "Software"),
- to deal in the Software without restriction, including without limitation
- the rights to use, copy, modify, merge, publish, distribute, sublicense,
- and/or sell copies of the Software, and to permit persons to whom the
- Software is furnished to do so, subject to the following conditions:
- .
- The above copyright notice including the dates of first publication and
- either this permission notice or a reference to
- http://oss.sgi.com/projects/FreeB/
- shall be included in all copies or substantial portions of the Software.
- ,
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- SILICON GRAPHICS, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
- OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- SOFTWARE.
- .
- Except as contained in this notice, the name of Silicon Graphics, Inc.
- shall not be used in advertising or otherwise to promote the sale, use or
- other dealings in this Software without prior written authorization from
- Silicon Graphics, Inc.
 
 License: Expat
  Permission is hereby granted, free of charge, to any person obtaining a
@@ -267,35 +245,6 @@ License: Apache-2.0
  .
  On Debian systems, a copy of the Apache License version 2.0
  can be found in /usr/share/common-licenses/Apache-2.0.
-
-License: BSD-3-clause-chromium
- Copyright (c) 2011 Google Inc. All rights reserved.
- .
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are
- met:
- .
-    * Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above
- copyright notice, this list of conditions and the following disclaimer
- in the documentation and/or other materials provided with the
- distribution.
-    * Neither the name of Google Inc. nor the names of its
- contributors may be used to endorse or promote products derived from
- this software without specific prior written permission.
- .
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
@@ -434,12 +383,6 @@ License: SunPro
   Permission to use, copy, modify, and distribute this
   software is freely granted, provided that this notice
   is preserved.
-
-License: PublicDomain_Sam_Lantinga
- Placed in the public domain by Sam Lantinga  4/13/98
-
-License: PublicDomain_David_Ludwig
- placed in the public domain by David Ludwig  3/13/14
 
 License: PublicDomain_Daniel_Gibson
  Placed in the public domain by Daniel Gibson
