@@ -1,0 +1,11 @@
+Tests: build
+Depends: build-essential, clang:native, libsdl3-dev
+Restrictions: superficial, allow-stderr
+
+Tests: cmake
+Depends: build-essential, cmake, libsdl3-dev
+Restrictions: superficial, allow-stderr
+
+Tests: installed-tests
+Depends: gnome-desktop-testing, libsdl3-tests
+Restrictions: superficial, allow-stderr

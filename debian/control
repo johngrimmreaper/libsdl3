@@ -1,0 +1,148 @@
+Source: libsdl3
+Priority: optional
+Section: libs
+Maintainer: Debian SDL packages maintainers <pkg-sdl-maintainers@lists.alioth.debian.org>
+Uploaders:
+ Manuel A. Fernandez Montecelo <mafm@debian.org>,
+ Felix Geyer <fgeyer@debian.org>,
+ Simon McVittie <smcv@debian.org>
+Standards-Version: 4.6.1
+Build-Depends:
+ cmake (>= 3.13),
+ debhelper-compat (= 13),
+ fcitx-libs-dev,
+ libasound2-dev [linux-any],
+ libdbus-1-dev,
+ libdecor-0-dev [linux-any],
+ libdrm-dev [linux-any],
+ libegl-dev [!hurd-any],
+ libgbm-dev [linux-any],
+ libgl-dev,
+ libgles-dev [!hurd-any],
+ libibus-1.0-dev,
+ libpipewire-0.3-dev (>= 0.3.20) [linux-any],
+ libpulse-dev,
+ libsamplerate0-dev,
+ libsndio-dev,
+ libudev-dev [linux-any],
+ libusb2-dev [kfreebsd-any],
+ libusbhid-dev [kfreebsd-any],
+ libvulkan-dev [linux-any],
+ libwayland-dev (>= 1.18) [linux-any],
+ libx11-dev,
+ libxcursor-dev,
+ libxext-dev,
+ libxfixes-dev,
+ libxi-dev,
+ libxinerama-dev,
+ libxkbcommon-dev (>= 0.5.0),
+ libxrandr-dev,
+ libxss-dev,
+ libxt-dev,
+ libxv-dev,
+ libxxf86vm-dev,
+ ninja-build,
+ pkg-config,
+ wayland-protocols
+Build-Depends-Indep:
+ graphviz <!nodoc>,
+ doxygen <!nodoc>,
+Vcs-Git: https://salsa.debian.org/sdl-team/libsdl3.git
+Vcs-Browser: https://salsa.debian.org/sdl-team/libsdl3
+Homepage: https://www.libsdl.org/
+Rules-Requires-Root: no
+
+Package: libsdl3-0
+Architecture: any
+Multi-Arch: same
+Pre-Depends:
+ ${misc:Pre-Depends}
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends}
+Suggests:
+ xdg-utils,
+Description: Simple DirectMedia Layer, version 3
+ SDL is a library that allows programs portable low level access to a video
+ framebuffer, audio output, mouse, and keyboard.
+ .
+ This version of SDL is under development and its API and ABI are not stable.
+ Use libsdl2-dev for new programs until a stable release of SDL 3 has
+ been made: the first stable release is expected to be versioned as 3.2.0.
+
+Package: libsdl3-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends:
+ libasound2-dev [linux-any],
+ libdbus-1-dev,
+ libdecor-0-dev [linux-any],
+ libdrm-dev [linux-any],
+ libegl-dev [!hurd-any],
+ libgbm-dev [linux-any],
+ libgl-dev,
+ libgles-dev [!hurd-any],
+ libibus-1.0-dev,
+ libpulse-dev,
+ libsamplerate0-dev,
+ libsdl3-0 (= ${binary:Version}),
+ libsndio-dev,
+ libudev-dev [linux-any],
+ libusb2-dev [kfreebsd-any],
+ libusbhid-dev [kfreebsd-any],
+ libwayland-dev [linux-any],
+ libx11-dev,
+ libxcursor-dev,
+ libxext-dev,
+ libxfixes-dev,
+ libxi-dev,
+ libxinerama-dev,
+ libxkbcommon-dev,
+ libxrandr-dev,
+ libxss-dev,
+ libxt-dev,
+ libxv-dev,
+ libxxf86vm-dev,
+ ${misc:Depends},
+ ${shlibs:Depends}
+Description: Simple DirectMedia Layer, version 3 development files
+ SDL is a library that allows programs portable low level access to a video
+ framebuffer, audio output, mouse, and keyboard.
+ .
+ This version of SDL is under development and its API and ABI are not stable.
+ Use libsdl2-dev for new programs until a stable release of SDL 3 has
+ been made: the first stable release is expected to be versioned as 3.2.0.
+ .
+ This package contains the files needed to compile and link programs which
+ use SDL.
+
+Package: libsdl3-doc
+Section: doc
+Architecture: all
+Multi-Arch: foreign
+Build-Profiles: <!nodoc>
+Depends:
+ ${misc:Depends},
+Description: Reference manual for SDL 3
+ SDL is a library that allows programs portable low level access to a video
+ framebuffer, audio output, mouse, and keyboard.
+ .
+ This package contains the reference manual and examples.
+
+Package: libsdl3-tests
+Section: misc
+Architecture: any
+Build-Profiles: <!noinsttest>
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends}
+Suggests:
+ gnome-desktop-testing
+Description: Simple DirectMedia Layer automated and manual tests
+ SDL is a library that allows programs portable low level access to a video
+ framebuffer, audio output, mouse, and keyboard.
+ .
+ This package contains manual and automated tests. The automated tests can
+ be run using ginsttest-runner in the gnome-desktop-testing package,
+ or manually.

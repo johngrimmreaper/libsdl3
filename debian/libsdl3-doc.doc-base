@@ -1,0 +1,11 @@
+Document: sdl3
+Title: SDL3 Manual
+Author: Sam Lantinga
+Abstract:
+ SDL is a library that allows programs portable low level access to a video
+ framebuffer, audio output, mouse, and keyboard.
+Section: Programming/C++
+
+Format: HTML
+Index: /usr/share/doc/libsdl3-dev/html/index.html
+Files: /usr/share/doc/libsdl3-dev/html/*

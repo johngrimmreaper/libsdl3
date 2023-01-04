@@ -1,0 +1,86 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+bindnow
+
+built_binaries := $(shell dh_listpackages)
+
+include /usr/share/dpkg/default.mk
+
+ifneq (,$(filter-out experimental UNRELEASED,$(DEB_DISTRIBUTION)))
+$(error This version of SDL is not yet suitable for testing/unstable)
+endif
+
+confflags = \
+	-DSDL_ALSA_SHARED=OFF \
+	-DSDL_JACK=OFF \
+	-DSDL_JACK_SHARED=OFF \
+	-DSDL_KMSDRM_SHARED=OFF \
+	-DSDL_LIBSAMPLERATE_SHARED=OFF \
+	-DSDL_OSS=OFF \
+	-DSDL_PIPEWIRE_SHARED=ON \
+	-DSDL_PULSEAUDIO_SHARED=OFF \
+	-DSDL_RPATH=OFF \
+	-DSDL_RPI=OFF \
+	-DSDL_STATIC_PIC=ON \
+	-DSDL_SHARED=ON \
+	-DSDL_SNDIO_SHARED=ON \
+	-DSDL_STATIC=ON \
+	-DSDL_TEST=ON \
+	-DSDL_TESTS=ON \
+	-DSDL_VENDOR_INFO="${DEB_VENDOR} ${DEB_VERSION}" \
+	-DSDL_VIVANTE=OFF \
+	-DSDL_X11=ON \
+	-DSDL_X11_SHARED=OFF \
+	$(NULL)
+
+ifneq ($(filter %-tests,$(built_binaries)),)
+  confflags += -DSDL_INSTALL_TESTS=ON
+endif
+
+ifeq ($(DEB_HOST_ARCH_CPU),powerpc)
+  confflags += -DSDL_ALTIVEC=OFF
+endif
+
+ifeq ($(DEB_HOST_ARCH_CPU),ppc64el)
+  confflags += -DSDL_ALTIVEC=OFF
+endif
+
+ifeq ($(DEB_HOST_ARCH_OS),linux)
+  confflags += -DSDL_WAYLAND=ON
+  confflags += -DSDL_WAYLAND_SHARED=OFF
+else
+  confflags += -DSDL_WAYLAND=OFF
+endif
+
+%:
+	dh $@ --buildsystem=cmake+ninja
+
+override_dh_auto_configure:
+	if [ $(DEB_VERSION_UPSTREAM) = 3~git20230103+dfsg ]; then \
+		echo prerelease-3.0.0-518-g5fab64f86 > VERSION.txt; \
+	fi
+	dh_auto_configure -- $(confflags)
+
+execute_after_dh_auto_build:
+ifneq ($(filter %-doc,$(built_binaries)),)
+	sed -e 's/FULL_PATH_NAMES *=.*/FULL_PATH_NAMES = NO/' < docs/doxyfile > debian/Doxyfile
+	cd docs && doxygen ../debian/Doxyfile
+	# useless files
+	find docs/output -name "*.md5" -delete
+	find docs/output -type d -empty -delete
+endif
+
+execute_after_dh_auto_clean-indep:
+	rm -f debian/Doxyfile
+	rm -rf docs/output
+
+# debhelper >= 13.4 makes all of /usr/libexec executable, which is not
+# quite right for installed-tests
+override_dh_fixperms:
+	dh_fixperms -Xusr/libexec/installed-tests
+ifneq ($(filter %-tests,$(built_binaries)),)
+	chmod --recursive --changes a+rX,u+w,og-w debian/libsdl3-tests/usr/libexec/installed-tests
+endif
+
+override_dh_installchangelogs:
+	dh_installchangelogs -- WhatsNew.txt

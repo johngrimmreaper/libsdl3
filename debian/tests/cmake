@@ -1,0 +1,75 @@
+#!/bin/sh
+# Copyright 2019-2022 Collabora Ltd.
+# SPDX-License-Identifier: Zlib
+# (see "zlib/libpng" in debian/copyright)
+
+set -eux
+
+WORKDIR="$(mktemp -d)"
+cleanup () {
+    rm -fr "$WORKDIR"
+}
+
+if [ -n "${DEB_HOST_GNU_TYPE:-}" ]; then
+    cat <<EOF > "$WORKDIR/toolchain.cmake"
+set(CMAKE_C_COMPILER $DEB_HOST_GNU_TYPE-gcc)
+set(CMAKE_CXX_COMPILER $DEB_HOST_GNU_TYPE-g++)
+set(PKG_CONFIG_EXECUTABLE $DEB_HOST_GNU_TYPE-pkg-config)
+EOF
+    CCFILE=-DCMAKE_TOOLCHAIN_FILE="$WORKDIR/toolchain.cmake"
+else
+    CCFILE=
+fi
+
+invoke_cmake () {
+    if cmake $CCFILE "$@"; then
+        return 0
+    fi
+
+    tail -v -n +0 CMakeCache.txt || :
+    tail -v -n +0 CMakeFiles/CMakeOutput.log || :
+    tail -v -n +0 CMakeFiles/CMakeError.log || :
+    return 1
+}
+
+srcdir="$(pwd)"
+
+mkdir "$WORKDIR/targets"
+(
+    cd "$WORKDIR/targets"
+    invoke_cmake "$srcdir/debian/tests/cmake-targets"
+)
+make -C "$WORKDIR/targets" VERBOSE=1
+"$WORKDIR/targets/hello"
+make -C "$WORKDIR/targets" VERBOSE=1 clean
+
+mkdir "$WORKDIR/example"
+(
+    cd "$WORKDIR/example"
+    invoke_cmake "$srcdir/debian/tests/cmake-example"
+)
+make -C "$WORKDIR/example" VERBOSE=1
+"$WORKDIR/example/hello"
+make -C "$WORKDIR/example" VERBOSE=1 clean
+
+mkdir "$WORKDIR/main"
+(
+    cd "$WORKDIR/main"
+    invoke_cmake "$srcdir/debian/tests/cmake-main"
+)
+make -C "$WORKDIR/main" VERBOSE=1
+(
+    export SDL_AUDIODRIVER=dummy
+    export SDL_VIDEODRIVER=dummy
+    "$WORKDIR/main/program"
+)
+make -C "$WORKDIR/main" VERBOSE=1 clean
+
+mkdir "$WORKDIR/static"
+(
+    cd "$WORKDIR/static"
+    invoke_cmake "$srcdir/debian/tests/cmake-static"
+)
+make -C "$WORKDIR/static" VERBOSE=1
+"$WORKDIR/static/hello"
+make -C "$WORKDIR/static" VERBOSE=1 clean
