@@ -1,4 +1,4 @@
-libsdl3 (3~git20230103+dfsg-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20230103+dfsg-1) experimental; urgency=medium
 
   * New upstream major version with incompatible API and ABI
   * d/copyright: Update
@@ -7,7 +7,7 @@ libsdl3 (3~git20230103+dfsg-1) UNRELEASED; urgency=medium
     until the first stable release of SDL 3.x, which is expected to be
     labelled as SDL 3.2.0.
 
- -- Simon McVittie <smcv@debian.org>  Wed, 04 Jan 2023 12:07:43 +0000
+ -- Simon McVittie <smcv@debian.org>  Wed, 04 Jan 2023 17:04:31 +0000
 
 libsdl2 (2.26.1+dfsg-1) unstable; urgency=medium
 
