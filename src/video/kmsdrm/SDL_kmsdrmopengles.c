@@ -37,8 +37,9 @@
 void KMSDRM_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
 {
     /* if SDL was _also_ built with the Raspberry Pi driver (so we're
-       definitely a Pi device), default to GLES2. */
-#if SDL_VIDEO_DRIVER_RPI
+       definitely a Pi device) or with the ROCKCHIP video driver
+       (it's a ROCKCHIP device),  default to GLES2. */
+#if defined(SDL_VIDEO_DRIVER_RPI) || defined(SDL_VIDEO_DRIVER_ROCKCHIP)
     *mask = SDL_GL_CONTEXT_PROFILE_ES;
     *major = 2;
     *minor = 0;
@@ -200,5 +201,3 @@ int KMSDRM_GLES_SwapWindow(_THIS, SDL_Window *window)
 SDL_EGL_MakeCurrent_impl(KMSDRM)
 
 #endif /* SDL_VIDEO_DRIVER_KMSDRM */
-
-    /* vi: set ts=4 sw=4 expandtab: */

@@ -15,6 +15,7 @@
 #include <signal.h>
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 #define NUM_THREADS 10
 /* This value should be smaller than the maximum count of the */
@@ -281,5 +282,3 @@ int main(int argc, char **argv)
     SDL_Quit();
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -14,6 +14,7 @@
    platform
 */
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 #define DEFAULT_RESOLUTION 1
 
@@ -135,5 +136,3 @@ int main(int argc, char *argv[])
     SDL_Quit();
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -10,6 +10,7 @@
   freely.
 */
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 /* !!! FIXME: move this to the test framework */
 
@@ -62,5 +63,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

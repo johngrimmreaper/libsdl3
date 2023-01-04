@@ -65,7 +65,7 @@ void SDL_DestroySemaphore(SDL_sem *sem)
 
 int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 {
-    int retval;
+    int retval = 0;
 #ifdef HAVE_SEM_TIMEDWAIT
 #ifndef HAVE_CLOCK_GETTIME
     struct timeval now;
@@ -182,4 +182,3 @@ int SDL_SemPost(SDL_sem *sem)
 }
 
 #endif /* __MACOS__ */
-/* vi: set ts=4 sw=4 expandtab: */

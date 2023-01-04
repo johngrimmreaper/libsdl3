@@ -160,7 +160,7 @@
 #endif
 
 /* Run-Length-Encoding
-   - SDL_SetColorKey() called with SDL_RLEACCEL flag */
+   - SDL_SetSurfaceColorKey() called with SDL_RLEACCEL flag */
 #ifndef SDL_HAVE_RLE
 #define SDL_HAVE_RLE !SDL_LEAN_AND_MEAN
 #endif
@@ -181,6 +181,8 @@
 #endif
 
 #include <SDL3/SDL.h>
+#define SDL_MAIN_NOIMPL /* don't drag in header-only implementation of SDL_main */
+#include <SDL3/SDL_main.h>
 
 /* The internal implementations of these functions have up to nanosecond precision.
    We can expose these functions as part of the API if we want to later.
@@ -200,5 +202,3 @@ extern DECLSPEC int SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 time
 #endif
 
 #endif /* SDL_internal_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

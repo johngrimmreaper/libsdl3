@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include <SDL3/SDL_test_common.h>
+#include <SDL3/SDL_main.h>
 
 #if defined(__ANDROID__) && defined(__ARM_EABI__) && !defined(__ARM_ARCH_7A__)
 
@@ -1153,5 +1154,3 @@ int main(int argc, char **argv)
 }
 
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

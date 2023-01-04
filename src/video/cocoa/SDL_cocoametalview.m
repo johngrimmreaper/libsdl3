@@ -42,7 +42,7 @@ static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
      * events don't always happen in the same frame (for example when a
      * resizable window exits a fullscreen Space via the user pressing the OS
      * exit-space button). */
-    if (event->type == SDL_WINDOWEVENT && event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+    if (event->type == SDL_WINDOWEVENT_SIZE_CHANGED) {
         @autoreleasepool {
             SDL_cocoametalview *view = (__bridge SDL_cocoametalview *)userdata;
             if (view.sdlWindowID == event->window.windowID) {
@@ -197,5 +197,3 @@ void Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) */
-
-/* vi: set ts=4 sw=4 expandtab: */

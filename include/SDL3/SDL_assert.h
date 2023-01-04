@@ -24,7 +24,7 @@
 
 #include <SDL3/SDL_stdinc.h>
 
-#include <SDL3/begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -51,7 +51,7 @@ assert can have unique static variables associated with it.
 /* Don't include intrin.h here because it contains C++ code */
     extern void __cdecl __debugbreak(void);
     #define SDL_TriggerBreakpoint() __debugbreak()
-#elif _SDL_HAS_BUILTIN(__builtin_debugtrap)
+#elif SDL_HAS_BUILTIN(__builtin_debugtrap)
     #define SDL_TriggerBreakpoint() __builtin_debugtrap()
 #elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "int $3\n\t" )
@@ -313,8 +313,6 @@ extern DECLSPEC void SDLCALL SDL_ResetAssertionReport(void);
 #ifdef __cplusplus
 }
 #endif
-#include <SDL3/close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_assert_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

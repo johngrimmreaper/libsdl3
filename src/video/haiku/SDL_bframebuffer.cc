@@ -29,7 +29,7 @@
 #include "SDL_bmodes.h"
 #include "SDL_BWin.h"
 
-#include "../../main/haiku/SDL_BApp.h"
+#include "../../core/haiku/SDL_BApp.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -125,5 +125,3 @@ void HAIKU_DestroyWindowFramebuffer(_THIS, SDL_Window * window) {
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
-
-/* vi: set ts=4 sw=4 expandtab: */

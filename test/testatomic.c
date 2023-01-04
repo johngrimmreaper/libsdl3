@@ -10,6 +10,7 @@
   freely.
 */
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 /*
   Absolutely basic tests just to see if we get the expected value
@@ -714,5 +715,3 @@ int main(int argc, char *argv[])
     RunFIFOTest(SDL_TRUE);
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

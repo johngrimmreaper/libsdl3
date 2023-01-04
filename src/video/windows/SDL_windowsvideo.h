@@ -41,12 +41,12 @@
 
 #include "SDL_windowsclipboard.h"
 #include "SDL_windowsevents.h"
+#include "SDL_windowsopengl.h"
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 #include "SDL_windowskeyboard.h"
 #include "SDL_windowsmodes.h"
 #include "SDL_windowsmouse.h"
-#include "SDL_windowsopengl.h"
 #include "SDL_windowsopengles.h"
 #endif
 
@@ -460,6 +460,7 @@ typedef struct SDL_VideoData
 } SDL_VideoData;
 
 extern SDL_bool g_WindowsEnableMessageLoop;
+extern SDL_bool g_WindowsEnableMenuMnemonics;
 extern SDL_bool g_WindowFrameUsableWhileCursorHidden;
 
 typedef struct IDirect3D9 IDirect3D9;
@@ -468,5 +469,3 @@ extern SDL_bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface);
 extern SDL_bool WIN_IsPerMonitorV2DPIAware(_THIS);
 
 #endif /* SDL_windowsvideo_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

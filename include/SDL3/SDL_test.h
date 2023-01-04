@@ -44,7 +44,7 @@
 #include <SDL3/SDL_test_memory.h>
 #include <SDL3/SDL_test_random.h>
 
-#include <SDL3/begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -62,8 +62,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#include <SDL3/close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_test_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

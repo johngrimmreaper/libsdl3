@@ -47,7 +47,7 @@ static int forward_argc;
 static char **forward_argv;
 static int exit_status;
 
-int SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction)
+int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
 {
     int i;
 
@@ -515,5 +515,3 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 @end
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -25,6 +25,38 @@
 
 #if SDL_VIDEO_OPENGL_WGL
 
+#if __XBOXONE__ || __XBOXSERIES__
+typedef struct tagPIXELFORMATDESCRIPTOR
+{
+    WORD nSize;
+    WORD nVersion;
+    DWORD dwFlags;
+    BYTE iPixelType;
+    BYTE cColorBits;
+    BYTE cRedBits;
+    BYTE cRedShift;
+    BYTE cGreenBits;
+    BYTE cGreenShift;
+    BYTE cBlueBits;
+    BYTE cBlueShift;
+    BYTE cAlphaBits;
+    BYTE cAlphaShift;
+    BYTE cAccumBits;
+    BYTE cAccumRedBits;
+    BYTE cAccumGreenBits;
+    BYTE cAccumBlueBits;
+    BYTE cAccumAlphaBits;
+    BYTE cDepthBits;
+    BYTE cStencilBits;
+    BYTE cAuxBuffers;
+    BYTE iLayerType;
+    BYTE bReserved;
+    DWORD dwLayerMask;
+    DWORD dwVisibleMask;
+    DWORD dwDamageMask;
+} PIXELFORMATDESCRIPTOR, *PPIXELFORMATDESCRIPTOR, *LPPIXELFORMATDESCRIPTOR;
+#endif
+
 struct SDL_GLDriverData
 {
     SDL_bool HAS_WGL_ARB_pixel_format;
@@ -53,6 +85,19 @@ struct SDL_GLDriverData
     BOOL (WINAPI *wglGetPixelFormatAttribivARB)(HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int *piAttributes, int *piValues);
     BOOL (WINAPI *wglSwapIntervalEXT)(int interval);
     int (WINAPI *wglGetSwapIntervalEXT)(void);
+#if __XBOXONE__ || __XBOXSERIES__
+    BOOL (WINAPI *wglSwapBuffers)(HDC hdc);
+    int (WINAPI *wglDescribePixelFormat)(HDC hdc,
+                                         int iPixelFormat,
+                                         UINT nBytes,
+                                         LPPIXELFORMATDESCRIPTOR ppfd);
+    int (WINAPI *wglChoosePixelFormat)(HDC hdc,
+                                       const PIXELFORMATDESCRIPTOR *ppfd);
+    BOOL (WINAPI *wglSetPixelFormat)(HDC hdc,
+                                     int format,
+                                     const PIXELFORMATDESCRIPTOR *ppfd);
+    int (WINAPI *wglGetPixelFormat)(HDC hdc);
+#endif
     /* *INDENT-ON* */ /* clang-format on */
 };
 
@@ -66,7 +111,7 @@ extern SDL_GLContext WIN_GL_CreateContext(_THIS, SDL_Window *window);
 extern int WIN_GL_MakeCurrent(_THIS, SDL_Window *window,
                               SDL_GLContext context);
 extern int WIN_GL_SetSwapInterval(_THIS, int interval);
-extern int WIN_GL_GetSwapInterval(_THIS);
+extern int WIN_GL_GetSwapInterval(_THIS, int *interval);
 extern int WIN_GL_SwapWindow(_THIS, SDL_Window *window);
 extern void WIN_GL_DeleteContext(_THIS, SDL_GLContext context);
 extern void WIN_GL_InitExtensions(_THIS);
@@ -132,5 +177,3 @@ extern SDL_bool WIN_GL_SetPixelFormatFrom(_THIS, SDL_Window *fromWindow, SDL_Win
 #endif /* SDL_VIDEO_OPENGL_WGL */
 
 #endif /* SDL_windowsopengl_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
