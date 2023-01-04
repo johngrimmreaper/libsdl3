@@ -34,9 +34,8 @@ Files:
  include/SDL3/SDL_opengles2_gl2ext.h
  include/SDL3/SDL_opengles2_khrplatform.h
  src/video/khronos/GLES2/gl2.h
- src/video/khronos/GLES2/gl2_ext.h
+ src/video/khronos/GLES2/gl2ext.h
  src/video/khronos/KHR/khrplatform.h
-
 Copyright: 2013-2020 The Khronos Group Inc.
 License: Expat and Expat-like
 
@@ -78,12 +77,21 @@ Copyright:
  2009-2010 Nokia Corporation
 License: Mozilla-permissive and Expat and zlib/libpng
 
-Files: src/video/khronos/vulkan/*.h
+Files:
+ src/video/khronos/EGL/*.h
+ src/video/khronos/GLES2/gl2platform.h
+ src/video/khronos/vulkan/*.h
 Copyright:
  2013-2022 The Khronos Group Inc.
  2015-2017 Valve Corporation
  2015-2017 LunarG, Inc.
 License: Apache-2.0
+
+Files:
+ src/video/khronos/vulkan/*.hpp
+Copyright:
+ 2015-2022 The Khronos Group Inc.
+License: Apache-2.0 or Expat
 
 Files: src/video/haiku/SDL_bkeyboard.cc
        src/video/haiku/SDL_bkeyboard.h
