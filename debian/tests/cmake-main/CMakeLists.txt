@@ -7,4 +7,4 @@ project(Test LANGUAGES CXX)
 
 find_package(SDL3 CONFIG REQUIRED)
 add_executable(program test.cpp)
-target_link_libraries(program PRIVATE SDL3::SDL3 SDL3::SDL3_main)
+target_link_libraries(program PRIVATE SDL3::SDL3)

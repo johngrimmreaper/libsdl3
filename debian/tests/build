@@ -23,7 +23,8 @@ cat <<EOF > use-sdl.c
 #undef NDEBUG
 #include <assert.h>
 
-#include <SDL3/SDL_version.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 int main(void)
 {
