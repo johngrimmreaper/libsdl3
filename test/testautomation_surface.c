@@ -19,6 +19,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_images.h"
 
 /* ================= Test Case Implementation ================== */
 
@@ -212,7 +213,7 @@ static void AssertFileExist(const char *filename)
 /* Test case functions */
 
 /**
- * @brief Tests sprite saving and loading
+ * \brief Tests sprite saving and loading
  */
 int surface_testSaveLoadBitmap(void *arg)
 {
@@ -258,7 +259,7 @@ int surface_testSaveLoadBitmap(void *arg)
     return TEST_COMPLETED;
 }
 
-/* !
+/**
  *  Tests surface conversion.
  */
 int surface_testSurfaceConversion(void *arg)
@@ -298,7 +299,7 @@ int surface_testSurfaceConversion(void *arg)
     return TEST_COMPLETED;
 }
 
-/* !
+/**
  *  Tests surface conversion across all pixel formats.
  */
 int surface_testCompleteSurfaceConversion(void *arg)
@@ -389,7 +390,7 @@ int surface_testCompleteSurfaceConversion(void *arg)
 }
 
 /**
- * @brief Tests sprite loading. A failure case.
+ * \brief Tests sprite loading. A failure case.
  */
 int surface_testLoadFailure(void *arg)
 {
@@ -400,7 +401,7 @@ int surface_testLoadFailure(void *arg)
 }
 
 /**
- * @brief Tests some blitting routines.
+ * \brief Tests some blitting routines.
  */
 int surface_testBlit(void *arg)
 {
@@ -422,7 +423,7 @@ int surface_testBlit(void *arg)
 }
 
 /**
- * @brief Tests some blitting routines with color mod
+ * \brief Tests some blitting routines with color mod
  */
 int surface_testBlitColorMod(void *arg)
 {
@@ -444,7 +445,7 @@ int surface_testBlitColorMod(void *arg)
 }
 
 /**
- * @brief Tests some blitting routines with alpha mod
+ * \brief Tests some blitting routines with alpha mod
  */
 int surface_testBlitAlphaMod(void *arg)
 {
@@ -466,7 +467,7 @@ int surface_testBlitAlphaMod(void *arg)
 }
 
 /**
- * @brief Tests some more blitting routines.
+ * \brief Tests some more blitting routines.
  */
 int surface_testBlitBlendNone(void *arg)
 {
@@ -488,7 +489,7 @@ int surface_testBlitBlendNone(void *arg)
 }
 
 /**
- * @brief Tests some more blitting routines.
+ * \brief Tests some more blitting routines.
  */
 int surface_testBlitBlendBlend(void *arg)
 {
@@ -510,7 +511,7 @@ int surface_testBlitBlendBlend(void *arg)
 }
 
 /**
- * @brief Tests some more blitting routines.
+ * \brief Tests some more blitting routines.
  */
 int surface_testBlitBlendAdd(void *arg)
 {
@@ -532,7 +533,7 @@ int surface_testBlitBlendAdd(void *arg)
 }
 
 /**
- * @brief Tests some more blitting routines.
+ * \brief Tests some more blitting routines.
  */
 int surface_testBlitBlendMod(void *arg)
 {
@@ -554,7 +555,7 @@ int surface_testBlitBlendMod(void *arg)
 }
 
 /**
- * @brief Tests some more blitting routines with loop
+ * \brief Tests some more blitting routines with loop
  */
 int surface_testBlitBlendLoop(void *arg)
 {
@@ -621,6 +622,14 @@ int surface_testOverflow(void *arg)
     SDLTest_AssertCheck(surface == NULL, "Should detect negative pitch");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+    surface = SDL_CreateSurfaceFrom(buf, 1, 1, 0, SDL_PIXELFORMAT_RGBA8888);
+    SDLTest_AssertCheck(surface == NULL, "Should detect zero pitch");
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+    surface = SDL_CreateSurfaceFrom(NULL, 1, 1, 0, SDL_PIXELFORMAT_RGBA8888);
+    SDLTest_AssertCheck(surface != NULL, "Allow zero pitch for partially set up surfaces: %s",
+                        surface != NULL ? "(success)" : SDL_GetError());
+    SDL_DestroySurface(surface);
 
     /* Less than 1 byte per pixel: the pitch can legitimately be less than
      * the width, but it must be enough to hold the appropriate number of

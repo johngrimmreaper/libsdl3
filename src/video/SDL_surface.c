@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -165,7 +165,7 @@ SDL_CreateSurface(int width, int height, Uint32 format)
             }
         }
 
-        surface->pixels = SDL_SIMDAlloc(size);
+        surface->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), size);
         if (!surface->pixels) {
             SDL_DestroySurface(surface);
             SDL_OutOfMemory();
@@ -203,7 +203,6 @@ SDL_CreateSurfaceFrom(void *pixels,
                       Uint32 format)
 {
     SDL_Surface *surface;
-    size_t minimalPitch;
 
     if (width < 0) {
         SDL_InvalidParamError("width");
@@ -215,20 +214,26 @@ SDL_CreateSurfaceFrom(void *pixels,
         return NULL;
     }
 
-    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
-        int p;
-        if (SDL_CalculateYUVSize(format, width, height, NULL, &p) < 0) {
+    if (pitch == 0 && pixels == NULL) {
+        /* The application will fill these in later with valid values */
+    } else {
+        size_t minimalPitch;
+
+        if (SDL_ISPIXELFORMAT_FOURCC(format)) {
+            int p;
+            if (SDL_CalculateYUVSize(format, width, height, NULL, &p) < 0) {
+                SDL_InvalidParamError("pitch");
+                return NULL;
+            }
+            minimalPitch = p;
+        } else {
+            minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
+        }
+
+        if (pitch < 0 || (size_t)pitch < minimalPitch) {
             SDL_InvalidParamError("pitch");
             return NULL;
         }
-        minimalPitch = p;
-    } else {
-        minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
-    }
-
-    if (pitch < 0 || (pitch > 0 && ((size_t)pitch) < minimalPitch)) {
-        SDL_InvalidParamError("pitch");
-        return NULL;
     }
 
     surface = SDL_CreateSurface(0, 0, format);
@@ -754,7 +759,7 @@ int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
 int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
                         SDL_Surface *dst, SDL_Rect *dstrect)
 {
-    return SDL_PrivateBlitSurfaceScaled(src, srcrect, dst, dstrect, SDL_ScaleModeNearest);
+    return SDL_PrivateBlitSurfaceScaled(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
 }
 
 int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
@@ -922,7 +927,7 @@ int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
 int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, SDL_Rect *srcrect,
                         SDL_Surface *dst, SDL_Rect *dstrect)
 {
-    return SDL_PrivateBlitSurfaceUncheckedScaled(src, srcrect, dst, dstrect, SDL_ScaleModeNearest);
+    return SDL_PrivateBlitSurfaceUncheckedScaled(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
 }
 
 int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, SDL_Rect *srcrect,
@@ -942,7 +947,7 @@ int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, SDL_Rect *srcrect,
         SDL_InvalidateMap(src->map);
     }
 
-    if (scaleMode == SDL_ScaleModeNearest) {
+    if (scaleMode == SDL_SCALEMODE_NEAREST) {
         if (!(src->map->info.flags & complex_copy_flags) &&
             src->format->format == dst->format->format &&
             !SDL_ISPIXELFORMAT_INDEXED(src->format->format)) {
@@ -1319,7 +1324,7 @@ end:
         (copy_flags & SDL_COPY_MODULATE_ALPHA)) {
         SDL_SetSurfaceBlendMode(convert, SDL_BLENDMODE_BLEND);
     }
-    if ((copy_flags & SDL_COPY_RLE_DESIRED)) {
+    if (copy_flags & SDL_COPY_RLE_DESIRED) {
         SDL_SetSurfaceRLE(convert, SDL_RLEACCEL);
     }
 
@@ -1553,7 +1558,7 @@ void SDL_DestroySurface(SDL_Surface *surface)
         /* Don't free */
     } else if (surface->flags & SDL_SIMD_ALIGNED) {
         /* Free aligned */
-        SDL_SIMDFree(surface->pixels);
+        SDL_aligned_free(surface->pixels);
     } else {
         /* Normal */
         SDL_free(surface->pixels);

@@ -13,16 +13,12 @@ include(CMakePushCheckState)
 include(GNUInstallDirs)
 
 set(SDL_TESTS_LINK_SHARED_DEFAULT ON)
-if(WINDOWS)
-    # Avoid missing dll error by linking to static SDL library,
-    # alternatively, copy dll to build directory in a post build event.
-    set(SDL_TESTS_LINK_SHARED_DEFAULT OFF)
-endif()
 if(EMSCRIPTEN OR N3DS OR PS2 OR PSP OR RISCOS OR VITA)
     set(SDL_TESTS_LINK_SHARED_DEFAULT OFF)
 endif()
 
 option(SDL_TESTS_LINK_SHARED "link tests to shared SDL library" ${SDL_TESTS_LINK_SHARED_DEFAULT})
+set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Timeout multiplier to account for really slow machines")
 
 if(SDL_TESTS_LINK_SHARED)
     set(sdl_name_component SDL3)
@@ -93,6 +89,10 @@ macro(add_sdl_test_executable TARGET)
 
     if(OPENGL_FOUND)
         target_compile_definitions(${TARGET} PRIVATE HAVE_OPENGL)
+    endif()
+
+    if(TARGET sdl-global-options)
+        target_link_libraries(${TARGET} PRIVATE $<BUILD_INTERFACE:sdl-global-options>)
     endif()
 endmacro()
 
@@ -204,8 +204,6 @@ add_sdl_test_executable(gamepadmap NEEDS_RESOURCES TESTUTILS gamepadmap.c)
 add_sdl_test_executable(testvulkan testvulkan.c)
 add_sdl_test_executable(testoffscreen testoffscreen.c)
 
-cmake_push_check_state()
-
 check_c_compiler_flag(-Wformat-overflow HAVE_WFORMAT_OVERFLOW)
 if(HAVE_WFORMAT_OVERFLOW)
     target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT_OVERFLOW)
@@ -216,12 +214,16 @@ if(HAVE_WFORMAT)
     target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT)
 endif()
 
+cmake_push_check_state()
+if(HAVE_WFORMAT)
+    # Some compilers ignore -Wformat-extra-args without -Wformat
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -Wformat")
+endif()
 check_c_compiler_flag(-Wformat-extra-args HAVE_WFORMAT_EXTRA_ARGS)
+cmake_pop_check_state()
 if(HAVE_WFORMAT_EXTRA_ARGS)
     target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT_EXTRA_ARGS)
 endif()
-
-cmake_pop_check_state()
 
 if(SDL_DUMMYAUDIO)
   list(APPEND SDL_TESTS_NONINTERACTIVE
@@ -305,7 +307,7 @@ if(N3DS)
     foreach(APP ${SDL_TEST_EXECUTABLES})
         get_target_property(TARGET_BINARY_DIR ${APP} BINARY_DIR)
         set(SMDH_FILE "${TARGET_BINARY_DIR}/${APP}.smdh")
-        ctr_generate_smdh("${SMDH_FILE}" 
+        ctr_generate_smdh("${SMDH_FILE}"
             NAME "SDL-${APP}"
             DESCRIPTION "SDL3 Test suite"
             AUTHOR "SDL3 Contributors"
@@ -344,8 +346,8 @@ if(APPLE)
         foreach(CURRENT_TARGET ${SDL_TEST_EXECUTABLES})
             set_target_properties("${CURRENT_TARGET}" PROPERTIES
                 MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.${CURRENT_TARGET}"
-                MACOSX_BUNDLE_BUNDLE_VERSION "${SDL_VERSION}"
-                MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL_VERSION}"
+                MACOSX_BUNDLE_BUNDLE_VERSION "${SDL3_VERSION}"
+                MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL3_VERSION}"
             )
         endforeach()
     endif()
@@ -354,7 +356,13 @@ endif()
 set(TESTS_ENVIRONMENT
     SDL_AUDIO_DRIVER=dummy
     SDL_VIDEO_DRIVER=dummy
+    PATH=$<TARGET_FILE_DIR:SDL3::${sdl_name_component}>
 )
+
+function(sdl_set_test_timeout TEST TIMEOUT)
+    math(EXPR TIMEOUT "${TIMEOUT}*${SDL_TESTS_TIMEOUT_MULTIPLIER}")
+    set_tests_properties(${test} PROPERTIES TIMEOUT "${TIMEOUT}")
+endfunction()
 
 foreach(TESTCASE ${SDL_TESTS_NONINTERACTIVE})
     add_test(
@@ -362,11 +370,8 @@ foreach(TESTCASE ${SDL_TESTS_NONINTERACTIVE})
         COMMAND ${TESTCASE}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
-    set_tests_properties(${TESTCASE}
-        PROPERTIES
-            ENVIRONMENT "${TESTS_ENVIRONMENT}"
-            TIMEOUT 10
-    )
+    set_tests_properties(${TESTCASE} PROPERTIES ENVIRONMENT "${TESTS_ENVIRONMENT}")
+    sdl_set_test_timeout(${TESTCASE} 10)
     if(SDL_INSTALL_TESTS)
         set(exe ${TESTCASE})
         set(installedtestsdir "${CMAKE_INSTALL_FULL_LIBEXECDIR}/installed-tests/SDL3")
@@ -378,8 +383,8 @@ foreach(TESTCASE ${SDL_TESTS_NONINTERACTIVE})
     endif()
 endforeach()
 
-set_tests_properties(testthread PROPERTIES TIMEOUT 40)
-set_tests_properties(testtimer PROPERTIES TIMEOUT 60)
+sdl_set_test_timeout(testthread 40)
+sdl_set_test_timeout(testtimer 60)
 
 if(SDL_INSTALL_TESTS)
     if(RISCOS)

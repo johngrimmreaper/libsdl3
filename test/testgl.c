@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,7 +45,7 @@ static int LoadContext(GL_Context *data)
 #else
 #define SDL_PROC(ret, func, params)                                                         \
     do {                                                                                    \
-        data->func = SDL_GL_GetProcAddress(#func);                                          \
+        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                                          \
         if (!data->func) {                                                                  \
             return SDL_SetError("Couldn't load GL function %s: %s", #func, SDL_GetError()); \
         }                                                                                   \
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
     int fsaa, accel;
     int value;
     int i, done;
-    SDL_DisplayMode mode;
+    const SDL_DisplayMode *mode;
     SDL_Event event;
     Uint64 then, now;
     Uint32 frames;
@@ -293,8 +293,10 @@ int main(int argc, char *argv[])
         swap_interval = 0;
     }
 
-    SDL_GetCurrentDisplayMode(0, &mode);
-    SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode.format));
+    mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+    if (mode) {
+        SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode->format));
+    }
 
     ret_interval = SDL_GL_GetSwapInterval(&interval);
     if (ret_interval < 0) {
@@ -305,7 +307,7 @@ int main(int argc, char *argv[])
 
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
     SDL_Log("Window Size   : %d,%d\n", dw, dh);
-    SDL_GL_GetDrawableSize(state->windows[0], &dw, &dh);
+    SDL_GetWindowSizeInPixels(state->windows[0], &dw, &dh);
     SDL_Log("Draw Size     : %d,%d\n", dw, dh);
     SDL_Log("\n");
     SDL_Log("Vendor        : %s\n", ctx.glGetString(GL_VENDOR));
@@ -387,7 +389,7 @@ int main(int argc, char *argv[])
         ++frames;
         while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
-            if (event.type == SDL_KEYDOWN) {
+            if (event.type == SDL_EVENT_KEY_DOWN) {
                 if (event.key.keysym.sym == SDLK_o) {
                     swap_interval--;
                     update_swap_interval = SDL_TRUE;
@@ -411,7 +413,7 @@ int main(int argc, char *argv[])
             if (update_swap_interval) {
                 SDL_GL_SetSwapInterval(swap_interval);
             }
-            SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
+            SDL_GetWindowSizeInPixels(state->windows[i], &w, &h);
             ctx.glViewport(0, 0, w, h);
             Render();
             SDL_GL_SwapWindow(state->windows[i]);

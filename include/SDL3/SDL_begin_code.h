@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -170,19 +170,19 @@
 #endif /* SDL_FALLTHROUGH not defined */
 
 #ifndef SDL_MALLOC
-#if defined(__GNUC__)
+#if defined(__GNUC__) && (__GNUC__ >= 3)
 #define SDL_MALLOC __attribute__((malloc))
-/* FIXME
+/** FIXME
 #elif defined(_MSC_VER)
 #define SDL_MALLOC __declspec(allocator) __desclspec(restrict)
-*/
+**/
 #else
 #define SDL_MALLOC
 #endif
 #endif /* SDL_MALLOC not defined */
 
 #ifndef SDL_ALLOC_SIZE
-#if defined(__clang__) || (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)))
+#if (defined(__clang__) && __clang_major__ >= 4) || (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)))
 #define SDL_ALLOC_SIZE(p) __attribute__((alloc_size(p)))
 #elif defined(_MSC_VER)
 #define SDL_ALLOC_SIZE(p)
@@ -192,7 +192,7 @@
 #endif /* SDL_ALLOC_SIZE not defined */
 
 #ifndef SDL_ALLOC_SIZE2
-#if defined(__clang__) || (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)))
+#if (defined(__clang__) && __clang_major__ >= 4) || (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)))
 #define SDL_ALLOC_SIZE2(p1, p2) __attribute__((alloc_size(p1, p2)))
 #elif defined(_MSC_VER)
 #define SDL_ALLOC_SIZE2(p1, p2)

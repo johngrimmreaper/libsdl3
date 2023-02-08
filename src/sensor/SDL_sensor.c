@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -115,12 +115,12 @@ SDL_SensorID *SDL_GetSensors(int *count)
             total_sensors += SDL_sensor_drivers[i]->GetCount();
         }
 
-        if (count) {
-            *count = total_sensors;
-        }
-
         sensors = (SDL_SensorID *)SDL_malloc((total_sensors + 1) * sizeof(*sensors));
         if (sensors) {
+            if (count) {
+                *count = total_sensors;
+            }
+
             for (i = 0; i < SDL_arraysize(SDL_sensor_drivers); ++i) {
                 num_sensors = SDL_sensor_drivers[i]->GetCount();
                 for (device_index = 0; device_index < num_sensors; ++device_index) {
@@ -133,6 +133,10 @@ SDL_SensorID *SDL_GetSensors(int *count)
             SDL_assert(sensor_index == total_sensors);
             sensors[sensor_index] = 0;
         } else {
+            if (count) {
+                *count = 0;
+            }
+
             SDL_OutOfMemory();
         }
     }
@@ -374,7 +378,7 @@ int SDL_GetSensorNonPortableType(SDL_Sensor *sensor)
 SDL_SensorID SDL_GetSensorInstanceID(SDL_Sensor *sensor)
 {
     if (!SDL_IsSensorValid(sensor)) {
-        return -1;
+        return 0;
     }
 
     return sensor->instance_id;
@@ -485,9 +489,9 @@ int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_tim
     /* Post the event, if desired */
     posted = 0;
 #if !SDL_EVENTS_DISABLED
-    if (SDL_EventEnabled(SDL_SENSORUPDATE)) {
+    if (SDL_EventEnabled(SDL_EVENT_SENSOR_UPDATE)) {
         SDL_Event event;
-        event.type = SDL_SENSORUPDATE;
+        event.type = SDL_EVENT_SENSOR_UPDATE;
         event.common.timestamp = timestamp;
         event.sensor.which = sensor->instance_id;
         num_values = SDL_min(num_values, SDL_arraysize(event.sensor.data));

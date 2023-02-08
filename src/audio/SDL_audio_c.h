@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -58,6 +58,9 @@ extern void SDL_CalculateAudioSpec(SDL_AudioSpec *spec);
 
 /* Choose the audio filter functions below */
 extern void SDL_ChooseAudioConverters(void);
+
+struct SDL_AudioCVT;
+typedef void (SDLCALL * SDL_AudioFilter) (struct SDL_AudioCVT * cvt, SDL_AudioFormat format);
 
 /* These pointers get set during SDL_ChooseAudioConverters() to various SIMD implementations. */
 extern SDL_AudioFilter SDL_Convert_S8_to_F32;

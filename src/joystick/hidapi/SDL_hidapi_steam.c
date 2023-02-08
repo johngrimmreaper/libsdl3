@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -248,7 +248,7 @@ static int WriteSegmentToSteamControllerPacketAssembler(SteamControllerPacketAss
 
         DPRINTF("GOT PACKET HEADER = 0x%x\n", uSegmentHeader);
 
-        if ((uSegmentHeader & REPORT_SEGMENT_DATA_FLAG) == 0) {
+        if (!(uSegmentHeader & REPORT_SEGMENT_DATA_FLAG)) {
             // We get empty segments, just ignore them
             return 0;
         }

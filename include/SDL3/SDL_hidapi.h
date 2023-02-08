@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -377,10 +377,12 @@ extern DECLSPEC int SDLCALL SDL_hid_get_feature_report(SDL_hid_device *dev, unsi
  * Close a HID device.
  *
  * \param dev A device handle returned from SDL_hid_open().
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_hid_close(SDL_hid_device *dev);
+extern DECLSPEC int SDLCALL SDL_hid_close(SDL_hid_device *dev);
 
 /**
  * Get The Manufacturer String from a HID device.
