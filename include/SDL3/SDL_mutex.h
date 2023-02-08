@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -481,7 +481,9 @@ extern DECLSPEC int SDLCALL SDL_CondBroadcast(SDL_cond *cond);
  * `cond`. Once the condition variable is signaled, the mutex is re-locked and
  * the function returns.
  *
- * The mutex must be locked before calling this function.
+ * The mutex must be locked before calling this function. Locking the mutex
+ * recursively (more than once) is not supported and leads to undefined
+ * behavior.
  *
  * This function is the equivalent of calling SDL_CondWaitTimeout() with a
  * time length of `SDL_MUTEX_MAXWAIT`.
@@ -510,12 +512,14 @@ extern DECLSPEC int SDLCALL SDL_CondWait(SDL_cond *cond, SDL_mutex *mutex);
  * signaled or the time elapsed, the mutex is re-locked and the function
  * returns.
  *
- * The mutex must be locked before calling this function.
+ * The mutex must be locked before calling this function. Locking the mutex
+ * recursively (more than once) is not supported and leads to undefined
+ * behavior.
  *
  * \param cond the condition variable to wait on
  * \param mutex the mutex used to coordinate thread access
- * \param timeoutMS the maximum time to wait, in milliseconds, or `SDL_MUTEX_MAXWAIT`
- *           to wait indefinitely
+ * \param timeoutMS the maximum time to wait, in milliseconds, or
+ *                  `SDL_MUTEX_MAXWAIT` to wait indefinitely
  * \returns 0 if the condition variable is signaled, `SDL_MUTEX_TIMEDOUT` if
  *          the condition is not signaled in the allotted time, or a negative
  *          error code on failure; call SDL_GetError() for more information.

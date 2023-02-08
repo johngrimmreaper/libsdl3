@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -421,7 +421,7 @@ static void HandlePendingRemovals(void)
     }
 }
 
-static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickGUID guid, int *device_instance)
+static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickGUID guid, SDL_JoystickID *device_instance)
 {
     SDL_joylist_item *item;
 
@@ -456,7 +456,7 @@ static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickG
     return SDL_TRUE;
 }
 
-static void SteamControllerDisconnectedCallback(int device_instance)
+static void SteamControllerDisconnectedCallback(SDL_JoystickID device_instance)
 {
     SDL_joylist_item *item;
     SDL_joylist_item *prev = NULL;

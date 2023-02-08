@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -100,12 +100,12 @@ void loop()
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-        case SDL_KEYDOWN:
+        case SDL_EVENT_KEY_DOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE) {
                 done = SDL_TRUE;
             }
             break;
-        case SDL_QUIT:
+        case SDL_EVENT_QUIT:
             done = SDL_TRUE;
             break;
         }

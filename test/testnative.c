@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -180,11 +180,11 @@ int main(int argc, char *argv[])
         /* Check for events */
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
-            case SDL_WINDOWEVENT_EXPOSED:
+            case SDL_EVENT_WINDOW_EXPOSED:
                 SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
                 SDL_RenderClear(renderer);
                 break;
-            case SDL_QUIT:
+            case SDL_EVENT_QUIT:
                 done = 1;
                 break;
             default:

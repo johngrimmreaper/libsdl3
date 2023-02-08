@@ -37,10 +37,10 @@ static int SDLCALL events_sampleNullEventFilter(void *userdata, SDL_Event *event
 }
 
 /**
- * @brief Test pumping and peeking events.
+ * \brief Test pumping and peeking events.
  *
- * @sa http://wiki.libsdl.org/SDL_PumpEvents
- * @sa http://wiki.libsdl.org/SDL_PollEvent
+ * \sa SDL_PumpEvents
+ * \sa SDL_PollEvent
  */
 int events_pushPumpAndPollUserevent(void *arg)
 {
@@ -49,7 +49,7 @@ int events_pushPumpAndPollUserevent(void *arg)
     int result;
 
     /* Create user event */
-    event1.type = SDL_USEREVENT;
+    event1.type = SDL_EVENT_USER;
     event1.user.code = SDLTest_RandomSint32();
     event1.user.data1 = (void *)&g_userdataValue1;
     event1.user.data2 = (void *)&g_userdataValue2;
@@ -69,10 +69,10 @@ int events_pushPumpAndPollUserevent(void *arg)
 }
 
 /**
- * @brief Adds and deletes an event watch function with NULL userdata
+ * \brief Adds and deletes an event watch function with NULL userdata
  *
- * @sa http://wiki.libsdl.org/SDL_AddEventWatch
- * @sa http://wiki.libsdl.org/SDL_DelEventWatch
+ * \sa SDL_AddEventWatch
+ * \sa SDL_DelEventWatch
  *
  */
 int events_addDelEventWatch(void *arg)
@@ -80,7 +80,7 @@ int events_addDelEventWatch(void *arg)
     SDL_Event event;
 
     /* Create user event */
-    event.type = SDL_USEREVENT;
+    event.type = SDL_EVENT_USER;
     event.user.code = SDLTest_RandomSint32();
     event.user.data1 = (void *)&g_userdataValue1;
     event.user.data2 = (void *)&g_userdataValue2;
@@ -118,10 +118,10 @@ int events_addDelEventWatch(void *arg)
 }
 
 /**
- * @brief Adds and deletes an event watch function with userdata
+ * \brief Adds and deletes an event watch function with userdata
  *
- * @sa http://wiki.libsdl.org/SDL_AddEventWatch
- * @sa http://wiki.libsdl.org/SDL_DelEventWatch
+ * \sa SDL_AddEventWatch
+ * \sa SDL_DelEventWatch
  *
  */
 int events_addDelEventWatchWithUserdata(void *arg)
@@ -129,7 +129,7 @@ int events_addDelEventWatchWithUserdata(void *arg)
     SDL_Event event;
 
     /* Create user event */
-    event.type = SDL_USEREVENT;
+    event.type = SDL_EVENT_USER;
     event.user.code = SDLTest_RandomSint32();
     event.user.data1 = (void *)&g_userdataValue1;
     event.user.data2 = (void *)&g_userdataValue2;

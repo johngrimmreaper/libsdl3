@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -79,8 +79,8 @@ typedef struct SDL_Locale
  * This might be a "slow" call that has to query the operating system. It's
  * best to ask for this once and save the results. However, this list can
  * change, usually because the user has changed a system preference outside of
- * your program; SDL will send an SDL_LOCALECHANGED event in this case, if
- * possible, and you can call this function again to get an updated copy of
+ * your program; SDL will send an SDL_EVENT_LOCALE_CHANGED event in this case,
+ * if possible, and you can call this function again to get an updated copy of
  * preferred locales.
  *
  * \return array of locales, terminated with a locale with a NULL language

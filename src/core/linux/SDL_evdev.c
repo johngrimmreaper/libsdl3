@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -251,7 +251,7 @@ static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_cl
             return;
         }
 
-        if ((udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
+        if (udev_class & SDL_UDEV_DEVICE_JOYSTICK) {
             return;
         }
 

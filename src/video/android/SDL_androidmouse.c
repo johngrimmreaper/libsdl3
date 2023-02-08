@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -218,6 +218,9 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
     if (window == NULL) {
         return;
     }
+
+    x /= Android_ScreenDensity;
+    y /= Android_ScreenDensity;
 
     switch (action) {
     case ACTION_DOWN:
