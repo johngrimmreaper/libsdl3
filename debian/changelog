@@ -1,8 +1,14 @@
-libsdl3 (3~git20230207+dfsg-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20230207+dfsg-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-947-gc5c94a6be
+  * d/copyright: Update
+  * Standards-Version: 4.6.2 (no changes required)
+  * Build-depend on a new enough libdecor-0-dev.
+    The upstream git branch for 0.2.x made two previously-private functions
+    officially public, and SDL wants to call them. Depend on a backport.
+  * d/libsdl3-0.symbols: Update
 
- -- Simon McVittie <smcv@debian.org>  Wed, 08 Feb 2023 19:59:16 +0000
+ -- Simon McVittie <smcv@debian.org>  Wed, 08 Feb 2023 20:47:03 +0000
 
 libsdl3 (3~git20230103+dfsg-1) experimental; urgency=medium
 
