@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -95,20 +95,20 @@ int main(int argc, char **argv)
         SDL_bool done = SDL_FALSE;
         SDL_Event event;
 
-        SDL_CreateWindow("Sensor Test", 0, 0, 0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP);
+        SDL_CreateWindow("Sensor Test", 0, 0, 0, 0, SDL_WINDOW_FULLSCREEN);
         while (!done) {
             /* Update to get the current event state */
             SDL_PumpEvents();
 
             /* Process all currently pending events */
-            while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) == 1) {
+            while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) == 1) {
                 switch (event.type) {
-                case SDL_SENSORUPDATE:
+                case SDL_EVENT_SENSOR_UPDATE:
                     HandleSensorEvent(&event.sensor);
                     break;
-                case SDL_MOUSEBUTTONUP:
-                case SDL_KEYUP:
-                case SDL_QUIT:
+                case SDL_EVENT_MOUSE_BUTTON_UP:
+                case SDL_EVENT_KEY_UP:
+                case SDL_EVENT_QUIT:
                     done = SDL_TRUE;
                     break;
                 default:

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@
 #ifndef SDL_stdinc_h_
 #define SDL_stdinc_h_
 
-#include <SDL3/SDL_platform.h>
+#include <SDL3/SDL_platform_defines.h>
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 #include <inttypes.h>
@@ -422,6 +422,36 @@ extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
                                                    SDL_free_func free_func);
 
 /**
+ * Allocate memory aligned to a specific value
+ *
+ * If `alignment` is less than the size of `void *`, then it will be increased
+ * to match that.
+ *
+ * The returned memory address will be a multiple of the alignment value, and
+ * the amount of memory allocated will be a multiple of the alignment value.
+ *
+ * The memory returned by this function must be freed with SDL_aligned_free()
+ *
+ * \param alignment the alignment requested
+ * \param size the size to allocate
+ * \returns a pointer to the aligned memory
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_aligned_free
+ */
+extern DECLSPEC SDL_MALLOC void *SDLCALL SDL_aligned_alloc(size_t alignment, size_t size);
+
+/**
+ * Free memory allocated by SDL_aligned_alloc()
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_aligned_alloc
+ */
+extern DECLSPEC void SDLCALL SDL_aligned_free(void *mem);
+
+/**
  * Get the number of outstanding (unfreed) allocations
  *
  * \since This function is available since SDL 3.0.0.
@@ -736,6 +766,13 @@ SDL_FORCE_INLINE int SDL_size_add_overflow_builtin (size_t a,
     return __builtin_add_overflow(a, b, ret) == 0 ? 0 : -1;
 }
 #define SDL_size_add_overflow(a, b, ret) (SDL_size_add_overflow_builtin(a, b, ret))
+#endif
+
+/* This is a generic function pointer which should be cast to the type you expect */
+#ifdef SDL_FUNCTION_POINTER_IS_VOID_POINTER
+typedef void *SDL_FunctionPointer;
+#else
+typedef void (*SDL_FunctionPointer)(void);
 #endif
 
 /* Ends C function definitions when using C++ */

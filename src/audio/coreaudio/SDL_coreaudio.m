@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1214,7 +1214,7 @@ static int COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int i
             /* Some devices have whitespace at the end...trim it. */
             while ((len > 0) && (devname[len - 1] == ' ')) {
                 len--;
-                usable = len;
+                usable = (int)len;
             }
         }
 

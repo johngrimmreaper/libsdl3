@@ -21,7 +21,6 @@ const char *HintsEnum[] = {
     SDL_HINT_RENDER_VSYNC,
     SDL_HINT_TIMER_RESOLUTION,
     SDL_HINT_VIDEO_ALLOW_SCREENSAVER,
-    SDL_HINT_VIDEO_HIGHDPI_DISABLED,
     SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES,
     SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS,
     SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,
@@ -45,7 +44,6 @@ const char *HintsVerbose[] = {
     "SDL_RENDER_VSYNC",
     "SDL_TIMER_RESOLUTION",
     "SDL_VIDEO_ALLOW_SCREENSAVER",
-    "SDL_VIDEO_HIGHDPI_DISABLED",
     "SDL_VIDEO_MAC_FULLSCREEN_SPACES",
     "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS",
     "SDL_VIDEO_WINDOW_SHARE_PIXEL_FORMAT",
@@ -61,7 +59,7 @@ const int numHintsEnum = SDL_arraysize(HintsEnum);
 /* Test case functions */
 
 /**
- * @brief Call to SDL_GetHint
+ * \brief Call to SDL_GetHint
  */
 int hints_getHint(void *arg)
 {
@@ -90,7 +88,7 @@ static void SDLCALL hints_testHintChanged(void *userdata, const char *name, cons
 }
 
 /**
- * @brief Call to SDL_SetHint
+ * \brief Call to SDL_SetHint
  */
 int hints_setHint(void *arg)
 {

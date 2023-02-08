@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,9 +23,9 @@
 /* Functions for audio drivers to perform runtime conversion of audio format */
 
 #include "SDL_audio_c.h"
+#include "SDL_audiocvt_c.h"
 
 #include "../SDL_dataqueue.h"
-#include "../SDL_intrin.h"
 
 #define DEBUG_AUDIOSTREAM 0
 
@@ -56,6 +56,89 @@
 #undef HAVE_AVX_INTRINSICS
 #endif
 #endif
+
+
+/**
+ * Initialize an SDL_AudioCVT structure for conversion.
+ *
+ * Before an SDL_AudioCVT structure can be used to convert audio data it must
+ * be initialized with source and destination information.
+ *
+ * This function will zero out every field of the SDL_AudioCVT, so it must be
+ * called before the application fills in the final buffer information.
+ *
+ * Once this function has returned successfully, and reported that a
+ * conversion is necessary, the application fills in the rest of the fields in
+ * SDL_AudioCVT, now that it knows how large a buffer it needs to allocate,
+ * and then can call SDL_ConvertAudio() to complete the conversion.
+ *
+ * \param cvt an SDL_AudioCVT structure filled in with audio conversion
+ *            information
+ * \param src_format the source format of the audio data; for more info see
+ *                   SDL_AudioFormat
+ * \param src_channels the number of channels in the source
+ * \param src_rate the frequency (sample-frames-per-second) of the source
+ * \param dst_format the destination format of the audio data; for more info
+ *                   see SDL_AudioFormat
+ * \param dst_channels the number of channels in the destination
+ * \param dst_rate the frequency (sample-frames-per-second) of the destination
+ * \returns 1 if the audio filter is prepared, 0 if no conversion is needed,
+ *          or a negative error code on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_ConvertAudio
+ */
+static int SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
+                             SDL_AudioFormat src_format,
+                             Uint8 src_channels,
+                             int src_rate,
+                             SDL_AudioFormat dst_format,
+                             Uint8 dst_channels,
+                             int dst_rate);
+
+
+/**
+ * Convert audio data to a desired audio format.
+ *
+ * This function does the actual audio data conversion, after the application
+ * has called SDL_BuildAudioCVT() to prepare the conversion information and
+ * then filled in the buffer details.
+ *
+ * Once the application has initialized the `cvt` structure using
+ * SDL_BuildAudioCVT(), allocated an audio buffer and filled it with audio
+ * data in the source format, this function will convert the buffer, in-place,
+ * to the desired format.
+ *
+ * The data conversion may go through several passes; any given pass may
+ * possibly temporarily increase the size of the data. For example, SDL might
+ * expand 16-bit data to 32 bits before resampling to a lower frequency,
+ * shrinking the data size after having grown it briefly. Since the supplied
+ * buffer will be both the source and destination, converting as necessary
+ * in-place, the application must allocate a buffer that will fully contain
+ * the data during its largest conversion pass. After SDL_BuildAudioCVT()
+ * returns, the application should set the `cvt->len` field to the size, in
+ * bytes, of the source data, and allocate a buffer that is `cvt->len *
+ * cvt->len_mult` bytes long for the `buf` field.
+ *
+ * The source data should be copied into this buffer before the call to
+ * SDL_ConvertAudio(). Upon successful return, this buffer will contain the
+ * converted audio, and `cvt->len_cvt` will be the size of the converted data,
+ * in bytes. Any bytes in the buffer past `cvt->len_cvt` are undefined once
+ * this function returns.
+ *
+ * \param cvt an SDL_AudioCVT structure that was previously set up by
+ *            SDL_BuildAudioCVT().
+ * \returns 0 if the conversion was completed successfully or a negative error
+ *          code on failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_BuildAudioCVT
+ */
+static int SDL_ConvertAudio(SDL_AudioCVT * cvt);
+
 
 /*
  * CHANNEL LAYOUTS AS SDL EXPECTS THEM:
@@ -251,7 +334,7 @@ static int SDL_ResampleAudio(const int chans, const int inrate, const int outrat
     return outframes * chans * sizeof(float);
 }
 
-int SDL_ConvertAudio(SDL_AudioCVT *cvt)
+static int SDL_ConvertAudio(SDL_AudioCVT *cvt)
 {
     /* !!! FIXME: (cvt) should be const; stack-copy it here. */
     /* !!! FIXME: (actually, we can't...len_cvt needs to be updated. Grr.) */
@@ -481,7 +564,7 @@ static void SDL_ResampleCVT_SRC(SDL_AudioCVT *cvt, const int chans, const SDL_Au
 
 #endif /* HAVE_LIBSAMPLERATE_H */
 
-static void SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format)
+static int SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format)
 {
     /* !!! FIXME in 2.1: there are ten slots in the filter list, and the theoretical maximum we use is six (seven with NULL terminator).
        !!! FIXME in 2.1:   We need to store data for this resampler, because the cvt structure doesn't store the original sample rates,
@@ -509,8 +592,7 @@ static void SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioF
     /* we keep no streaming state here, so pad with silence on both ends. */
     padding = (float *)SDL_calloc(paddingsamples ? paddingsamples : 1, sizeof(float));
     if (padding == NULL) {
-        SDL_OutOfMemory();
-        return;
+        return SDL_OutOfMemory();
     }
 
     cvt->len_cvt = SDL_ResampleAudio(chans, inrate, outrate, padding, padding, src, srclen, dst, dstlen);
@@ -522,6 +604,7 @@ static void SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioF
     if (cvt->filters[++cvt->filter_index]) {
         cvt->filters[cvt->filter_index](cvt, format);
     }
+    return 0;
 }
 
 /* !!! FIXME: We only have this macro salsa because SDL_AudioCVT doesn't
@@ -671,9 +754,9 @@ static SDL_bool SDL_IsSupportedChannelCount(const int channels)
    or -1 if an error like invalid parameter, unsupported format, etc. occurred.
 */
 
-int SDL_BuildAudioCVT(SDL_AudioCVT *cvt,
-                      SDL_AudioFormat src_format, Uint8 src_channels, int src_rate,
-                      SDL_AudioFormat dst_format, Uint8 dst_channels, int dst_rate)
+static int SDL_BuildAudioCVT(SDL_AudioCVT *cvt,
+                            SDL_AudioFormat src_format, Uint8 src_channels, int src_rate,
+                            SDL_AudioFormat dst_format, Uint8 dst_channels, int dst_rate)
 {
     SDL_AudioFilter channel_converter = NULL;
 
@@ -1007,6 +1090,16 @@ SDL_CreateAudioStream(SDL_AudioFormat src_format,
     int packetlen = 4096; /* !!! FIXME: good enough for now. */
     Uint8 pre_resample_channels;
     SDL_AudioStream *retval;
+
+    if (src_channels == 0) {
+        SDL_InvalidParamError("src_channels");
+        return NULL;
+    }
+
+    if (dst_channels == 0) {
+        SDL_InvalidParamError("dst_channels");
+        return NULL;
+    }
 
     retval = (SDL_AudioStream *)SDL_calloc(1, sizeof(SDL_AudioStream));
     if (retval == NULL) {

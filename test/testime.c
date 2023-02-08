@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -716,7 +716,7 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
             switch (event.type) {
-            case SDL_KEYDOWN:
+            case SDL_EVENT_KEY_DOWN:
                 switch (event.key.keysym.sym) {
                 case SDLK_RETURN:
                     text[0] = 0x00;
@@ -731,7 +731,7 @@ int main(int argc, char *argv[])
                             if (textlen == 0) {
                                 break;
                             }
-                            if ((text[textlen - 1] & 0x80) == 0x00) {
+                            if (!(text[textlen - 1] & 0x80)) {
                                 /* One byte */
                                 text[textlen - 1] = 0x00;
                                 break;
@@ -764,7 +764,7 @@ int main(int argc, char *argv[])
                         SDL_GetKeyName(event.key.keysym.sym));
                 break;
 
-            case SDL_TEXTINPUT:
+            case SDL_EVENT_TEXT_INPUT:
                 if (event.text.text[0] == '\0' || event.text.text[0] == '\n' || markedRect.w < 0) {
                     break;
                 }
@@ -783,7 +783,7 @@ int main(int argc, char *argv[])
                 Redraw();
                 break;
 
-            case SDL_TEXTEDITING:
+            case SDL_EVENT_TEXT_EDITING:
                 SDL_Log("text editing \"%s\", selected range (%" SDL_PRIs32 ", %" SDL_PRIs32 ")\n",
                         event.edit.text, event.edit.start, event.edit.length);
 

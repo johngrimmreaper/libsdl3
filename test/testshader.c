@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -493,10 +493,10 @@ int main(int argc, char **argv)
         {
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
-                if (event.type == SDL_QUIT) {
+                if (event.type == SDL_EVENT_QUIT) {
                     done = 1;
                 }
-                if (event.type == SDL_KEYDOWN) {
+                if (event.type == SDL_EVENT_KEY_DOWN) {
                     if (event.key.keysym.sym == SDLK_SPACE) {
                         current_shader = (current_shader + 1) % NUM_SHADERS;
                     }

@@ -6,6 +6,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_images.h"
 
 /* ================= Test Case Implementation ================== */
 
@@ -23,7 +24,7 @@ static int mouseStateCheck(Uint32 state)
 }
 
 /**
- * @brief Check call to SDL_GetMouseState
+ * \brief Check call to SDL_GetMouseState
  *
  */
 int mouse_getMouseState(void *arg)
@@ -42,33 +43,33 @@ int mouse_getMouseState(void *arg)
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where x pointer is not NULL */
-    x = FLT_MIN;
+    x = -FLT_MAX;
     state = SDL_GetMouseState(&x, NULL);
     SDLTest_AssertPass("Call to SDL_GetMouseState(&x, NULL)");
-    SDLTest_AssertCheck(x > FLT_MIN, "Validate that value of x is > FLT_MIN, got: %g", x);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %g", x);
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where y pointer is not NULL */
-    y = FLT_MIN;
+    y = -FLT_MAX;
     state = SDL_GetMouseState(NULL, &y);
     SDLTest_AssertPass("Call to SDL_GetMouseState(NULL, &y)");
-    SDLTest_AssertCheck(y > FLT_MIN, "Validate that value of y is > FLT_MIN, got: %g", y);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %g", y);
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where x and y pointer is not NULL */
-    x = FLT_MIN;
-    y = FLT_MIN;
+    x = -FLT_MAX;
+    y = -FLT_MAX;
     state = SDL_GetMouseState(&x, &y);
     SDLTest_AssertPass("Call to SDL_GetMouseState(&x, &y)");
-    SDLTest_AssertCheck(x > FLT_MIN, "Validate that value of x is > FLT_MIN, got: %g", x);
-    SDLTest_AssertCheck(y > FLT_MIN, "Validate that value of y is > FLT_MIN, got: %g", y);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %g", x);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %g", y);
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     return TEST_COMPLETED;
 }
 
 /**
- * @brief Check call to SDL_GetRelativeMouseState
+ * \brief Check call to SDL_GetRelativeMouseState
  *
  */
 int mouse_getRelativeMouseState(void *arg)
@@ -87,26 +88,26 @@ int mouse_getRelativeMouseState(void *arg)
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where x pointer is not NULL */
-    x = FLT_MIN;
+    x = -FLT_MAX;
     state = SDL_GetRelativeMouseState(&x, NULL);
     SDLTest_AssertPass("Call to SDL_GetRelativeMouseState(&x, NULL)");
-    SDLTest_AssertCheck(x > FLT_MIN, "Validate that value of x is > FLT_MIN, got: %g", x);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %g", x);
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where y pointer is not NULL */
-    y = FLT_MIN;
+    y = -FLT_MAX;
     state = SDL_GetRelativeMouseState(NULL, &y);
     SDLTest_AssertPass("Call to SDL_GetRelativeMouseState(NULL, &y)");
-    SDLTest_AssertCheck(y > FLT_MIN, "Validate that value of y is > FLT_MIN, got: %g", y);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %g", y);
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     /* Case where x and y pointer is not NULL */
-    x = FLT_MIN;
-    y = FLT_MIN;
+    x = -FLT_MAX;
+    y = -FLT_MAX;
     state = SDL_GetRelativeMouseState(&x, &y);
     SDLTest_AssertPass("Call to SDL_GetRelativeMouseState(&x, &y)");
-    SDLTest_AssertCheck(x > FLT_MIN, "Validate that value of x is > FLT_MIN, got: %g", x);
-    SDLTest_AssertCheck(y > FLT_MIN, "Validate that value of y is > FLT_MIN, got: %g", y);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %g", x);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %g", y);
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     return TEST_COMPLETED;
@@ -186,10 +187,10 @@ static SDL_Cursor *initArrowCursor(const char *image[])
 }
 
 /**
- * @brief Check call to SDL_CreateCursor and SDL_DestroyCursor
+ * \brief Check call to SDL_CreateCursor and SDL_DestroyCursor
  *
- * @sa http://wiki.libsdl.org/SDL_CreateCursor
- * @sa http://wiki.libsdl.org/SDL_DestroyCursor
+ * \sa SDL_CreateCursor
+ * \sa SDL_DestroyCursor
  */
 int mouse_createFreeCursor(void *arg)
 {
@@ -211,10 +212,10 @@ int mouse_createFreeCursor(void *arg)
 }
 
 /**
- * @brief Check call to SDL_CreateColorCursor and SDL_DestroyCursor
+ * \brief Check call to SDL_CreateColorCursor and SDL_DestroyCursor
  *
- * @sa http://wiki.libsdl.org/SDL_CreateColorCursor
- * @sa http://wiki.libsdl.org/SDL_DestroyCursor
+ * \sa SDL_CreateColorCursor
+ * \sa SDL_DestroyCursor
  */
 int mouse_createFreeColorCursor(void *arg)
 {
@@ -267,9 +268,9 @@ static void changeCursorVisibility(SDL_bool state)
 }
 
 /**
- * @brief Check call to SDL_ShowCursor
+ * \brief Check call to SDL_ShowCursor
  *
- * @sa http://wiki.libsdl.org/SDL_ShowCursor
+ * \sa SDL_ShowCursor
  */
 int mouse_showCursor(void *arg)
 {
@@ -292,9 +293,9 @@ int mouse_showCursor(void *arg)
 }
 
 /**
- * @brief Check call to SDL_SetCursor
+ * \brief Check call to SDL_SetCursor
  *
- * @sa http://wiki.libsdl.org/SDL_SetCursor
+ * \sa SDL_SetCursor
  */
 int mouse_setCursor(void *arg)
 {
@@ -324,9 +325,9 @@ int mouse_setCursor(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetCursor
+ * \brief Check call to SDL_GetCursor
  *
- * @sa http://wiki.libsdl.org/SDL_GetCursor
+ * \sa SDL_GetCursor
  */
 int mouse_getCursor(void *arg)
 {
@@ -341,10 +342,10 @@ int mouse_getCursor(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetRelativeMouseMode and SDL_SetRelativeMouseMode
+ * \brief Check call to SDL_GetRelativeMouseMode and SDL_SetRelativeMouseMode
  *
- * @sa http://wiki.libsdl.org/SDL_GetRelativeMouseMode
- * @sa http://wiki.libsdl.org/SDL_SetRelativeMouseMode
+ * \sa SDL_GetRelativeMouseMode
+ * \sa SDL_SetRelativeMouseMode
  */
 int mouse_getSetRelativeMouseMode(void *arg)
 {
@@ -411,7 +412,7 @@ static SDL_Window *createMouseSuiteTestWindow()
     return window;
 }
 
-/*
+/**
  * Destroy test window
  */
 static void destroyMouseSuiteTestWindow(SDL_Window *window)
@@ -424,9 +425,9 @@ static void destroyMouseSuiteTestWindow(SDL_Window *window)
 }
 
 /**
- * @brief Check call to SDL_WarpMouseInWindow
+ * \brief Check call to SDL_WarpMouseInWindow
  *
- * @sa http://wiki.libsdl.org/SDL_WarpMouseInWindow
+ * \sa SDL_WarpMouseInWindow
  */
 int mouse_warpMouseInWindow(void *arg)
 {
@@ -487,9 +488,9 @@ int mouse_warpMouseInWindow(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetMouseFocus
+ * \brief Check call to SDL_GetMouseFocus
  *
- * @sa http://wiki.libsdl.org/SDL_GetMouseFocus
+ * \sa SDL_GetMouseFocus
  */
 int mouse_getMouseFocus(void *arg)
 {
@@ -547,9 +548,9 @@ int mouse_getMouseFocus(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetDefaultCursor
+ * \brief Check call to SDL_GetDefaultCursor
  *
- * @sa http://wiki.libsdl.org/SDL_GetDefaultCursor
+ * \sa SDL_GetDefaultCursor
  */
 int mouse_getDefaultCursor(void *arg)
 {
@@ -564,9 +565,9 @@ int mouse_getDefaultCursor(void *arg)
 }
 
 /**
- * @brief Check call to SDL_GetGlobalMouseState
+ * \brief Check call to SDL_GetGlobalMouseState
  *
- * @sa http://wiki.libsdl.org/SDL_GetGlobalMouseState
+ * \sa SDL_GetGlobalMouseState
  */
 int mouse_getGlobalMouseState(void *arg)
 {
@@ -574,14 +575,14 @@ int mouse_getGlobalMouseState(void *arg)
     float y;
     Uint32 state;
 
-    x = FLT_MIN;
-    y = FLT_MIN;
+    x = -FLT_MAX;
+    y = -FLT_MAX;
 
     /* Get current cursor */
     state = SDL_GetGlobalMouseState(&x, &y);
     SDLTest_AssertPass("Call to SDL_GetGlobalMouseState()");
-    SDLTest_AssertCheck(x > FLT_MIN, "Validate that value of x is > FLT_MIN, got: %.f", x);
-    SDLTest_AssertCheck(y > FLT_MIN, "Validate that value of y is > FLT_MIN, got: %.f", y);
+    SDLTest_AssertCheck(x > -FLT_MAX, "Validate that value of x is > -FLT_MAX, got: %.f", x);
+    SDLTest_AssertCheck(y > -FLT_MAX, "Validate that value of y is > -FLT_MAX, got: %.f", y);
     SDLTest_AssertCheck(mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
     return TEST_COMPLETED;

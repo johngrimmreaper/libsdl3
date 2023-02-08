@@ -41,16 +41,15 @@ size their content based on screen coordinates / points rather than pixels,
 as this allows different iOS devices to have different pixel densities
 (Retina versus non-Retina screens, etc.) without apps caring too much.
 
-By default SDL will not use the full pixel density of the screen on
-Retina/high-dpi capable devices. Use the SDL_WINDOW_ALLOW_HIGHDPI flag when
-creating your window to enable high-dpi support.
+SDL_GetWindowSize() and mouse coordinates are in screen coordinates rather
+than pixels, but the window will have a much greater pixel density when the
+device supports it, and the SDL_GetWindowSizeInPixels() can be called to
+determine the size in pixels of the drawable screen framebuffer.
 
-When high-dpi support is enabled, SDL_GetWindowSize() and display mode sizes
-will still be in "screen coordinates" rather than pixels, but the window will
-have a much greater pixel density when the device supports it, and the
-SDL_GL_GetDrawableSize() or SDL_GetRendererOutputSize() functions (depending on
-whether raw OpenGL or the SDL_Render API is used) can be queried to determine
-the size in pixels of the drawable screen framebuffer.
+The SDL 2D rendering API will automatically handle this for you, by default
+providing a rendering area in screen coordinates, and you can call
+SDL_SetRenderLogicalPresentation() to gain access to the higher density
+resolution.
 
 Some OpenGL ES functions such as glViewport expect sizes in pixels rather than
 sizes in screen coordinates. When doing 2D rendering with OpenGL ES, an
@@ -73,34 +72,34 @@ e.g.
     {
         switch (event->type)
         {
-        case SDL_APP_TERMINATING:
+        case SDL_EVENT_TERMINATING:
             /* Terminate the app.
                Shut everything down before returning from this function.
             */
             return 0;
-        case SDL_APP_LOWMEMORY:
+        case SDL_EVENT_LOW_MEMORY:
             /* You will get this when your app is paused and iOS wants more memory.
                Release as much memory as possible.
             */
             return 0;
-        case SDL_APP_WILLENTERBACKGROUND:
+        case SDL_EVENT_WILL_ENTER_BACKGROUND:
             /* Prepare your app to go into the background.  Stop loops, etc.
                This gets called when the user hits the home button, or gets a call.
             */
             return 0;
-        case SDL_APP_DIDENTERBACKGROUND:
+        case SDL_EVENT_DID_ENTER_BACKGROUND:
             /* This will get called if the user accepted whatever sent your app to the background.
-               If the user got a phone call and canceled it, you'll instead get an SDL_APP_DIDENTERFOREGROUND event and restart your loops.
+               If the user got a phone call and canceled it, you'll instead get an SDL_EVENT_DID_ENTER_FOREGROUND event and restart your loops.
                When you get this, you have 5 seconds to save all your state or the app will be terminated.
                Your app is NOT active at this point.
             */
             return 0;
-        case SDL_APP_WILLENTERFOREGROUND:
+        case SDL_EVENT_WILL_ENTER_FOREGROUND:
             /* This call happens when your app is coming back to the foreground.
                Restore all your state here.
             */
             return 0;
-        case SDL_APP_DIDENTERFOREGROUND:
+        case SDL_EVENT_DID_ENTER_FOREGROUND:
             /* Restart your loops here.
                Your app is interactive and getting CPU again.
             */

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -167,7 +167,7 @@ quit(int rc)
     /* If rc is 0, just let main return normally rather than calling exit.
      * This allows testing of platforms where SDL_main is required and does meaningful cleanup.
      */
-        
+
     SDL_free(RawMooseData);
 
     for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
@@ -221,7 +221,7 @@ void loop()
     Uint64 now;
     int i;
     SDL_Event event;
-        
+
     SDL_Renderer *renderer = state->renderers[0]; /* only 1 window */
 
     /* Check for events */
@@ -229,24 +229,24 @@ void loop()
         SDLTest_CommonEvent(state, &event, &done);
 
         switch (event.type) {
-        case SDL_WINDOWEVENT_RESIZED:
+        case SDL_EVENT_WINDOW_RESIZED:
             SDL_SetRenderViewport(renderer, NULL);
             window_w = event.window.data1;
             window_h = event.window.data2;
             displayrect.w = (float)window_w;
             displayrect.h = (float)window_h;
             break;
-        case SDL_MOUSEBUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
             displayrect.x = event.button.x - window_w / 2;
             displayrect.y = event.button.y - window_h / 2;
             break;
-        case SDL_MOUSEMOTION:
+        case SDL_EVENT_MOUSE_MOTION:
             if (event.motion.state) {
                 displayrect.x = event.motion.x - window_w / 2;
                 displayrect.y = event.motion.y - window_h / 2;
             }
             break;
-        case SDL_KEYDOWN:
+        case SDL_EVENT_KEY_DOWN:
             if (event.key.keysym.sym == SDLK_SPACE) {
                 paused = !paused;
                 break;
@@ -302,12 +302,12 @@ int main(int argc, char **argv)
     if (state == NULL) {
         return 1;
     }
-    
+
     SDL_zeroa(MooseYUVSurfaces);
 
     for (i = 1; i < argc;) {
         int consumed;
-        
+
         consumed = SDLTest_CommonArg(state, i);
         if (consumed == 0) {
             consumed = -1;
@@ -383,7 +383,7 @@ int main(int argc, char **argv)
             static const char *options[] = {
                 "[--fps <frames per second>]",
                 "[--nodelay]",
-                "[--yuvformat <fmt>] (one of the: YV12 (default), IYUV, YUY2, UYVY, YVYU, NV12, NV21)", 
+                "[--yuvformat <fmt>] (one of the: YV12 (default), IYUV, YUY2, UYVY, YVYU, NV12, NV21)",
                 "[--scale <scale factor>] (initial scale of the overlay)",
                 "[--nostreaming] path that use SDL_CreateTextureFromSurface() not STREAMING texture",
                 NULL
@@ -494,7 +494,7 @@ int main(int argc, char **argv)
     displayrect.h = (float)window_h;
 
     /* Ignore key up events, they don't even get filtered */
-    SDL_SetEventEnabled(SDL_KEYUP, SDL_FALSE);
+    SDL_SetEventEnabled(SDL_EVENT_KEY_UP, SDL_FALSE);
 
     /* Main render loop */
     frames = 0;

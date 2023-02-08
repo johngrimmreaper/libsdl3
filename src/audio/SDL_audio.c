@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -128,6 +128,8 @@ static SDL_bool LoadLibSampleRate(void)
         SRC_converter = SRC_SINC_MEDIUM_QUALITY;
     } else if (*hint == '3' || SDL_strcasecmp(hint, "best") == 0) {
         SRC_converter = SRC_SINC_BEST_QUALITY;
+    } else if (*hint == '4' || SDL_strcasecmp(hint, "linear") == 0) {
+        SRC_converter = SRC_LINEAR;
     } else {
         return SDL_FALSE; /* treat it like "default", don't load anything. */
     }
@@ -412,9 +414,9 @@ void SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, SDL_AudioSpe
     const int device_index = iscapture ? add_capture_device(name, spec, handle) : add_output_device(name, spec, handle);
     if (device_index != -1) {
         /* Post the event, if desired */
-        if (SDL_EventEnabled(SDL_AUDIODEVICEADDED)) {
+        if (SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_ADDED)) {
             SDL_Event event;
-            event.type = SDL_AUDIODEVICEADDED;
+            event.type = SDL_EVENT_AUDIO_DEVICE_ADDED;
             event.common.timestamp = 0;
             event.adevice.which = device_index;
             event.adevice.iscapture = iscapture;
@@ -443,9 +445,9 @@ void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device)
     current_audio.impl.UnlockDevice(device);
 
     /* Post the event, if desired */
-    if (SDL_EventEnabled(SDL_AUDIODEVICEREMOVED)) {
+    if (SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_REMOVED)) {
         SDL_Event event;
-        event.type = SDL_AUDIODEVICEREMOVED;
+        event.type = SDL_EVENT_AUDIO_DEVICE_REMOVED;
         event.common.timestamp = 0;
         event.adevice.which = device->id;
         event.adevice.iscapture = device->iscapture ? 1 : 0;
@@ -489,15 +491,15 @@ void SDL_RemoveAudioDevice(const SDL_bool iscapture, void *handle)
     }
 
     /* Devices that aren't opened, as of 2.24.0, will post an
-       SDL_AUDIODEVICEREMOVED event with the `which` field set to zero.
+       SDL_EVENT_AUDIO_DEVICE_REMOVED event with the `which` field set to zero.
        Apps can use this to decide if they need to refresh a list of
        available devices instead of closing an opened one.
        Note that opened devices will send the non-zero event in
        SDL_OpenedAudioDeviceDisconnected(). */
     if (!device_was_opened) {
-        if (SDL_EventEnabled(SDL_AUDIODEVICEREMOVED)) {
+        if (SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_REMOVED)) {
             SDL_Event event;
-            event.type = SDL_AUDIODEVICEREMOVED;
+            event.type = SDL_EVENT_AUDIO_DEVICE_REMOVED;
             event.common.timestamp = 0;
             event.adevice.which = 0;
             event.adevice.iscapture = iscapture ? 1 : 0;
@@ -1492,40 +1494,6 @@ static SDL_AudioDeviceID open_audio_device(const char *devname, int iscapture,
     return device->id;
 }
 
-int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained)
-{
-    SDL_AudioDeviceID id = 0;
-
-    /* Start up the audio driver, if necessary. This is legacy behaviour! */
-    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
-        if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
-            return -1;
-        }
-    }
-
-    /* SDL_OpenAudio() is legacy and can only act on Device ID #1. */
-    if (open_devices[0] != NULL) {
-        return SDL_SetError("Audio device is already opened");
-    }
-
-    if (obtained) {
-        id = open_audio_device(NULL, 0, desired, obtained,
-                               SDL_AUDIO_ALLOW_ANY_CHANGE, 1);
-    } else {
-        SDL_AudioSpec _obtained;
-        SDL_zero(_obtained);
-        id = open_audio_device(NULL, 0, desired, &_obtained, 0, 1);
-        /* On successful open, copy calculated values into 'desired'. */
-        if (id > 0) {
-            desired->size = _obtained.size;
-            desired->silence = _obtained.silence;
-        }
-    }
-
-    SDL_assert((id == 0) || (id == 1));
-    return (id == 0) ? -1 : 0;
-}
-
 SDL_AudioDeviceID
 SDL_OpenAudioDevice(const char *device, int iscapture,
                     const SDL_AudioSpec *desired, SDL_AudioSpec *obtained,
@@ -1550,25 +1518,24 @@ SDL_GetAudioDeviceStatus(SDL_AudioDeviceID devid)
     return status;
 }
 
-SDL_AudioStatus
-SDL_GetAudioStatus(void)
-{
-    return SDL_GetAudioDeviceStatus(1);
-}
-
-void SDL_PauseAudioDevice(SDL_AudioDeviceID devid, int pause_on)
+void SDL_PauseAudioDevice(SDL_AudioDeviceID devid)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
     if (device) {
         current_audio.impl.LockDevice(device);
-        SDL_AtomicSet(&device->paused, pause_on ? 1 : 0);
+        SDL_AtomicSet(&device->paused, 1);
         current_audio.impl.UnlockDevice(device);
     }
 }
 
-void SDL_PauseAudio(int pause_on)
+void SDL_PlayAudioDevice(SDL_AudioDeviceID devid)
 {
-    SDL_PauseAudioDevice(1, pause_on);
+    SDL_AudioDevice *device = get_audio_device(devid);
+    if (device) {
+        current_audio.impl.LockDevice(device);
+        SDL_AtomicSet(&device->paused, 0);
+        current_audio.impl.UnlockDevice(device);
+    }
 }
 
 void SDL_LockAudioDevice(SDL_AudioDeviceID devid)
@@ -1580,11 +1547,6 @@ void SDL_LockAudioDevice(SDL_AudioDeviceID devid)
     }
 }
 
-void SDL_LockAudio(void)
-{
-    SDL_LockAudioDevice(1);
-}
-
 void SDL_UnlockAudioDevice(SDL_AudioDeviceID devid)
 {
     /* Obtain a lock on the mixing buffers */
@@ -1594,19 +1556,9 @@ void SDL_UnlockAudioDevice(SDL_AudioDeviceID devid)
     }
 }
 
-void SDL_UnlockAudio(void)
-{
-    SDL_UnlockAudioDevice(1);
-}
-
 void SDL_CloseAudioDevice(SDL_AudioDeviceID devid)
 {
     close_audio_device(get_audio_device(devid));
-}
-
-void SDL_CloseAudio(void)
-{
-    SDL_CloseAudioDevice(1);
 }
 
 void SDL_QuitAudio(void)
@@ -1710,15 +1662,73 @@ void SDL_CalculateAudioSpec(SDL_AudioSpec *spec)
     spec->size *= spec->samples;
 }
 
-/*
- * Moved here from SDL_mixer.c, since it relies on internals of an opened
- *  audio device (and is deprecated, by the way!).
- */
-void SDL_MixAudio(Uint8 *dst, const Uint8 *src, Uint32 len, int volume)
+int SDL_ConvertAudioSamples(
+        SDL_AudioFormat src_format, Uint8 src_channels, int src_rate, int src_len, Uint8 *src_data,
+        SDL_AudioFormat dst_format, Uint8 dst_channels, int dst_rate, int *dst_len, Uint8 **dst_data)
 {
-    /* Mix the user-level audio format */
-    SDL_AudioDevice *device = get_audio_device(1);
-    if (device != NULL) {
-        SDL_MixAudioFormat(dst, src, device->callbackspec.format, len, volume);
+    int ret = -1;
+    SDL_AudioStream *stream = NULL;
+
+    int src_samplesize, dst_samplesize;
+    int real_dst_len;
+
+
+    if (src_len < 0) {
+        return SDL_InvalidParamError("src_len");
     }
+    if (src_data == NULL) {
+        return SDL_InvalidParamError("src_data");
+    }
+    if (dst_len == NULL) {
+        return SDL_InvalidParamError("dst_len");
+    }
+    if (dst_data == NULL) {
+        return SDL_InvalidParamError("dst_data");
+    }
+
+    *dst_len = 0;
+    *dst_data = NULL;
+
+    stream = SDL_CreateAudioStream(src_format, src_channels, src_rate, dst_format, dst_channels, dst_rate);
+    if (stream == NULL) {
+        goto end;
+    }
+
+    src_samplesize = (SDL_AUDIO_BITSIZE(src_format) / 8) * src_channels;
+    dst_samplesize = (SDL_AUDIO_BITSIZE(dst_format) / 8) * dst_channels;
+
+    src_len &= ~(src_samplesize - 1);
+    *dst_len = dst_samplesize * (src_len / src_samplesize);
+    if (src_rate < dst_rate) {
+        const double mult = ((double)dst_rate) / ((double)src_rate);
+        *dst_len *= (int) SDL_ceil(mult);
+    }
+
+    *dst_len &= ~(dst_samplesize - 1);
+    *dst_data = (Uint8 *)SDL_malloc(*dst_len);
+    if (*dst_data == NULL) {
+        goto end;
+    }
+
+    if (SDL_PutAudioStreamData(stream, src_data, src_len) < 0 ||
+        SDL_FlushAudioStream(stream) < 0) {
+        goto end;
+    }
+
+    real_dst_len = SDL_GetAudioStreamData(stream, *dst_data, *dst_len);
+    if (real_dst_len < 0) {
+        goto end;
+    }
+
+    *dst_len = real_dst_len;
+    ret = 0;
+
+end:
+    if (ret != 0) {
+        SDL_free(*dst_data);
+        *dst_len = 0;
+        *dst_data = NULL;
+    }
+    SDL_DestroyAudioStream(stream);
+    return ret;
 }

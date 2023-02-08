@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -290,14 +290,14 @@ void SDL_SetMouseFocus(SDL_Window *window)
 
     /* See if the current window has lost focus */
     if (mouse->focus) {
-        SDL_SendWindowEvent(mouse->focus, SDL_WINDOWEVENT_LEAVE, 0, 0);
+        SDL_SendWindowEvent(mouse->focus, SDL_EVENT_WINDOW_MOUSE_LEAVE, 0, 0);
     }
 
     mouse->focus = window;
     mouse->has_position = SDL_FALSE;
 
     if (mouse->focus) {
-        SDL_SendWindowEvent(mouse->focus, SDL_WINDOWEVENT_ENTER, 0, 0);
+        SDL_SendWindowEvent(mouse->focus, SDL_EVENT_WINDOW_MOUSE_ENTER, 0, 0);
     }
 
     /* Update cursor visibility */
@@ -310,7 +310,7 @@ static SDL_bool SDL_UpdateMouseFocus(SDL_Window *window, float x, float y, Uint3
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_bool inWindow = SDL_TRUE;
 
-    if (window && ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0)) {
+    if (window && !(window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
         if (x < 0.0f || y < 0.0f || x >= (float)window->w || y >= (float)window->h) {
             inWindow = SDL_FALSE;
         }
@@ -482,7 +482,7 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
                 return 0;
             }
         } else {
-            if (window && (window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
+            if (window && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
                 if (mouse->WarpMouse) {
                     mouse->WarpMouse(window, center_x, center_y);
                 } else {
@@ -532,7 +532,7 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
 
     /* make sure that the pointers find themselves inside the windows,
        unless we have the mouse captured. */
-    if (window && ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0)) {
+    if (window && !(window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
         int x_min = 0, x_max = window->w - 1;
         int y_min = 0, y_max = window->h - 1;
         const SDL_Rect *confine = SDL_GetWindowMouseRect(window);
@@ -579,9 +579,9 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_EventEnabled(SDL_MOUSEMOTION)) {
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_MOTION)) {
         SDL_Event event;
-        event.type = SDL_MOUSEMOTION;
+        event.type = SDL_EVENT_MOUSE_MOTION;
         event.common.timestamp = timestamp;
         event.motion.windowID = mouse->focus ? mouse->focus->id : 0;
         event.motion.which = mouseID;
@@ -687,11 +687,11 @@ static int SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_
     /* Figure out which event to perform */
     switch (state) {
     case SDL_PRESSED:
-        type = SDL_MOUSEBUTTONDOWN;
+        type = SDL_EVENT_MOUSE_BUTTON_DOWN;
         buttonstate |= SDL_BUTTON(button);
         break;
     case SDL_RELEASED:
-        type = SDL_MOUSEBUTTONUP;
+        type = SDL_EVENT_MOUSE_BUTTON_UP;
         buttonstate &= ~SDL_BUTTON(button);
         break;
     default:
@@ -789,9 +789,9 @@ int SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_EventEnabled(SDL_MOUSEWHEEL)) {
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_WHEEL)) {
         SDL_Event event;
-        event.type = SDL_MOUSEWHEEL;
+        event.type = SDL_EVENT_MOUSE_WHEEL;
         event.common.timestamp = timestamp;
         event.wheel.windowID = mouse->focus ? mouse->focus->id : 0;
         event.wheel.which = mouseID;
@@ -1053,7 +1053,7 @@ int SDL_SetRelativeMouseMode(SDL_bool enabled)
     }
 
     /* Flush pending mouse motion - ideally we would pump events, but that's not always safe */
-    SDL_FlushEvent(SDL_MOUSEMOTION);
+    SDL_FlushEvent(SDL_EVENT_MOUSE_MOTION);
 
     return 0;
 }
@@ -1256,9 +1256,14 @@ SDL_CreateSystemCursor(SDL_SystemCursor id)
    if this is desired for any reason.  This is used when setting
    the video mode and when the SDL window gains the mouse focus.
  */
-void SDL_SetCursor(SDL_Cursor *cursor)
+int SDL_SetCursor(SDL_Cursor *cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+
+    /* Return immediately if setting the cursor to the currently set one (fixes #7151) */
+    if (cursor == mouse->cur_cursor) {
+        return 0;
+    }
 
     /* Set the new cursor */
     if (cursor) {
@@ -1271,8 +1276,7 @@ void SDL_SetCursor(SDL_Cursor *cursor)
                 }
             }
             if (found == NULL) {
-                SDL_SetError("Cursor not associated with the current mouse");
-                return;
+                return SDL_SetError("Cursor not associated with the current mouse");
             }
         }
         mouse->cur_cursor = cursor;
@@ -1293,6 +1297,7 @@ void SDL_SetCursor(SDL_Cursor *cursor)
             mouse->ShowCursor(NULL);
         }
     }
+    return 0;
 }
 
 SDL_Cursor *
