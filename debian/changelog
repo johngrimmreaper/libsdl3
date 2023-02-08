@@ -1,3 +1,9 @@
+libsdl3 (3~git20230207+dfsg-1) UNRELEASED; urgency=medium
+
+  * New upstream snapshot prerelease-3.0.0-947-gc5c94a6be
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 08 Feb 2023 19:59:16 +0000
+
 libsdl3 (3~git20230103+dfsg-1) experimental; urgency=medium
 
   * New upstream major version with incompatible API and ABI
