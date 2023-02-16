@@ -203,11 +203,6 @@ expression e;
 - SDL_HINT_VIDEODRIVER
 + SDL_HINT_VIDEO_DRIVER
 
-@@
-@@
-- M_PI
-+ SDL_PI_D
-
 // SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in SDL 2.0.
 @@
 @@
@@ -2095,7 +2090,7 @@ expression e;
 @@
 @@
 - SDL_WINDOWEVENT_SIZE_CHANGED
-+ SDL_EVENT_WINDOW_SIZE_CHANGED
++ SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
 @@
 @@
 - SDL_WINDOWEVENT_MINIMIZED
@@ -2326,11 +2321,6 @@ expression e;
 + SDL_EVENT_LAST
 @@
 @@
-- SDL_GetDisplayDPI
-+ SDL_GetDisplayPhysicalDPI
-  (...)
-@@
-@@
 - SDL_WINDOW_INPUT_GRABBED
 + SDL_WINDOW_MOUSE_GRABBED
 @@
@@ -2376,7 +2366,7 @@ SDL_DisplayMode e;
 @@
 @@
 - SDL_GetRendererOutputSize
-+ SDL_GetCurrentRenderOutputSizeInPixels
++ SDL_GetCurrentRenderOutputSize
   (...)
 @@
 @@
@@ -2496,4 +2486,19 @@ expression e2;
 @@
 - SDL_RenderDrawRects
 + SDL_RenderRects
+  (...)
+@@
+@@
+- SDL_GL_GetDrawableSize
++ SDL_GetWindowSizeInPixels
+  (...)
+@@
+@@
+- SDL_Metal_GetDrawableSize
++ SDL_GetWindowSizeInPixels
+  (...)
+@@
+@@
+- SDL_Vulkan_GetDrawableSize
++ SDL_GetWindowSizeInPixels
   (...)

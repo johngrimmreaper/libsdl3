@@ -70,8 +70,8 @@ should be changed to:
 ```c
     Uint8 *dst_data = NULL;
     int dst_len = 0;
-    if (SDL_ConvertAudioSamples(src_format, src_channels, src_rate, src_len, src_data
-                                dst_format, dst_channels, dst_rate, &dst_len, &dst_data) < 0) {
+    if (SDL_ConvertAudioSamples(src_format, src_channels, src_rate, src_data, src_len
+                                dst_format, dst_channels, dst_rate, &dst_data, &dst_len) < 0) {
         /* error */
     }
     do_something(dst_data, dst_len);
@@ -936,6 +936,8 @@ The following functions have been renamed:
 
 ## SDL_system.h
 
+SDL_AndroidGetExternalStorageState() takes the state as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
+
 The following functions have been renamed:
 * SDL_RenderGetD3D11Device() => SDL_GetRenderD3D11Device()
 * SDL_RenderGetD3D9Device() => SDL_GetRenderD3D9Device()
@@ -972,6 +974,10 @@ If you were using this macro for other things besides SDL ticks values, you can 
 ```c
 #define SDL_TICKS_PASSED(A, B)  ((Sint32)((B) - (A)) <= 0)
 ```
+
+## SDL_touch.h
+
+SDL_GetNumTouchFingers() returns a negative error code if there was an error.
 
 ## SDL_version.h
 
@@ -1051,7 +1057,6 @@ SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be us
 
 The following functions have been renamed:
 * SDL_GetClosestDisplayMode() => SDL_GetClosestFullscreenDisplayMode()
-* SDL_GetDisplayDPI() => SDL_GetDisplayPhysicalDPI()
 * SDL_GetPointDisplayIndex() => SDL_GetDisplayForPoint()
 * SDL_GetRectDisplayIndex() => SDL_GetDisplayForRect()
 * SDL_GetWindowDisplayIndex() => SDL_GetDisplayForWindow()
@@ -1060,6 +1065,7 @@ The following functions have been renamed:
 
 The following functions have been removed:
 * SDL_GetClosestFullscreenDisplayMode()
+* SDL_GetDisplayDPI() - not reliable across platforms, approximately replaced by multiplying `display_scale` in the structure returned by SDL_GetDesktopDisplayMode() times 160 on iPhone and Android, and 96 on other platforms.
 * SDL_GetDisplayMode()
 * SDL_GetNumDisplayModes() - replaced with SDL_GetFullscreenDisplayModes()
 * SDL_GetNumVideoDisplays() - replaced with SDL_GetDisplays()
