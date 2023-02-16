@@ -157,7 +157,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetDisplayForWindow@SDL3_0.0.0 3~git20230207
  SDL_GetDisplayName@SDL3_0.0.0 3~
  SDL_GetDisplayOrientation@SDL3_0.0.0 3~
- SDL_GetDisplayPhysicalDPI@SDL3_0.0.0 3~git20230207
  SDL_GetDisplayUsableBounds@SDL3_0.0.0 3~
  SDL_GetDisplays@SDL3_0.0.0 3~git20230207
  SDL_GetError@SDL3_0.0.0 3~
