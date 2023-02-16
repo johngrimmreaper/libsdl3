@@ -58,13 +58,14 @@ static void SDLCALL UpdateWindowFrameUsableWhileCursorHidden(void *userdata, con
 }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-static void WIN_SuspendScreenSaver(_THIS)
+static int WIN_SuspendScreenSaver(_THIS)
 {
     if (_this->suspend_screensaver) {
         SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
     } else {
         SetThreadExecutionState(ES_CONTINUOUS);
     }
+    return 0;
 }
 #endif
 
@@ -156,7 +157,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->RefreshDisplays = WIN_RefreshDisplays;
     device->GetDisplayBounds = WIN_GetDisplayBounds;
     device->GetDisplayUsableBounds = WIN_GetDisplayUsableBounds;
-    device->GetDisplayPhysicalDPI = WIN_GetDisplayPhysicalDPI;
     device->GetDisplayModes = WIN_GetDisplayModes;
     device->SetDisplayMode = WIN_SetDisplayMode;
 #endif
@@ -692,5 +692,3 @@ WIN_IsPerMonitorV2DPIAware(_THIS)
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
-
-/* vim: set ts=4 sw=4 expandtab: */

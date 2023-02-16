@@ -2013,12 +2013,12 @@ static void SDL_UnlockTextureNative(SDL_Texture *texture)
     SDL_UnlockTexture(native);
 }
 
-int SDL_UnlockTexture(SDL_Texture *texture)
+void SDL_UnlockTexture(SDL_Texture *texture)
 {
-    CHECK_TEXTURE_MAGIC(texture, -1);
+    CHECK_TEXTURE_MAGIC(texture,);
 
     if (texture->access != SDL_TEXTUREACCESS_STREAMING) {
-        return 0;
+        return;
     }
 #if SDL_HAVE_YUV
     if (texture->yuv) {
@@ -2034,7 +2034,6 @@ int SDL_UnlockTexture(SDL_Texture *texture)
 
     SDL_DestroySurface(texture->locked_surface);
     texture->locked_surface = NULL;
-    return 0;
 }
 
 static int SDL_SetRenderTargetInternal(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -4089,9 +4088,9 @@ static int SDL_DestroyTextureInternal(SDL_Texture *texture, SDL_bool is_destroyi
     return 0;
 }
 
-int SDL_DestroyTexture(SDL_Texture *texture)
+void SDL_DestroyTexture(SDL_Texture *texture)
 {
-    return SDL_DestroyTextureInternal(texture, SDL_FALSE /* is_destroying */);
+    SDL_DestroyTextureInternal(texture, SDL_FALSE /* is_destroying */);
 }
 
 static void SDL_DiscardAllCommands(SDL_Renderer *renderer)
@@ -4116,9 +4115,9 @@ static void SDL_DiscardAllCommands(SDL_Renderer *renderer)
     }
 }
 
-int SDL_DestroyRenderer(SDL_Renderer *renderer)
+void SDL_DestroyRenderer(SDL_Renderer *renderer)
 {
-    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_RENDERER_MAGIC(renderer,);
 
     SDL_DelEventWatch(SDL_RendererEventWatch, renderer);
 
@@ -4147,7 +4146,6 @@ int SDL_DestroyRenderer(SDL_Renderer *renderer)
 
     /* Free the renderer instance */
     renderer->DestroyRenderer(renderer);
-    return 0;
 }
 
 int SDL_GL_BindTexture(SDL_Texture *texture, float *texw, float *texh)

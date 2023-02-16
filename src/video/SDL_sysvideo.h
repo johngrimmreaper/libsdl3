@@ -107,13 +107,14 @@ struct SDL_Window
     int last_pixel_w, last_pixel_h;
     Uint32 flags;
     SDL_bool fullscreen_exclusive;  /* The window is currently fullscreen exclusive */
-    SDL_bool last_fullscreen_exclusive;  /* The last fullscreen_exclusive setting */
+    SDL_DisplayID last_fullscreen_exclusive_display;  /* The last fullscreen_exclusive display */
     SDL_DisplayID last_displayID;
 
     /* Stored position and size for windowed mode */
     SDL_Rect windowed;
 
-    SDL_DisplayMode fullscreen_mode;
+    SDL_DisplayMode requested_fullscreen_mode;
+    SDL_DisplayMode current_fullscreen_mode;
 
     float opacity;
 
@@ -225,11 +226,6 @@ struct SDL_VideoDevice
     int (*GetDisplayUsableBounds)(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
 
     /*
-     * Get the dots/pixels-per-inch of a display
-     */
-    int (*GetDisplayPhysicalDPI)(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
-
-    /*
      * Get a list of the available display modes for a display.
      */
     int (*GetDisplayModes)(_THIS, SDL_VideoDisplay *display);
@@ -332,7 +328,7 @@ struct SDL_VideoDevice
     void (*PumpEvents)(_THIS);
 
     /* Suspend the screensaver */
-    void (*SuspendScreenSaver)(_THIS);
+    int (*SuspendScreenSaver)(_THIS);
 
     /* Text input */
     void (*StartTextInput)(_THIS);
@@ -542,8 +538,6 @@ extern void SDL_UpdateWindowGrab(SDL_Window *window);
 extern SDL_Window *SDL_GetFocusWindow(void);
 
 extern SDL_bool SDL_ShouldAllowTopmost(void);
-
-extern float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches);
 
 extern void SDL_ToggleDragAndDropSupport(void);
 
