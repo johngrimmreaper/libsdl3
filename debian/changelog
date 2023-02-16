@@ -1,3 +1,10 @@
+libsdl3 (3~git20230216+dfsg-1) experimental; urgency=medium
+
+  * New upstream version 3~git20230216+dfsg
+  * d/libsdl3-0.symbols: Update for removal of SDL_GetDisplayPhysicalDPI
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 16 Feb 2023 14:36:27 +0000
+
 libsdl3 (3~git20230207+dfsg-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-947-gc5c94a6be
