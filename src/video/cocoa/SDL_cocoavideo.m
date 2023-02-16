@@ -81,7 +81,6 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->VideoQuit = Cocoa_VideoQuit;
         device->GetDisplayBounds = Cocoa_GetDisplayBounds;
         device->GetDisplayUsableBounds = Cocoa_GetDisplayUsableBounds;
-        device->GetDisplayPhysicalDPI = Cocoa_GetDisplayPhysicalDPI;
         device->GetDisplayModes = Cocoa_GetDisplayModes;
         device->SetDisplayMode = Cocoa_SetDisplayMode;
         device->PumpEvents = Cocoa_PumpEvents;
@@ -296,5 +295,3 @@ void SDL_NSLog(const char *prefix, const char *text)
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
-
-/* vim: set ts=4 sw=4 expandtab: */
