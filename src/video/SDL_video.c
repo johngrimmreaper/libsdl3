@@ -154,12 +154,18 @@ extern SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, SDL_bool stat
 /* Convenience functions for reading driver flags */
 static SDL_bool ModeSwitchingEmulated(_THIS)
 {
-    return !!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_MODE_SWITCHING_EMULATED);
+    if (_this->quirk_flags & VIDEO_DEVICE_QUIRK_MODE_SWITCHING_EMULATED) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
 }
 
 static SDL_bool DisableUnsetFullscreenOnMinimize(_THIS)
 {
-    return !!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_DISABLE_UNSET_FULLSCREEN_ON_MINIMIZE);
+    if (_this->quirk_flags & VIDEO_DEVICE_QUIRK_DISABLE_UNSET_FULLSCREEN_ON_MINIMIZE) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
 }
 
 /* Support for framebuffer emulation using an accelerated renderer */
@@ -1026,7 +1032,7 @@ const SDL_DisplayMode *SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID display
         aspect_ratio = 1.0f;
     }
 
-    if (!refresh_rate) {
+    if (refresh_rate == 0.0f) {
         mode = SDL_GetDesktopDisplayMode(displayID);
         if (mode) {
             refresh_rate = mode->refresh_rate;
@@ -1071,9 +1077,15 @@ const SDL_DisplayMode *SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID display
 
 void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
 {
+    float display_scale = display->desktop_mode.display_scale;
+
     SDL_memcpy(&display->desktop_mode, mode, sizeof(*mode));
     display->desktop_mode.displayID = display->id;
     SDL_FinalizeDisplayMode(&display->desktop_mode);
+
+    if (display_scale != display->desktop_mode.display_scale) {
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_SCALE_CHANGED, 0);
+    }
 }
 
 const SDL_DisplayMode *SDL_GetDesktopDisplayMode(SDL_DisplayID displayID)
@@ -1211,21 +1223,6 @@ SDL_DisplayID SDL_GetDisplayForRect(const SDL_Rect *rect)
     return GetDisplayForRect(rect->x, rect->y, rect->w, rect->h);
 }
 
-SDL_DisplayID SDL_GetDisplayForWindowCoordinate(int coordinate)
-{
-    SDL_DisplayID displayID = 0;
-
-    if (SDL_WINDOWPOS_ISUNDEFINED(coordinate) ||
-        SDL_WINDOWPOS_ISCENTERED(coordinate)) {
-        displayID = (coordinate & 0xFFFF);
-        /* 0 or invalid */
-        if (displayID == 0 || SDL_GetDisplayIndex(displayID) < 0) {
-            displayID = SDL_GetPrimaryDisplay();
-        }
-    }
-    return displayID;
-}
-
 static SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window)
 {
     SDL_DisplayID displayID = 0;
@@ -1240,12 +1237,6 @@ static SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window)
      * (for example if the window is off-screen), but other code may expect it
      * to succeed in that situation, so we fall back to a generic position-
      * based implementation in that case. */
-    if (!displayID) {
-        displayID = SDL_GetDisplayForWindowCoordinate(window->windowed.x);
-    }
-    if (!displayID) {
-        displayID = SDL_GetDisplayForWindowCoordinate(window->windowed.y);
-    }
     if (!displayID) {
         displayID = GetDisplayForRect(window->x, window->y, window->w, window->h);
     }
@@ -1267,31 +1258,13 @@ SDL_DisplayID SDL_GetDisplayForWindow(SDL_Window *window)
         displayID = window->current_fullscreen_mode.displayID;
     }
 
-    if (!displayID && _this->GetDisplayForWindow) {
-        displayID = _this->GetDisplayForWindow(_this, window);
-    }
-
-    /* A backend implementation may fail to get a display for the window
-     * (for example if the window is off-screen), but other code may expect it
-     * to succeed in that situation, so we fall back to a generic position-
-     * based implementation in that case. */
     if (!displayID) {
-        displayID = SDL_GetDisplayForWindowCoordinate(window->windowed.x);
-    }
-    if (!displayID) {
-        displayID = SDL_GetDisplayForWindowCoordinate(window->windowed.y);
-    }
-    if (!displayID) {
-        displayID = GetDisplayForRect(window->x, window->y, window->w, window->h);
-    }
-    if (!displayID) {
-        /* Use the primary display for a window if we can't find it anywhere else */
-        displayID = SDL_GetPrimaryDisplay();
+        displayID = SDL_GetDisplayForWindowPosition(window);
     }
     return displayID;
 }
 
-void SDL_CheckWindowDisplayChanged(SDL_Window *window)
+static void SDL_CheckWindowDisplayChanged(SDL_Window *window)
 {
     SDL_DisplayID displayID = SDL_GetDisplayForWindowPosition(window);
 
@@ -1346,22 +1319,40 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
 {
     SDL_VideoDisplay *display = NULL;
     SDL_DisplayMode *mode = NULL;
+    int i;
 
     CHECK_WINDOW_MAGIC(window, -1);
 
     window->fullscreen_exclusive = SDL_FALSE;
 
-    /* if we are in the process of hiding don't go back to fullscreen */
-    if (window->is_hiding && fullscreen) {
-        goto done;
+    /* If we are in the process of hiding don't go back to fullscreen */
+    if (window->is_destroying || window->is_hiding) {
+        fullscreen = SDL_FALSE;
     }
 
-    display = SDL_GetVideoDisplayForWindow(window);
+    /* Get the correct display for this operation */
+    if (fullscreen) {
+        display = SDL_GetVideoDisplayForWindow(window);
+    } else {
+        for (i = 0; i < _this->num_displays; ++i) {
+            display = &_this->displays[i];
+            if (display->fullscreen_window == window) {
+                break;
+            }
+        }
+        if (i == _this->num_displays) {
+            /* Already not fullscreen on any display */
+            goto done;
+        }
+    }
 
     if (fullscreen) {
         mode = (SDL_DisplayMode *)SDL_GetWindowFullscreenMode(window);
         if (mode != NULL) {
             window->fullscreen_exclusive = SDL_TRUE;
+        } else {
+            /* Make sure the current mode is zeroed for fullscreen desktop. */
+            SDL_zero(window->current_fullscreen_mode);
         }
     }
 
@@ -1372,6 +1363,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
     if (SDL_strcmp(_this->name, "cocoa") == 0) { /* don't do this for X11, etc */
         if (window->is_destroying && !window->last_fullscreen_exclusive_display) {
             window->fullscreen_exclusive = SDL_FALSE;
+            display->fullscreen_window = NULL;
             goto done;
         }
 
@@ -1381,16 +1373,26 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
                 goto error;
             }
         } else if (fullscreen && window->last_fullscreen_exclusive_display && !window->fullscreen_exclusive) {
-            display = SDL_GetVideoDisplayForWindow(window);
-            SDL_SetDisplayModeForDisplay(display, NULL);
-            if (_this->SetWindowFullscreen) {
-                _this->SetWindowFullscreen(_this, window, display, SDL_FALSE);
+            for (i = 0; i < _this->num_displays; ++i) {
+                SDL_VideoDisplay *last_display = &_this->displays[i];
+                if (last_display->fullscreen_window == window) {
+                    SDL_SetDisplayModeForDisplay(last_display, NULL);
+                    if (_this->SetWindowFullscreen) {
+                        _this->SetWindowFullscreen(_this, window, last_display, SDL_FALSE);
+                    }
+                    last_display->fullscreen_window = NULL;
+                }
             }
         }
 
         if (Cocoa_SetWindowFullscreenSpace(window, fullscreen)) {
             if (Cocoa_IsWindowInFullscreenSpace(window) != fullscreen) {
                 goto error;
+            }
+            if (fullscreen) {
+                display->fullscreen_window = window;
+            } else {
+                display->fullscreen_window = NULL;
             }
             goto done;
         }
@@ -1417,19 +1419,24 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
         /* Whatever was requested, fullscreen or windowed mode, is already
             in-place.
         */
+        if (fullscreen) {
+            display->fullscreen_window = window;
+        } else {
+            display->fullscreen_window = NULL;
+        }
         goto done;
     }
 #endif
 
     /* Restore the video mode on other displays if needed */
-    if (window->last_fullscreen_exclusive_display) {
-        int i;
-
-        for (i = 0; i < _this->num_displays; ++i) {
-            SDL_VideoDisplay *other = &_this->displays[i];
-            if (display != other && other->id == window->last_fullscreen_exclusive_display) {
-                SDL_SetDisplayModeForDisplay(other, NULL);
+    for (i = 0; i < _this->num_displays; ++i) {
+        SDL_VideoDisplay *other = &_this->displays[i];
+        if (other != display && other->fullscreen_window == window) {
+            SDL_SetDisplayModeForDisplay(other, NULL);
+            if (_this->SetWindowFullscreen) {
+                _this->SetWindowFullscreen(_this, window, other, SDL_FALSE);
             }
+            other->fullscreen_window = NULL;
         }
     }
 
@@ -1437,7 +1444,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
         int mode_w = 0, mode_h = 0;
         SDL_bool resized = SDL_FALSE;
 
-        /* Hide any other fullscreen windows */
+        /* Hide any other fullscreen window on this display */
         if (display->fullscreen_window &&
             display->fullscreen_window != window) {
             SDL_MinimizeWindow(display->fullscreen_window);
@@ -1483,17 +1490,12 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
         SDL_RestoreMousePosition(window);
 
     } else {
-        if (display->fullscreen_window == window) {
-            /* Restore the desktop mode */
-            SDL_SetDisplayModeForDisplay(display, NULL);
-        }
-
+        /* Restore the desktop mode */
+        SDL_SetDisplayModeForDisplay(display, NULL);
         if (_this->SetWindowFullscreen) {
             _this->SetWindowFullscreen(_this, window, display, SDL_FALSE);
         }
-        if (display->fullscreen_window == window) {
-            display->fullscreen_window = NULL;
-        }
+        display->fullscreen_window = NULL;
 
         SDL_OnWindowResized(window);
 
@@ -1617,7 +1619,7 @@ static void SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
         SDL_MinimizeWindow(window);
     }
     if (flags & SDL_WINDOW_FULLSCREEN) {
-        SDL_SetWindowFullscreen(window, flags);
+        SDL_SetWindowFullscreen(window, SDL_TRUE);
     }
     if (flags & SDL_WINDOW_MOUSE_GRABBED) {
         /* We must specifically call SDL_SetWindowGrab() and not
@@ -1649,10 +1651,14 @@ static int SDL_DllNotSupported(const char *name)
     return SDL_SetError("No dynamic %s support in current SDL video driver (%s)", name, _this->name);
 }
 
-SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
+SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
 {
     SDL_Window *window;
     Uint32 type_flags, graphics_flags;
+    int x = SDL_WINDOWPOS_UNDEFINED;
+    int y = SDL_WINDOWPOS_UNDEFINED;
+    SDL_bool undefined_x = SDL_FALSE;
+    SDL_bool undefined_y = SDL_FALSE;
 
     if (_this == NULL) {
         /* Initialize the video system if needed */
@@ -1674,7 +1680,7 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
     /* ensure no more than one of these flags is set */
     type_flags = flags & (SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU);
     if (type_flags & (type_flags - 1)) {
-        SDL_SetError("Conflicting window flags specified");
+        SDL_SetError("Conflicting window type flags specified: 0x%.8x", (unsigned int)type_flags);
         return NULL;
     }
 
@@ -1692,10 +1698,40 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
         return NULL;
     }
 
+    if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISUNDEFINED(y) ||
+        SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
+        SDL_DisplayID displayID = 0;
+        SDL_Rect bounds;
+
+        if ((SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISCENTERED(x)) && (x & 0xFFFF)) {
+            displayID = (x & 0xFFFF);
+        } else if ((SDL_WINDOWPOS_ISUNDEFINED(y) || SDL_WINDOWPOS_ISCENTERED(y)) && (y & 0xFFFF)) {
+            displayID = (y & 0xFFFF);
+        }
+        if (displayID == 0 || SDL_GetDisplayIndex(displayID) < 0) {
+            displayID = SDL_GetPrimaryDisplay();
+        }
+
+        SDL_zero(bounds);
+        SDL_GetDisplayBounds(displayID, &bounds);
+        if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISUNDEFINED(x)) {
+            if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
+                undefined_x = SDL_TRUE;
+            }
+            x = bounds.x + (bounds.w - w) / 2;
+        }
+        if (SDL_WINDOWPOS_ISCENTERED(y) || SDL_WINDOWPOS_ISUNDEFINED(y)) {
+            if (SDL_WINDOWPOS_ISUNDEFINED(y)) {
+                undefined_y = SDL_TRUE;
+            }
+            y = bounds.y + (bounds.h - h) / 2;
+        }
+    }
+
     /* ensure no more than one of these flags is set */
     graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
     if (graphics_flags & (graphics_flags - 1)) {
-        SDL_SetError("Conflicting window flags specified");
+        SDL_SetError("Conflicting window graphics flags specified: 0x%.8x", (unsigned int)graphics_flags);
         return NULL;
     }
 
@@ -1746,19 +1782,8 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
     window->windowed.y = window->y = y;
     window->windowed.w = window->w = w;
     window->windowed.h = window->h = h;
-    if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISUNDEFINED(y) ||
-        SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
-        SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
-        SDL_Rect bounds;
-
-        SDL_GetDisplayBounds(display->id, &bounds);
-        if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISCENTERED(x)) {
-            window->windowed.x = window->x = bounds.x + (bounds.w - w) / 2;
-        }
-        if (SDL_WINDOWPOS_ISUNDEFINED(y) || SDL_WINDOWPOS_ISCENTERED(y)) {
-            window->windowed.y = window->y = bounds.y + (bounds.h - h) / 2;
-        }
-    }
+    window->undefined_x = undefined_x;
+    window->undefined_y = undefined_y;
 
     if (flags & SDL_WINDOW_FULLSCREEN) {
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
@@ -1813,8 +1838,10 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
     }
     SDL_FinishWindowCreation(window, flags);
 
-    /* If the window was created fullscreen, make sure the mode code matches */
-    SDL_UpdateFullscreenMode(window, SDL_WINDOW_FULLSCREEN_VISIBLE(window));
+    /* If the window was created fullscreen, make sure the display mode matches */
+    if (SDL_WINDOW_FULLSCREEN_VISIBLE(window)) {
+        SDL_UpdateFullscreenMode(window, SDL_TRUE);
+    }
 
     return window;
 }
@@ -2088,7 +2115,7 @@ int SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon)
     CHECK_WINDOW_MAGIC(window, -1);
 
     if (icon == NULL) {
-        return 0;
+        return SDL_InvalidParamError("icon");
     }
 
     SDL_DestroySurface(window->icon);
@@ -2099,10 +2126,11 @@ int SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon)
         return -1;
     }
 
-    if (_this->SetWindowIcon) {
-        _this->SetWindowIcon(_this, window, window->icon);
+    if (!_this->SetWindowIcon) {
+        return SDL_Unsupported();
     }
-    return 0;
+
+    return _this->SetWindowIcon(_this, window, window->icon);
 }
 
 void *SDL_SetWindowData(SDL_Window *window, const char *name, void *userdata)
@@ -2173,17 +2201,29 @@ void *SDL_GetWindowData(SDL_Window *window, const char *name)
 
 int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
 {
+    SDL_DisplayID original_displayID;
+
     CHECK_WINDOW_MAGIC(window, -1);
 
+    original_displayID = SDL_GetDisplayForWindow(window);
+
+    if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
+        x = window->windowed.x;
+    }
+    if (SDL_WINDOWPOS_ISUNDEFINED(y)) {
+        y = window->windowed.y;
+    }
     if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
-        SDL_DisplayID displayID = 0;
+        SDL_DisplayID displayID = original_displayID;
         SDL_Rect bounds;
 
-        if (!displayID) {
-            displayID = SDL_GetDisplayForWindowCoordinate(x);
+        if (SDL_WINDOWPOS_ISCENTERED(x) && (x & 0xFFFF)) {
+            displayID = (x & 0xFFFF);
+        } else if (SDL_WINDOWPOS_ISCENTERED(y) && (y & 0xFFFF)) {
+            displayID = (y & 0xFFFF);
         }
-        if (!displayID) {
-            displayID = SDL_GetDisplayForWindowCoordinate(y);
+        if (displayID == 0 || SDL_GetDisplayIndex(displayID) < 0) {
+            displayID = SDL_GetPrimaryDisplay();
         }
 
         SDL_zero(bounds);
@@ -2196,20 +2236,26 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
         }
     }
 
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
-        if (!SDL_WINDOWPOS_ISUNDEFINED(x)) {
-            window->windowed.x = x;
-        }
-        if (!SDL_WINDOWPOS_ISUNDEFINED(y)) {
-            window->windowed.y = y;
+    window->windowed.x = x;
+    window->windowed.y = y;
+    window->undefined_x = SDL_FALSE;
+    window->undefined_y = SDL_FALSE;
+
+    if (SDL_WINDOW_FULLSCREEN_VISIBLE(window)) {
+        if (!window->fullscreen_exclusive) {
+            /* See if we should move to another display */
+            SDL_DisplayID displayID = GetDisplayForRect(x, y, 1, 1);
+
+            if (displayID != original_displayID) {
+                /* Set the new target display and update the fullscreen mode */
+                window->current_fullscreen_mode.displayID = displayID;
+                SDL_UpdateFullscreenMode(window, SDL_TRUE);
+            }
         }
     } else {
-        if (!SDL_WINDOWPOS_ISUNDEFINED(x)) {
-            window->x = x;
-        }
-        if (!SDL_WINDOWPOS_ISUNDEFINED(y)) {
-            window->y = y;
-        }
+        window->x = x;
+        window->y = y;
+        window->last_displayID = SDL_GetDisplayForWindow(window);
 
         if (_this->SetWindowPosition) {
             _this->SetWindowPosition(_this, window);
@@ -2342,6 +2388,9 @@ int SDL_SetWindowSize(SDL_Window *window, int w, int h)
     window->windowed.h = h;
 
     if (!SDL_WINDOW_FULLSCREEN_VISIBLE(window)) {
+        window->w = w;
+        window->h = h;
+
         if (_this->SetWindowSize) {
             _this->SetWindowSize(_this, window);
         }
@@ -2536,8 +2585,6 @@ int SDL_HideWindow(SDL_Window *window)
     }
 
     window->is_hiding = SDL_TRUE;
-    SDL_UpdateFullscreenMode(window, SDL_FALSE);
-
     if (_this->HideWindow) {
         _this->HideWindow(_this, window);
     }
@@ -3165,13 +3212,12 @@ SDL_Window *SDL_GetFocusWindow(void)
 
 void SDL_DestroyWindow(SDL_Window *window)
 {
-    SDL_VideoDisplay *display;
-
     CHECK_WINDOW_MAGIC(window,);
 
     window->is_destroying = SDL_TRUE;
 
     /* Restore video mode, etc. */
+    SDL_UpdateFullscreenMode(window, SDL_FALSE);
     if (!(window->flags & SDL_WINDOW_FOREIGN)) {
         SDL_HideWindow(window);
     }
@@ -3214,11 +3260,6 @@ void SDL_DestroyWindow(SDL_Window *window)
         _this->DestroyWindow(_this, window);
     }
 
-    display = SDL_GetVideoDisplayForWindow(window);
-    if (display->fullscreen_window == window) {
-        display->fullscreen_window = NULL;
-    }
-
     /* Now invalidate magic */
     window->magic = NULL;
 
@@ -3246,7 +3287,7 @@ void SDL_DestroyWindow(SDL_Window *window)
     SDL_free(window);
 }
 
-SDL_bool SDL_ScreenSaverEnabled()
+SDL_bool SDL_ScreenSaverEnabled(void)
 {
     if (_this == NULL) {
         return SDL_TRUE;
@@ -3254,7 +3295,7 @@ SDL_bool SDL_ScreenSaverEnabled()
     return _this->suspend_screensaver ? SDL_FALSE : SDL_TRUE;
 }
 
-int SDL_EnableScreenSaver()
+int SDL_EnableScreenSaver(void)
 {
     if (_this == NULL) {
         return 0;
@@ -3270,7 +3311,7 @@ int SDL_EnableScreenSaver()
     return SDL_Unsupported();
 }
 
-int SDL_DisableScreenSaver()
+int SDL_DisableScreenSaver(void)
 {
     if (_this == NULL) {
         return 0;
@@ -3354,7 +3395,7 @@ int SDL_GL_LoadLibrary(const char *path)
 
 SDL_FunctionPointer SDL_GL_GetProcAddress(const char *proc)
 {
-    void *func;
+    SDL_FunctionPointer func;
 
     if (_this == NULL) {
         SDL_UninitializedVideo();
@@ -3376,7 +3417,7 @@ SDL_FunctionPointer SDL_GL_GetProcAddress(const char *proc)
 SDL_FunctionPointer SDL_EGL_GetProcAddress(const char *proc)
 {
 #if SDL_VIDEO_OPENGL_EGL
-    void *func;
+    SDL_FunctionPointer func;
 
     if (!_this) {
         SDL_UninitializedVideo();
@@ -3555,7 +3596,7 @@ void SDL_EGL_SetEGLAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribC
     _this->egl_contextattrib_callback = contextAttribCallback;
 }
 
-void SDL_GL_ResetAttributes()
+void SDL_GL_ResetAttributes(void)
 {
     if (_this == NULL) {
         return;

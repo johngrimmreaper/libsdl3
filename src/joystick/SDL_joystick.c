@@ -196,7 +196,7 @@ static SDL_bool SDL_GetDriverAndJoystickIndex(SDL_JoystickID instance_id, SDL_Jo
     return SDL_FALSE;
 }
 
-static int SDL_FindFreePlayerIndex()
+static int SDL_FindFreePlayerIndex(void)
 {
     int player_index;
 
@@ -232,7 +232,7 @@ static SDL_JoystickID SDL_GetJoystickIDForPlayerIndex(int player_index)
     SDL_AssertJoysticksLocked();
 
     if (player_index < 0 || player_index >= SDL_joystick_player_count) {
-        return -1;
+        return 0;
     }
     return SDL_joystick_players[player_index];
 }
@@ -395,7 +395,7 @@ SDL_JoystickID *SDL_GetJoysticks(int *count)
  * Return the next available joystick instance ID
  * This may be called by drivers from multiple threads, unprotected by any locks
  */
-SDL_JoystickID SDL_GetNextJoystickInstanceID()
+SDL_JoystickID SDL_GetNextJoystickInstanceID(void)
 {
     return SDL_AtomicIncRef(&SDL_last_joystick_instance_id) + 1;
 }
@@ -1319,7 +1319,7 @@ void SDL_QuitJoysticks(void)
     SDL_UnlockJoysticks();
 }
 
-static SDL_bool SDL_PrivateJoystickShouldIgnoreEvent()
+static SDL_bool SDL_PrivateJoystickShouldIgnoreEvent(void)
 {
     if (SDL_joystick_allows_background_events) {
         return SDL_FALSE;
@@ -1726,7 +1726,7 @@ void SDL_SetJoystickEventsEnabled(SDL_bool enabled)
 #endif /* SDL_EVENTS_DISABLED */
 }
 
-SDL_bool SDL_JoystickEventsEnabled()
+SDL_bool SDL_JoystickEventsEnabled(void)
 {
     SDL_bool enabled = SDL_FALSE;
 
@@ -2195,6 +2195,12 @@ SDL_bool SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id)
             return SDL_TRUE;
         }
     }
+    if (vendor_id == USB_VENDOR_RAZER) {
+        if (product_id == USB_PRODUCT_RAZER_WOLVERINE_V2 ||
+            product_id == USB_PRODUCT_RAZER_WOLVERINE_V2_CHROMA) {
+            return SDL_TRUE;
+        }
+    }
     if (vendor_id == USB_VENDOR_THRUSTMASTER) {
         if (product_id == USB_PRODUCT_THRUSTMASTER_ESWAPX_PRO) {
             return SDL_TRUE;
@@ -2327,7 +2333,7 @@ SDL_bool SDL_IsJoystickVIRTUAL(SDL_JoystickGUID guid)
 static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
 {
     static Uint32 wheel_joysticks[] = {
-        MAKE_VIDPID(0x0079, 0x1864), /* PXN V900 (PS3) */
+        MAKE_VIDPID(0x0079, 0x1864), /* DragonRise Inc. Wired Wheel (active mode) (also known as PXN V900 (PS3), Superdrive SV-750, or a Genesis Seaborg 400) */
         MAKE_VIDPID(0x046d, 0xc294), /* Logitech generic wheel */
         MAKE_VIDPID(0x046d, 0xc295), /* Logitech Momo Force */
         MAKE_VIDPID(0x046d, 0xc298), /* Logitech Driving Force Pro */
@@ -2353,6 +2359,7 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x044f, 0xb65e), /* Thrustmaster T500RS */
         MAKE_VIDPID(0x044f, 0xb664), /* Thrustmaster TX (initial mode) */
         MAKE_VIDPID(0x044f, 0xb669), /* Thrustmaster TX (active mode) */
+        MAKE_VIDPID(0x11ff, 0x0511), /* DragonRise Inc. Wired Wheel (initial mode) (also known as PXN V900 (PS3), Superdrive SV-750, or a Genesis Seaborg 400) */
     };
     int i;
 
@@ -2952,12 +2959,12 @@ int SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int touch
         SDL_Event event;
         event.type = event_type;
         event.common.timestamp = timestamp;
-        event.ctouchpad.which = joystick->instance_id;
-        event.ctouchpad.touchpad = touchpad;
-        event.ctouchpad.finger = finger;
-        event.ctouchpad.x = x;
-        event.ctouchpad.y = y;
-        event.ctouchpad.pressure = pressure;
+        event.gtouchpad.which = joystick->instance_id;
+        event.gtouchpad.touchpad = touchpad;
+        event.gtouchpad.finger = finger;
+        event.gtouchpad.x = x;
+        event.gtouchpad.y = y;
+        event.gtouchpad.pressure = pressure;
         posted = SDL_PushEvent(&event) == 1;
     }
 #endif /* !SDL_EVENTS_DISABLED */
@@ -2992,12 +2999,15 @@ int SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorT
                     SDL_Event event;
                     event.type = SDL_EVENT_GAMEPAD_SENSOR_UPDATE;
                     event.common.timestamp = timestamp;
-                    event.csensor.which = joystick->instance_id;
-                    event.csensor.sensor = type;
-                    num_values = SDL_min(num_values, SDL_arraysize(event.csensor.data));
-                    SDL_memset(event.csensor.data, 0, sizeof(event.csensor.data));
-                    SDL_memcpy(event.csensor.data, data, num_values * sizeof(*data));
-                    event.csensor.sensor_timestamp = sensor_timestamp;
+                    event.gsensor.which = joystick->instance_id;
+                    event.gsensor.sensor = type;
+                    num_values = SDL_min(num_values,
+                                         SDL_arraysize(event.gsensor.data));
+                    SDL_memset(event.gsensor.data, 0,
+                               sizeof(event.gsensor.data));
+                    SDL_memcpy(event.gsensor.data, data,
+                               num_values * sizeof(*data));
+                    event.gsensor.sensor_timestamp = sensor_timestamp;
                     posted = SDL_PushEvent(&event) == 1;
                 }
 #endif /* !SDL_EVENTS_DISABLED */

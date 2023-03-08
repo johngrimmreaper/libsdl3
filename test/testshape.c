@@ -14,8 +14,6 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
-#define SHAPED_WINDOW_X         150
-#define SHAPED_WINDOW_Y         150
 #define SHAPED_WINDOW_DIMENSION 640
 
 typedef struct LoadedPicture
@@ -26,21 +24,14 @@ typedef struct LoadedPicture
     const char *name;
 } LoadedPicture;
 
-void render(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect texture_dimensions)
+void render(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    SDL_FRect dst;
-
     /* Clear render-target to blue. */
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xff, 0xff);
     SDL_RenderClear(renderer);
 
     /* Render the texture. */
-    dst.x = (float)texture_dimensions.x;
-    dst.y = (float)texture_dimensions.y;
-    dst.w = (float)texture_dimensions.w;
-    dst.h = (float)texture_dimensions.h;
-    SDL_RenderTexture(renderer, texture, &texture_dimensions, &dst);
-
+    SDL_RenderTexture(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
 }
 
@@ -49,6 +40,7 @@ int main(int argc, char **argv)
     Uint8 num_pictures;
     LoadedPicture *pictures;
     int i, j;
+    const SDL_DisplayMode *mode;
     SDL_PixelFormat *format = NULL;
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -58,8 +50,7 @@ int main(int argc, char **argv)
     unsigned int current_picture;
     int button_down;
     Uint32 pixelFormat = 0;
-    int access = 0;
-    SDL_Rect texture_dimensions;
+    int w, h, access = 0;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -71,6 +62,12 @@ int main(int argc, char **argv)
 
     if (SDL_Init(SDL_INIT_VIDEO) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not initialize SDL video.");
+        exit(-2);
+    }
+
+    mode = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
+    if (!mode) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't get desktop display mode: %s", SDL_GetError());
         exit(-2);
     }
 
@@ -107,10 +104,7 @@ int main(int argc, char **argv)
     }
 
     window = SDL_CreateShapedWindow("SDL_Shape test",
-                                    SHAPED_WINDOW_X, SHAPED_WINDOW_Y,
-                                    SHAPED_WINDOW_DIMENSION, SHAPED_WINDOW_DIMENSION,
-                                    0);
-    SDL_SetWindowPosition(window, SHAPED_WINDOW_X, SHAPED_WINDOW_Y);
+                                    SHAPED_WINDOW_DIMENSION, SHAPED_WINDOW_DIMENSION, 0);
     if (window == NULL) {
         for (i = 0; i < num_pictures; i++) {
             SDL_DestroySurface(pictures[i].surface);
@@ -158,13 +152,10 @@ int main(int argc, char **argv)
     should_exit = 0;
     current_picture = 0;
     button_down = 0;
-    texture_dimensions.h = 0;
-    texture_dimensions.w = 0;
-    texture_dimensions.x = 0;
-    texture_dimensions.y = 0;
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Changing to shaped bmp: %s", pictures[current_picture].name);
-    SDL_QueryTexture(pictures[current_picture].texture, &pixelFormat, &access, &texture_dimensions.w, &texture_dimensions.h);
-    SDL_SetWindowSize(window, texture_dimensions.w, texture_dimensions.h);
+    SDL_QueryTexture(pictures[current_picture].texture, &pixelFormat, &access, &w, &h);
+    /* We want to set the window size in pixels */
+    SDL_SetWindowSize(window, (int)SDL_ceilf(w / mode->display_scale), (int)SDL_ceilf(h / mode->display_scale));
     SDL_SetWindowShape(window, pictures[current_picture].surface, &pictures[current_picture].mode);
     while (should_exit == 0) {
         while (SDL_PollEvent(&event)) {
@@ -182,8 +173,8 @@ int main(int argc, char **argv)
                     current_picture = 0;
                 }
                 SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Changing to shaped bmp: %s", pictures[current_picture].name);
-                SDL_QueryTexture(pictures[current_picture].texture, &pixelFormat, &access, &texture_dimensions.w, &texture_dimensions.h);
-                SDL_SetWindowSize(window, texture_dimensions.w, texture_dimensions.h);
+                SDL_QueryTexture(pictures[current_picture].texture, &pixelFormat, &access, &w, &h);
+                SDL_SetWindowSize(window, (int)SDL_ceilf(w / mode->display_scale), (int)SDL_ceilf(h / mode->display_scale));
                 SDL_SetWindowShape(window, pictures[current_picture].surface, &pictures[current_picture].mode);
             }
             if (event.type == SDL_EVENT_QUIT) {
@@ -191,7 +182,7 @@ int main(int argc, char **argv)
                 break;
             }
         }
-        render(renderer, pictures[current_picture].texture, texture_dimensions);
+        render(renderer, pictures[current_picture].texture);
         SDL_Delay(10);
     }
 

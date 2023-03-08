@@ -22,7 +22,7 @@
 /**
  *  \file SDL_touch.h
  *
- *  Include file for SDL touch event handling.
+ *  \brief Include file for SDL touch event handling.
  */
 
 #ifndef SDL_touch_h_
@@ -121,7 +121,8 @@ extern DECLSPEC SDL_TouchDeviceType SDLCALL SDL_GetTouchDeviceType(SDL_TouchID t
  *
  * \param touchID the ID of a touch device
  * \returns the number of active fingers for a given touch device on success
- *          or a negative error code on failure; call SDL_GetError() for more information.
+ *          or a negative error code on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
