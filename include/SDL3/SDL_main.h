@@ -27,7 +27,7 @@
 /**
  *  \file SDL_main.h
  *
- *  Redefine main() on some platforms so that it is called by SDL.
+ *  \brief Redefine main() on some platforms so that it is called by SDL.
  */
 
 #ifndef SDL_MAIN_HANDLED
@@ -192,7 +192,7 @@ extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
  * \param reserved should be NULL (reserved for future use, will probably be
  *                 platform-specific then)
  * \returns the return value from mainFunction: 0 on success, -1 on failure;
- *         SDL_GetError() might have more information on the failure
+ *          SDL_GetError() might have more information on the failure
  *
  * \since This function is available since SDL 3.0.0.
  */
