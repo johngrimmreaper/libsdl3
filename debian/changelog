@@ -1,4 +1,4 @@
-libsdl3 (3~git20230308+dfsg-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20230308+dfsg-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-1147-g16bb6a0b3
   * d/watch: Use git to download new snapshots.
@@ -6,7 +6,7 @@ libsdl3 (3~git20230308+dfsg-1) UNRELEASED; urgency=medium
     made between the upstream source code and a `make dist`.
   * d/copyright: Update
 
- -- Simon McVittie <smcv@debian.org>  Wed, 08 Mar 2023 11:52:12 +0000
+ -- Simon McVittie <smcv@debian.org>  Wed, 08 Mar 2023 12:05:13 +0000
 
 libsdl3 (3~git20230216+dfsg-1) experimental; urgency=medium
 
