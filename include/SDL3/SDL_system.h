@@ -22,7 +22,7 @@
 /**
  *  \file SDL_system.h
  *
- *  Include file for platform specific SDL API functions
+ *  \brief Include file for platform specific SDL API functions
  */
 
 #ifndef SDL_system_h_
@@ -385,7 +385,8 @@ extern DECLSPEC const char * SDLCALL SDL_AndroidGetInternalStoragePath(void);
  *
  * If external storage is currently unavailable, this will return 0.
  *
- * \param state filled with the current state of external storage. 0 if external storage is currently unavailable.
+ * \param state filled with the current state of external storage. 0 if
+ *              external storage is currently unavailable.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *

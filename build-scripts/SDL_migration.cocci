@@ -2217,46 +2217,6 @@ expression e;
 + SDL_EVENT_JOYSTICK_BATTERY_UPDATED
 @@
 @@
-- SDL_GAMEPADAXISMOTION
-+ SDL_EVENT_GAMEPAD_AXIS_MOTION
-@@
-@@
-- SDL_GAMEPADBUTTONDOWN
-+ SDL_EVENT_GAMEPAD_BUTTON_DOWN
-@@
-@@
-- SDL_GAMEPADBUTTONUP
-+ SDL_EVENT_GAMEPAD_BUTTON_UP
-@@
-@@
-- SDL_GAMEPADADDED
-+ SDL_EVENT_GAMEPAD_ADDED
-@@
-@@
-- SDL_GAMEPADREMOVED
-+ SDL_EVENT_GAMEPAD_REMOVED
-@@
-@@
-- SDL_GAMEPADREMAPPED
-+ SDL_EVENT_GAMEPAD_REMAPPED
-@@
-@@
-- SDL_GAMEPADTOUCHPADDOWN
-+ SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN
-@@
-@@
-- SDL_GAMEPADTOUCHPADMOTION
-+ SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION
-@@
-@@
-- SDL_GAMEPADTOUCHPADUP
-+ SDL_EVENT_GAMEPAD_TOUCHPAD_UP
-@@
-@@
-- SDL_GAMEPADSENSORUPDATE
-+ SDL_EVENT_GAMEPAD_SENSOR_UPDATE
-@@
-@@
 - SDL_FINGERDOWN
 + SDL_EVENT_FINGER_DOWN
 @@
@@ -2502,3 +2462,70 @@ expression e2;
 - SDL_Vulkan_GetDrawableSize
 + SDL_GetWindowSizeInPixels
   (...)
+@@
+@@
+- SDL_IsScreenSaverEnabled
++ SDL_ScreenSaverEnabled
+  (...)
+@@
+SDL_Event e1;
+@@
+- e1.caxis
++ e1.gaxis
+@@
+SDL_Event e1;
+@@
+- e1.cbutton
++ e1.gbutton
+@@
+SDL_Event e1;
+@@
+- e1.cdevice
++ e1.gdevice
+@@
+SDL_Event e1;
+@@
+- e1.ctouchpad
++ e1.gtouchpad
+@@
+SDL_Event e1;
+@@
+- e1.csensor
++ e1.gsensor
+@@
+SDL_Event *e1;
+@@
+- e1->caxis
++ e1->gaxis
+@@
+SDL_Event *e1;
+@@
+- e1->cbutton
++ e1->gbutton
+@@
+SDL_Event *e1;
+@@
+- e1->cdevice
++ e1->gdevice
+@@
+SDL_Event *e1;
+@@
+- e1->ctouchpad
++ e1->gtouchpad
+@@
+SDL_Event *e1;
+@@
+- e1->csensor
++ e1->gsensor
+@@
+expression e1, e2, e3, e4;
+constant c1, c2;
+@@
+- SDL_CreateWindow(e1, c1, c2, e2, e3, e4)
++ SDL_CreateWindow(e1, e2, e3, e4)
+@@
+expression e1, e2, e3, e4;
+constant c1, c2;
+@@
+- SDL_CreateShapedWindow(e1, c1, c2, e2, e3, e4)
++ SDL_CreateShapedWindow(e1, e2, e3, e4)

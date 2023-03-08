@@ -958,6 +958,8 @@ static void Wayland_move_window(SDL_Window *window, SDL_DisplayData *driverdata)
                  */
                 SDL_Rect bounds;
                 SDL_GetDisplayBounds(displays[i], &bounds);
+
+                window->driverdata->last_displayID = displays[i];
                 SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, bounds.x, bounds.y);
                 break;
             }
@@ -1472,7 +1474,7 @@ int Wayland_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation)
     return 0;
 }
 
-void handle_preferred_scale_changed(void *data,
+static void handle_preferred_scale_changed(void *data,
                                     struct wp_fractional_scale_v1 *wp_fractional_scale_v1,
                                     uint preferred_scale)
 {
@@ -1611,7 +1613,7 @@ void Wayland_SetWindowFullscreen(_THIS, SDL_Window *window,
          * If the window is already positioned on the target output, just update the
          * window geometry.
          */
-        if (window->last_displayID != display->id) {
+        if (wind->last_displayID != display->id) {
             wind->fullscreen_was_positioned = SDL_TRUE;
             SetFullscreen(window, output);
         } else {
