@@ -420,8 +420,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_JoystickHasRumble@SDL3_0.0.0 3~
  SDL_JoystickHasRumbleTriggers@SDL3_0.0.0 3~
  SDL_JoystickIsHaptic@SDL3_0.0.0 3~
- SDL_LinuxSetThreadPriority@SDL3_0.0.0 3~
- SDL_LinuxSetThreadPriorityAndPolicy@SDL3_0.0.0 3~
+ (arch=linux-any)SDL_LinuxSetThreadPriority@SDL3_0.0.0 3~
+ (arch=linux-any)SDL_LinuxSetThreadPriorityAndPolicy@SDL3_0.0.0 3~
  SDL_LoadBMP_RW@SDL3_0.0.0 3~
  SDL_LoadFile@SDL3_0.0.0 3~
  SDL_LoadFile_RW@SDL3_0.0.0 3~
