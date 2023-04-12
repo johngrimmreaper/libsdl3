@@ -1,3 +1,16 @@
+libsdl3 (3~git20230412+dfsg-1) experimental; urgency=medium
+
+  * New upstream snapshot prerelease-3.0.0-1424-gec053ec4f
+  * d/copyright: Update
+  * d/libsdl3-doc.manpages: Include API documentation in the package
+  * d/libsdl3-0.symbols: Update.
+    Acknowledge ABI break (removal of SDL_HasRDTSC) since this is a
+    development snapshot of an unstable branch.
+  * d/p/test-template.test.in-Pass-SDL_NONINTERACTIVE_ARGUMENTS-t.patch:
+    Add patch to pass required arguments to tests when run from autopkgtest
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 12 Apr 2023 12:19:46 +0100
+
 libsdl3 (3~git20230308+dfsg-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-1147-g16bb6a0b3

@@ -1,0 +1,24 @@
+From: Simon McVittie <smcv@collabora.com>
+Date: Wed, 12 Apr 2023 12:13:38 +0100
+Subject: test/template.test.in: Pass SDL_NONINTERACTIVE_ARGUMENTS to
+ installed-tests
+
+Otherwise they'll try to run with no arguments, and fail, when run by
+ginsttest-runner.
+
+Fixes: 81ca9d61 "cmake+test: add more automated tests + use properties"
+Signed-off-by: Simon McVittie <smcv@collabora.com>
+Forwarded: https://github.com/libsdl-org/SDL/pull/7605
+---
+ test/template.test.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/test/template.test.in b/test/template.test.in
+index e1ac063..c182bbc 100644
+--- a/test/template.test.in
++++ b/test/template.test.in
+@@ -1,3 +1,3 @@
+ [Test]
+ Type=session
+-Exec=@installedtestsdir@/@exe@
++Exec=@installedtestsdir@/@exe@ @noninteractive_arguments@

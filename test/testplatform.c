@@ -11,6 +11,7 @@
 */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 /*
  * Watcom C flags these as Warning 201: "Unreachable code" if you just
@@ -43,7 +44,7 @@ SDL_COMPILE_TIME_ASSERT(SDL_MIN_SINT64, SDL_MIN_SINT64 == ~0x7fffffffffffffffll)
 SDL_COMPILE_TIME_ASSERT(SDL_MAX_UINT64, SDL_MAX_UINT64 == 18446744073709551615ull);
 SDL_COMPILE_TIME_ASSERT(SDL_MIN_UINT64, SDL_MIN_UINT64 == 0);
 
-int TestTypes(SDL_bool verbose)
+static int TestTypes(SDL_bool verbose)
 {
     int error = 0;
 
@@ -78,7 +79,7 @@ int TestTypes(SDL_bool verbose)
     return error ? 1 : 0;
 }
 
-int TestEndian(SDL_bool verbose)
+static int TestEndian(SDL_bool verbose)
 {
     int error = 0;
     Uint16 value = 0x1234;
@@ -356,10 +357,10 @@ static LL_Test LL_Tests[] = {
     { "_uallrem", &TST_uallrem, 0x7FFFFFFEFFFFFFF0ll, 0x0000FFFFFFFFFFFEll, 0, 0x0000FFFF0000FFEEll },
     { "_uallrem", &TST_uallrem, 0x7FFFFFFEFFFFFFF0ll, 0x7FFFFFFEFFFFFFF0ll, 0, 0x0000000000000000ll },
 
-    { NULL }
+    { NULL, NULL, 0, 0, 0, 0 }
 };
 
-int Test64Bit(SDL_bool verbose)
+static int Test64Bit(SDL_bool verbose)
 {
     LL_Test *t;
     int failed = 0;
@@ -385,12 +386,11 @@ int Test64Bit(SDL_bool verbose)
     return failed ? 1 : 0;
 }
 
-int TestCPUInfo(SDL_bool verbose)
+static int TestCPUInfo(SDL_bool verbose)
 {
     if (verbose) {
         SDL_Log("CPU count: %d\n", SDL_GetCPUCount());
         SDL_Log("CPU cache line size: %d\n", SDL_GetCPUCacheLineSize());
-        SDL_Log("RDTSC %s\n", SDL_HasRDTSC() ? "detected" : "not detected");
         SDL_Log("AltiVec %s\n", SDL_HasAltiVec() ? "detected" : "not detected");
         SDL_Log("MMX %s\n", SDL_HasMMX() ? "detected" : "not detected");
         SDL_Log("SSE %s\n", SDL_HasSSE() ? "detected" : "not detected");
@@ -410,7 +410,7 @@ int TestCPUInfo(SDL_bool verbose)
     return 0;
 }
 
-int TestAssertions(SDL_bool verbose)
+static int TestAssertions(SDL_bool verbose)
 {
     SDL_assert(1);
     SDL_assert_release(1);
@@ -440,15 +440,40 @@ int TestAssertions(SDL_bool verbose)
 
 int main(int argc, char *argv[])
 {
+    int i;
     SDL_bool verbose = SDL_TRUE;
     int status = 0;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    if (argv[1] && (SDL_strcmp(argv[1], "-q") == 0)) {
-        verbose = SDL_FALSE;
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (SDL_strcmp(argv[i], "-q") == 0) {
+                verbose = SDL_FALSE;
+                consumed = 1;
+            }
+        }
+        if (consumed <= 0) {
+            static const char *options[] = { "[-q]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            return 1;
+        }
+
+        i += consumed;
     }
+
     if (verbose) {
         SDL_Log("This system is running %s\n", SDL_GetPlatform());
     }
@@ -458,6 +483,8 @@ int main(int argc, char *argv[])
     status += Test64Bit(verbose);
     status += TestCPUInfo(verbose);
     status += TestAssertions(verbose);
+
+    SDLTest_CommonDestroyState(state);
 
     return status;
 }

@@ -17,10 +17,11 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 #define NUMTHREADS 10
 
-static SDL_atomic_t time_for_threads_to_die[NUMTHREADS];
+static SDL_AtomicInt time_for_threads_to_die[NUMTHREADS];
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -34,7 +35,7 @@ static int SDLCALL
 SubThreadFunc(void *data)
 {
     while (!*(int volatile *)data) {
-        ; /* SDL_Delay(10); */ /* do nothing */
+        SDL_Delay(10);
     }
     return 0;
 }
@@ -51,7 +52,7 @@ ThreadFunc(void *data)
 
     for (i = 0; i < NUMTHREADS; i++) {
         char name[64];
-        (void)SDL_snprintf(name, sizeof name, "Child%d_%d", tid, i);
+        (void)SDL_snprintf(name, sizeof(name), "Child%d_%d", tid, i);
         flags[i] = 0;
         sub_threads[i] = SDL_CreateThread(SubThreadFunc, name, &flags[i]);
     }
@@ -76,6 +77,13 @@ int main(int argc, char *argv[])
 {
     SDL_Thread *threads[NUMTHREADS];
     int i;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -86,10 +94,15 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        SDLTest_CommonDestroyState(state);
+        return 1;
+    }
+
     (void)signal(SIGSEGV, SIG_DFL);
     for (i = 0; i < NUMTHREADS; i++) {
         char name[64];
-        (void)SDL_snprintf(name, sizeof name, "Parent%d", i);
+        (void)SDL_snprintf(name, sizeof(name), "Parent%d", i);
         SDL_AtomicSet(&time_for_threads_to_die[i], 0);
         threads[i] = SDL_CreateThread(ThreadFunc, name, (void *)(uintptr_t)i);
 
@@ -107,5 +120,6 @@ int main(int argc, char *argv[])
         SDL_WaitThread(threads[i], NULL);
     }
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     return 0;
 }

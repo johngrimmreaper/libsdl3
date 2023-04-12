@@ -61,10 +61,10 @@ static char *GetAppName(void)
     char linkfile[1024];
     int linksize;
 
-#if defined(__LINUX__)
-    (void)SDL_snprintf(procfile, sizeof procfile, "/proc/%d/exe", getpid());
+#ifdef __LINUX__
+    (void)SDL_snprintf(procfile, sizeof(procfile), "/proc/%d/exe", getpid());
 #elif defined(__FREEBSD__)
-    (void)SDL_snprintf(procfile, sizeof procfile, "/proc/%d/file", getpid());
+    (void)SDL_snprintf(procfile, sizeof(procfile), "/proc/%d/file", getpid());
 #endif
     linksize = readlink(procfile, linkfile, sizeof(linkfile) - 1);
     if (linksize > 0) {
@@ -276,7 +276,8 @@ static SDL_bool FcitxCreateInputContext(SDL_DBusContext *dbus, const char *appna
 {
     const char *program = "program";
     SDL_bool retval = SDL_FALSE;
-    if (dbus->session_conn) {
+
+    if (dbus && dbus->session_conn) {
         DBusMessage *msg = dbus->message_new_method_call(FCITX_DBUS_SERVICE, FCITX_IM_DBUS_PATH, FCITX_IM_DBUS_INTERFACE, "CreateInputContext");
         if (msg) {
             DBusMessage *reply = NULL;
