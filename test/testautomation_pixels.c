@@ -3,6 +3,7 @@
  */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+#include "testautomation_suites.h"
 
 /* Test case functions */
 
@@ -112,8 +113,7 @@ static const char *g_invalidPixelFormatsVerbose[] = {
 static int pixels_allocFreeFormat(void *arg)
 {
     const char *unknownFormat = "SDL_PIXELFORMAT_UNKNOWN";
-    const char *expectedError = "Parameter 'format' is invalid";
-    const char *expectedError2 = "Unknown pixel format";
+    const char *expectedError = "Unknown pixel format";
     const char *error;
     int i;
     Uint32 format;
@@ -178,8 +178,8 @@ static int pixels_allocFreeFormat(void *arg)
         SDLTest_AssertPass("Call to SDL_GetError()");
         SDLTest_AssertCheck(error != NULL, "Validate that error message was not NULL");
         if (error != NULL) {
-            SDLTest_AssertCheck(SDL_strcmp(error, expectedError2) == 0,
-                                "Validate error message, expected: '%s', got: '%s'", expectedError2, error);
+            SDLTest_AssertCheck(SDL_strcmp(error, expectedError) == 0,
+                                "Validate error message, expected: '%s', got: '%s'", expectedError, error);
         }
     }
 
@@ -190,11 +190,7 @@ static int pixels_allocFreeFormat(void *arg)
     SDLTest_AssertPass("Call to SDL_DestroyPixelFormat(NULL)");
     error = SDL_GetError();
     SDLTest_AssertPass("Call to SDL_GetError()");
-    SDLTest_AssertCheck(error != NULL, "Validate that error message was not NULL");
-    if (error != NULL) {
-        SDLTest_AssertCheck(SDL_strcmp(error, expectedError) == 0,
-                            "Validate error message, expected: '%s', got: '%s'", expectedError, error);
-    }
+    SDLTest_AssertCheck(error == NULL || error[0] == '\0', "Validate that error message is empty");
 
     return TEST_COMPLETED;
 }
@@ -274,8 +270,7 @@ static int pixels_getPixelFormatName(void *arg)
  */
 static int pixels_allocFreePalette(void *arg)
 {
-    const char *expectedError1 = "Parameter 'ncolors' is invalid";
-    const char *expectedError2 = "Parameter 'palette' is invalid";
+    const char *expectedError = "Parameter 'ncolors' is invalid";
     const char *error;
     int variation;
     int i;
@@ -335,8 +330,8 @@ static int pixels_allocFreePalette(void *arg)
         SDLTest_AssertPass("Call to SDL_GetError()");
         SDLTest_AssertCheck(error != NULL, "Validate that error message was not NULL");
         if (error != NULL) {
-            SDLTest_AssertCheck(SDL_strcmp(error, expectedError1) == 0,
-                                "Validate error message, expected: '%s', got: '%s'", expectedError1, error);
+            SDLTest_AssertCheck(SDL_strcmp(error, expectedError) == 0,
+                                "Validate error message, expected: '%s', got: '%s'", expectedError, error);
         }
     }
 
@@ -347,11 +342,7 @@ static int pixels_allocFreePalette(void *arg)
     SDLTest_AssertPass("Call to SDL_DestroyPalette(NULL)");
     error = SDL_GetError();
     SDLTest_AssertPass("Call to SDL_GetError()");
-    SDLTest_AssertCheck(error != NULL, "Validate that error message was not NULL");
-    if (error != NULL) {
-        SDLTest_AssertCheck(SDL_strcmp(error, expectedError2) == 0,
-                            "Validate error message, expected: '%s', got: '%s'", expectedError2, error);
-    }
+    SDLTest_AssertCheck(error == NULL || error[0] == '\0', "Validate that error message is empty");
 
     return TEST_COMPLETED;
 }

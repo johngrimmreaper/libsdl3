@@ -50,6 +50,7 @@ struct SDL_HIDAPI_DeviceDriver;
 
 typedef struct SDL_HIDAPI_Device
 {
+    const void *magic;
     char *name;
     char *path;
     Uint16 vendor_id;
@@ -71,7 +72,7 @@ typedef struct SDL_HIDAPI_Device
     void *context;
     SDL_mutex *dev_lock;
     SDL_hid_device *dev;
-    SDL_atomic_t rumble_pending;
+    SDL_AtomicInt rumble_pending;
     int num_joysticks;
     SDL_JoystickID *joysticks;
 

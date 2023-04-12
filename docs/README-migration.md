@@ -46,6 +46,11 @@ begin_code.h and close_code.h in the public headers have been renamed to SDL_beg
 
 The vi format comments have been removed from source code. Vim users can use the [editorconfig plugin](https://github.com/editorconfig/editorconfig-vim) to automatically set tab spacing for the SDL coding style.
 
+## SDL_atomic.h
+
+The following structures have been renamed:
+- SDL_atomic_t => SDL_AtomicInt
+
 ## SDL_audio.h
 
 SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_InitSubSytem() and SDL_QuitSubSytem() with SDL_INIT_AUDIO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_AUDIO_DRIVER hint.
@@ -1031,14 +1036,7 @@ Rather than iterating over displays using display index, there is a new function
 }
 ```
 
-SDL_CreateWindow() has been simplified and no longer takes a window position. You can set a position for your window during window creation by creating it hidden and setting the position before showing it:
-```c
-{
-    SDL_Window *window = SDL_CreateWindow("Test", 640, 480, SDL_WINDOW_HIDDEN);
-    SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-    SDL_ShowWindow(window);
-}
-```
+SDL_CreateWindow() has been simplified and no longer takes a window position. You can use SDL_CreateWindowWithPosition() if you need to set the window position when creating it.
 
 The SDL_WINDOWPOS_UNDEFINED_DISPLAY() and SDL_WINDOWPOS_CENTERED_DISPLAY() macros take a display ID instead of display index. The display ID 0 has a special meaning in this case, and is used to indicate the primary display.
 
@@ -1087,6 +1085,8 @@ SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns 0
 
 SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
 
+The SDL_WINDOW_TOOLTIP and SDL_WINDOW_POPUP_MENU window flags are now supported on Windows, Mac (Cocoa), X11, and Wayland. Creating windows with these flags must happen via the `SDL_CreatePopupWindow()` function. This function requires passing in the handle to a valid parent window for the popup, and the popup window is positioned relative to the parent.
+
 The following functions have been renamed:
 * SDL_GetClosestDisplayMode() => SDL_GetClosestFullscreenDisplayMode()
 * SDL_GetPointDisplayIndex() => SDL_GetDisplayForPoint()
@@ -1115,4 +1115,3 @@ SDL_Vulkan_GetInstanceExtensions() no longer takes a window parameter.
 SDL_Vulkan_GetVkGetInstanceProcAddr() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to PFN_vkGetInstanceProcAddr.
 
 SDL_Vulkan_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
-

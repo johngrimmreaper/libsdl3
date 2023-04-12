@@ -16,6 +16,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 static void
 print_mode(const char *prefix, const SDL_DisplayMode *mode)
@@ -35,9 +36,21 @@ int main(int argc, char *argv[])
     const SDL_DisplayMode **modes;
     const SDL_DisplayMode *mode;
     int num_displays, i;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
 
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -75,15 +88,16 @@ int main(int argc, char *argv[])
 
         for (m = 0; m < num_modes; m++) {
             char prefix[64];
-            (void)SDL_snprintf(prefix, sizeof prefix, "    MODE %d", m);
-            print_mode(prefix, modes[i]);
+            (void)SDL_snprintf(prefix, sizeof(prefix), "    MODE %d", m);
+            print_mode(prefix, modes[m]);
         }
-        SDL_free(modes);
+        SDL_free((void*)modes);
 
         SDL_Log("\n");
     }
     SDL_free(displays);
 
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     return 0;
 }

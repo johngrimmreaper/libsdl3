@@ -34,9 +34,9 @@ static GL_Context ctx;
 
 static int LoadContext(GL_Context *data)
 {
-#if SDL_VIDEO_DRIVER_UIKIT
+#ifdef SDL_VIDEO_DRIVER_UIKIT
 #define __SDL_NOGETPROCADDR__
-#elif SDL_VIDEO_DRIVER_ANDROID
+#elif defined(SDL_VIDEO_DRIVER_ANDROID)
 #define __SDL_NOGETPROCADDR__
 #endif
 
@@ -45,7 +45,7 @@ static int LoadContext(GL_Context *data)
 #else
 #define SDL_PROC(ret, func, params)                                                         \
     do {                                                                                    \
-        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                                          \
+        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                 \
         if (!data->func) {                                                                  \
             return SDL_SetError("Couldn't load GL function %s: %s", #func, SDL_GetError()); \
         }                                                                                   \
@@ -58,8 +58,7 @@ static int LoadContext(GL_Context *data)
 }
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
+static void quit(int rc)
 {
     if (context) {
         /* SDL_GL_MakeCurrent(0, NULL); */ /* doesn't do anything */
@@ -69,8 +68,7 @@ quit(int rc)
     exit(rc);
 }
 
-static void
-Render()
+static void Render(void)
 {
     static float color[8][3] = {
         { 1.0, 1.0, 0.0 },
@@ -94,7 +92,7 @@ Render()
     };
 
     /* Do our drawing, too. */
-    ctx.glClearColor(0.0, 0.0, 0.0, 1.0);
+    ctx.glClearColor(0.0, 0.0, 0.0, 0.0 /* used with --transparent */);
     ctx.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ctx.glBegin(GL_QUADS);
@@ -212,9 +210,6 @@ int main(int argc, char *argv[])
     int interval = 0;
     int ret_interval = 0;
 
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     /* Initialize parameters */
     fsaa = 0;
     accel = -1;
@@ -224,6 +219,10 @@ int main(int argc, char *argv[])
     if (state == NULL) {
         return 1;
     }
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     for (i = 1; i < argc;) {
         int consumed;
 

@@ -105,7 +105,7 @@ static void SDLCALL SDL_TouchMouseEventsChanged(void *userdata, const char *name
     mouse->touch_mouse_events = SDL_GetStringBoolean(hint, SDL_TRUE);
 }
 
-#if defined(__vita__)
+#ifdef __vita__
 static void SDLCALL SDL_VitaTouchMouseDeviceChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
@@ -186,7 +186,7 @@ int SDL_InitMouse(void)
     SDL_AddHintCallback(SDL_HINT_TOUCH_MOUSE_EVENTS,
                         SDL_TouchMouseEventsChanged, mouse);
 
-#if defined(__vita__)
+#ifdef __vita__
     SDL_AddHintCallback(SDL_HINT_VITA_TOUCH_MOUSE_DEVICE,
                         SDL_VitaTouchMouseDeviceChanged, mouse);
 #endif
@@ -503,10 +503,8 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
     }
 
     /* SDL_HINT_TOUCH_MOUSE_EVENTS: if not set, discard synthetic mouse events coming from platform layer */
-    if (mouse->touch_mouse_events == 0) {
-        if (mouseID == SDL_TOUCH_MOUSEID) {
-            return 0;
-        }
+    if (!mouse->touch_mouse_events && mouseID == SDL_TOUCH_MOUSEID) {
+        return 0;
     }
 
     if (mouseID != SDL_TOUCH_MOUSEID && mouse->relative_mode_warp) {
@@ -549,31 +547,33 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
         }
     }
 
-    /* Ignore relative motion when first positioning the mouse */
-    if (!mouse->has_position) {
-        mouse->x = x;
-        mouse->y = y;
-        mouse->has_position = SDL_TRUE;
-    } else if (xrel == 0.0f && yrel == 0.0f) { /* Drop events that don't change state */
-#ifdef DEBUG_MOUSE
-        SDL_Log("Mouse event didn't change state - dropped!\n");
-#endif
-        return 0;
-    }
-
     /* Ignore relative motion positioning the first touch */
     if (mouseID == SDL_TOUCH_MOUSEID && !GetButtonState(mouse, SDL_TRUE)) {
         xrel = 0.0f;
         yrel = 0.0f;
     }
 
-    /* Update internal mouse coordinates */
-    if (!mouse->relative_mode) {
+    if (mouse->has_position) {
+        if (xrel == 0.0f && yrel == 0.0f) { /* Drop events that don't change state */
+#ifdef DEBUG_MOUSE
+            SDL_Log("Mouse event didn't change state - dropped!\n");
+#endif
+            return 0;
+        }
+
+        /* Update internal mouse coordinates */
+        if (!mouse->relative_mode) {
+            mouse->x = x;
+            mouse->y = y;
+        } else {
+            mouse->x += xrel;
+            mouse->y += yrel;
+            ConstrainMousePosition(mouse, window, &mouse->x, &mouse->y);
+        }
+    } else {
         mouse->x = x;
         mouse->y = y;
-    } else {
-        mouse->x += xrel;
-        mouse->y += yrel;
+        mouse->has_position = SDL_TRUE;
     }
 
     mouse->xdelta += xrel;

@@ -11,6 +11,17 @@
   freely.
 */
 
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
+
+/* Hack to avoid dynapi renaming */
+#include "../src/dynapi/SDL_dynapi.h"
+#ifdef SDL_DYNAMIC_API
+#undef SDL_DYNAMIC_API
+#endif
+#define SDL_DYNAMIC_API 0
+
 #include "../src/SDL_internal.h"
 
 #include <stdio.h>
@@ -19,7 +30,7 @@
 static int run_test(void);
 
 /* FIXME: Need CMake tests for this */
-#if (HAVE_LIBUDEV_H || defined(SDL_JOYSTICK_LINUX)) && HAVE_LINUX_INPUT_H
+#if (defined(HAVE_LIBUDEV_H) || defined(SDL_JOYSTICK_LINUX)) && defined(HAVE_LINUX_INPUT_H)
 
 #include <stdint.h>
 
@@ -970,7 +981,7 @@ run_test(void)
             unsigned long abs[NBITS(ABS_MAX)];
             unsigned long keys[NBITS(KEY_MAX)];
             unsigned long rel[NBITS(REL_MAX)];
-        } caps = {};
+        } caps;
 
         printf("%s...\n", t->name);
 
@@ -1038,5 +1049,22 @@ run_test(void)
 
 int main(int argc, char *argv[])
 {
-    return run_test() ? 0 : 1;
+    int result;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
+
+    result = run_test() ? 0 : 1;
+
+    SDLTest_CommonDestroyState(state);
+    return result;
 }

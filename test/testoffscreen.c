@@ -21,6 +21,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 #include <SDL3/SDL_opengl.h>
 
 static SDL_Renderer *renderer = NULL;
@@ -61,7 +62,7 @@ static void save_surface_to_bmp(void)
 
     SDL_RenderReadPixels(renderer, NULL, pixel_format, surface->pixels, surface->pitch);
 
-    (void)SDL_snprintf(file, sizeof file, "SDL_window%" SDL_PRIs32 "-%8.8d.bmp",
+    (void)SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIs32 "-%8.8d.bmp",
                        SDL_GetWindowID(window), ++frame_number);
 
     SDL_SaveBMP(surface, file);
@@ -97,9 +98,21 @@ int main(int argc, char *argv[])
     Uint64 then, now;
     Uint32 frames;
 #endif
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
 
     /* Force the offscreen renderer, if it cannot be created then fail out */
     SDL_SetHint("SDL_VIDEO_DRIVER", "offscreen");
@@ -113,8 +126,7 @@ int main(int argc, char *argv[])
     window = SDL_CreateWindow("Offscreen Test", width, height, 0);
 
     if (window == NULL) {
-        SDL_Log("Couldn't create window: %s\n",
-                SDL_GetError());
+        SDL_Log("Couldn't create window: %s\n", SDL_GetError());
         return SDL_FALSE;
     }
 
@@ -160,6 +172,7 @@ int main(int argc, char *argv[])
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
 
     return 0;
 }
