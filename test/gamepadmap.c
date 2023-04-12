@@ -18,6 +18,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 #include "testutils.h"
 
 /* Define this for verbose output while mapping gamepads */
@@ -593,7 +594,7 @@ WatchJoystick(SDL_Joystick *joystick)
             char crc_string[5];
 
             SDL_strlcat(mapping, "crc:", SDL_arraysize(mapping));
-            (void)SDL_snprintf(crc_string, sizeof crc_string, "%.4x", crc);
+            (void)SDL_snprintf(crc_string, sizeof(crc_string), "%.4x", crc);
             SDL_strlcat(mapping, crc_string, SDL_arraysize(mapping));
             SDL_strlcat(mapping, ",", SDL_arraysize(mapping));
         }
@@ -666,17 +667,17 @@ WatchJoystick(SDL_Joystick *joystick)
             pszElement[0] = '\0';
             switch (pBinding->bindType) {
             case SDL_GAMEPAD_BINDTYPE_BUTTON:
-                (void)SDL_snprintf(pszElement, sizeof pszElement, "b%d", pBinding->value.button);
+                (void)SDL_snprintf(pszElement, sizeof(pszElement), "b%d", pBinding->value.button);
                 break;
             case SDL_GAMEPAD_BINDTYPE_AXIS:
                 if (pBinding->value.axis.axis_min == 0 && pBinding->value.axis.axis_max == SDL_JOYSTICK_AXIS_MIN) {
                     /* The negative half axis */
-                    (void)SDL_snprintf(pszElement, sizeof pszElement, "-a%d", pBinding->value.axis.axis);
+                    (void)SDL_snprintf(pszElement, sizeof(pszElement), "-a%d", pBinding->value.axis.axis);
                 } else if (pBinding->value.axis.axis_min == 0 && pBinding->value.axis.axis_max == SDL_JOYSTICK_AXIS_MAX) {
                     /* The positive half axis */
-                    (void)SDL_snprintf(pszElement, sizeof pszElement, "+a%d", pBinding->value.axis.axis);
+                    (void)SDL_snprintf(pszElement, sizeof(pszElement), "+a%d", pBinding->value.axis.axis);
                 } else {
-                    (void)SDL_snprintf(pszElement, sizeof pszElement, "a%d", pBinding->value.axis.axis);
+                    (void)SDL_snprintf(pszElement, sizeof(pszElement), "a%d", pBinding->value.axis.axis);
                     if (pBinding->value.axis.axis_min > pBinding->value.axis.axis_max) {
                         /* Invert the axis */
                         SDL_strlcat(pszElement, "~", SDL_arraysize(pszElement));
@@ -684,7 +685,7 @@ WatchJoystick(SDL_Joystick *joystick)
                 }
                 break;
             case SDL_GAMEPAD_BINDTYPE_HAT:
-                (void)SDL_snprintf(pszElement, sizeof pszElement, "h%d.%d", pBinding->value.hat.hat, pBinding->value.hat.hat_mask);
+                (void)SDL_snprintf(pszElement, sizeof(pszElement), "h%d.%d", pBinding->value.hat.hat, pBinding->value.hat.hat_mask);
                 break;
             default:
                 SDL_assert(!"Unknown bind type");
@@ -729,20 +730,43 @@ int main(int argc, char *argv[])
     SDL_JoystickID *joysticks;
     int joystick_index;
     SDL_Joystick *joystick = NULL;
+    SDLTest_CommonState *state;
 
     SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
 
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (state == NULL) {
+        return 1;
+    }
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (SDL_strcmp(argv[i], "--bind-touchpad") == 0) {
+                bind_touchpad = SDL_TRUE;
+                consumed = 1;
+            }
+        }
+        if (consumed <= 0) {
+            static const char *options[] = { "[--bind-touchpad]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            exit(1);
+        }
+
+        i += consumed;
+    }
 
     /* Initialize SDL (Note: video is required to start event loop) */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         exit(1);
-    }
-
-    if (argv[1] && SDL_strcmp(argv[1], "--bind-touchpad") == 0) {
-        bind_touchpad = SDL_TRUE;
     }
 
     /* Create a window to display joystick axis position */
@@ -829,6 +853,8 @@ int main(int argc, char *argv[])
     SDL_DestroyWindow(window);
 
     SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
+
+    SDLTest_CommonDestroyState(state);
 
     return 0;
 }

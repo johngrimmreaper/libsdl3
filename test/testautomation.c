@@ -20,6 +20,33 @@
 
 static SDLTest_CommonState *state;
 
+/* All test suites */
+static SDLTest_TestSuiteReference *testSuites[] = {
+    &audioTestSuite,
+    &clipboardTestSuite,
+    &eventsTestSuite,
+    &guidTestSuite,
+    &hintsTestSuite,
+    &intrinsicsTestSuite,
+    &joystickTestSuite,
+    &keyboardTestSuite,
+    &mainTestSuite,
+    &mathTestSuite,
+    &mouseTestSuite,
+    &pixelsTestSuite,
+    &platformTestSuite,
+    &rectTestSuite,
+    &renderTestSuite,
+    &rwopsTestSuite,
+    &sdltestTestSuite,
+    &stdlibTestSuite,
+    &surfaceTestSuite,
+    &syswmTestSuite,
+    &timerTestSuite,
+    &videoTestSuite,
+    NULL
+};
+
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
 quit(int rc)
@@ -40,10 +67,13 @@ int main(int argc, char *argv[])
     int list = 0;
 
     /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     if (state == NULL) {
         return 1;
     }
+
+    /* No need of windows (or update testautomation_mouse.c:mouse_getMouseFocus() */
+    state->num_windows = 0;
 
     /* Parse commandline */
     for (i = 1; i < argc;) {

@@ -14,6 +14,7 @@ extern SDLTest_TestSuiteReference clipboardTestSuite;
 extern SDLTest_TestSuiteReference eventsTestSuite;
 extern SDLTest_TestSuiteReference guidTestSuite;
 extern SDLTest_TestSuiteReference hintsTestSuite;
+extern SDLTest_TestSuiteReference intrinsicsTestSuite;
 extern SDLTest_TestSuiteReference joystickTestSuite;
 extern SDLTest_TestSuiteReference keyboardTestSuite;
 extern SDLTest_TestSuiteReference mainTestSuite;
@@ -30,31 +31,5 @@ extern SDLTest_TestSuiteReference surfaceTestSuite;
 extern SDLTest_TestSuiteReference syswmTestSuite;
 extern SDLTest_TestSuiteReference timerTestSuite;
 extern SDLTest_TestSuiteReference videoTestSuite;
-
-/* All test suites */
-static SDLTest_TestSuiteReference *testSuites[] = {
-    &audioTestSuite,
-    &clipboardTestSuite,
-    &eventsTestSuite,
-    &guidTestSuite,
-    &hintsTestSuite,
-    &joystickTestSuite,
-    &keyboardTestSuite,
-    &mainTestSuite,
-    &mathTestSuite,
-    &mouseTestSuite,
-    &pixelsTestSuite,
-    &platformTestSuite,
-    &rectTestSuite,
-    &renderTestSuite,
-    &rwopsTestSuite,
-    &sdltestTestSuite,
-    &stdlibTestSuite,
-    &surfaceTestSuite,
-    &syswmTestSuite,
-    &timerTestSuite,
-    &videoTestSuite,
-    NULL
-};
 
 #endif

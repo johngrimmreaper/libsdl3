@@ -28,8 +28,7 @@ static float mouseX, mouseY;
 static SDL_FRect rect;
 static SDL_Event event;
 
-static void
-DrawRects(SDL_Renderer *renderer)
+static void DrawRects(SDL_Renderer *renderer)
 {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     rect.x = mouseX;
@@ -37,8 +36,7 @@ DrawRects(SDL_Renderer *renderer)
     SDL_RenderFillRect(renderer, &rect);
 }
 
-static void
-loop()
+static void loop(void)
 {
     /* Check for events */
     while (SDL_PollEvent(&event)) {
@@ -97,9 +95,12 @@ int main(int argc, char *argv[])
     if (state == NULL) {
         return 1;
     }
-    for (i = 1; i < argc; ++i) {
-        SDLTest_CommonArg(state, i);
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
     }
+
     if (!SDLTest_CommonInit(state)) {
         return 2;
     }
