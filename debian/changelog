@@ -1,3 +1,10 @@
+libsdl3 (3~git20230412+dfsg-2) experimental; urgency=medium
+
+  [ Pino Toscano ]
+  * d/libsdl3-0.symbols: Mark Linux symbols as such
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 12 Apr 2023 13:58:45 +0100
+
 libsdl3 (3~git20230412+dfsg-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-1424-gec053ec4f
