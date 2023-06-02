@@ -1,3 +1,9 @@
+libsdl3 (3~git20230601+dfsg-1) UNRELEASED; urgency=medium
+
+  * New upstream snapshot prerelease-3.0.0-1660-gf082c68b2
+
+ -- Simon McVittie <smcv@debian.org>  Fri, 02 Jun 2023 11:35:22 +0100
+
 libsdl3 (3~git20230412+dfsg-2) experimental; urgency=medium
 
   [ Pino Toscano ]
