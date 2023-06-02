@@ -22,7 +22,9 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_BlitSurfaceScaled@SDL3_0.0.0 3~
  SDL_BlitSurfaceUnchecked@SDL3_0.0.0 3~
  SDL_BlitSurfaceUncheckedScaled@SDL3_0.0.0 3~
+ SDL_BroadcastCondition@SDL3_0.0.0 3~
  SDL_CaptureMouse@SDL3_0.0.0 3~
+ SDL_CleanupTLS@SDL3_0.0.0 3~
  SDL_ClearAudioStream@SDL3_0.0.0 3~
  SDL_ClearComposition@SDL3_0.0.0 3~
  SDL_ClearError@SDL3_0.0.0 3~
@@ -33,10 +35,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_CloseJoystick@SDL3_0.0.0 3~
  SDL_CloseSensor@SDL3_0.0.0 3~
  SDL_ComposeCustomBlendMode@SDL3_0.0.0 3~
- SDL_CondBroadcast@SDL3_0.0.0 3~
- SDL_CondSignal@SDL3_0.0.0 3~
- SDL_CondWait@SDL3_0.0.0 3~
- SDL_CondWaitTimeout@SDL3_0.0.0 3~
  SDL_ConvertAudioSamples@SDL3_0.0.0 3~
  SDL_ConvertEventToRenderCoordinates@SDL3_0.0.0 3~
  SDL_ConvertPixels@SDL3_0.0.0 3~
@@ -44,13 +42,14 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ConvertSurfaceFormat@SDL3_0.0.0 3~
  SDL_CreateAudioStream@SDL3_0.0.0 3~
  SDL_CreateColorCursor@SDL3_0.0.0 3~
- SDL_CreateCond@SDL3_0.0.0 3~
+ SDL_CreateCondition@SDL3_0.0.0 3~
  SDL_CreateCursor@SDL3_0.0.0 3~
  SDL_CreateMutex@SDL3_0.0.0 3~
  SDL_CreatePalette@SDL3_0.0.0 3~
  SDL_CreatePixelFormat@SDL3_0.0.0 3~
  SDL_CreatePopupWindow@SDL3_0.0.0 3~
  SDL_CreateRW@SDL3_0.0.0 3~
+ SDL_CreateRWLock@SDL3_0.0.0 3~
  SDL_CreateRenderer@SDL3_0.0.0 3~
  SDL_CreateSemaphore@SDL3_0.0.0 3~
  SDL_CreateShapedWindow@SDL3_0.0.0 3~
@@ -58,6 +57,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_CreateSurface@SDL3_0.0.0 3~
  SDL_CreateSurfaceFrom@SDL3_0.0.0 3~
  SDL_CreateSystemCursor@SDL3_0.0.0 3~
+ SDL_CreateTLS@SDL3_0.0.0 3~
  SDL_CreateTexture@SDL3_0.0.0 3~
  SDL_CreateTextureFromSurface@SDL3_0.0.0 3~
  SDL_CreateThread@SDL3_0.0.0 3~
@@ -74,12 +74,13 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_DelayNS@SDL3_0.0.0 3~
  SDL_DequeueAudio@SDL3_0.0.0 3~
  SDL_DestroyAudioStream@SDL3_0.0.0 3~
- SDL_DestroyCond@SDL3_0.0.0 3~
+ SDL_DestroyCondition@SDL3_0.0.0 3~
  SDL_DestroyCursor@SDL3_0.0.0 3~
  SDL_DestroyMutex@SDL3_0.0.0 3~
  SDL_DestroyPalette@SDL3_0.0.0 3~
  SDL_DestroyPixelFormat@SDL3_0.0.0 3~
  SDL_DestroyRW@SDL3_0.0.0 3~
+ SDL_DestroyRWLock@SDL3_0.0.0 3~
  SDL_DestroyRenderer@SDL3_0.0.0 3~
  SDL_DestroySemaphore@SDL3_0.0.0 3~
  SDL_DestroySurface@SDL3_0.0.0 3~
@@ -140,10 +141,13 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetAudioDriver@SDL3_0.0.0 3~
  SDL_GetAudioStreamAvailable@SDL3_0.0.0 3~
  SDL_GetAudioStreamData@SDL3_0.0.0 3~
+ SDL_GetAudioStreamFormat@SDL3_0.0.0 3~
  SDL_GetBasePath@SDL3_0.0.0 3~
  SDL_GetCPUCacheLineSize@SDL3_0.0.0 3~
  SDL_GetCPUCount@SDL3_0.0.0 3~
+ SDL_GetClipboardData@SDL3_0.0.0 3~
  SDL_GetClipboardText@SDL3_0.0.0 3~
+ SDL_GetClipboardUserdata@SDL3_0.0.0 3~
  SDL_GetClosestFullscreenDisplayMode@SDL3_0.0.0 3~
  SDL_GetCurrentAudioDriver@SDL3_0.0.0 3~
  SDL_GetCurrentDisplayMode@SDL3_0.0.0 3~
@@ -155,6 +159,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetDefaultCursor@SDL3_0.0.0 3~
  SDL_GetDesktopDisplayMode@SDL3_0.0.0 3~
  SDL_GetDisplayBounds@SDL3_0.0.0 3~
+ SDL_GetDisplayContentScale@SDL3_0.0.0 3~
  SDL_GetDisplayForPoint@SDL3_0.0.0 3~
  SDL_GetDisplayForRect@SDL3_0.0.0 3~
  SDL_GetDisplayForWindow@SDL3_0.0.0 3~
@@ -262,6 +267,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetNumTouchFingers@SDL3_0.0.0 3~
  SDL_GetNumVideoDrivers@SDL3_0.0.0 3~
  SDL_GetOriginalMemoryFunctions@SDL3_0.0.0 3~
+ SDL_GetPath@SDL3_0.0.0 3~
  SDL_GetPerformanceCounter@SDL3_0.0.0 3~
  SDL_GetPerformanceFrequency@SDL3_0.0.0 3~
  SDL_GetPixelFormatEnumForMasks@SDL3_0.0.0 3~
@@ -298,13 +304,13 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetRenderVSync@SDL3_0.0.0 3~
  SDL_GetRenderViewport@SDL3_0.0.0 3~
  SDL_GetRenderWindow@SDL3_0.0.0 3~
- SDL_GetRenderWindowSize@SDL3_0.0.0 3~
  SDL_GetRenderer@SDL3_0.0.0 3~
  SDL_GetRendererInfo@SDL3_0.0.0 3~
  SDL_GetRevision@SDL3_0.0.0 3~
  SDL_GetScancodeFromKey@SDL3_0.0.0 3~
  SDL_GetScancodeFromName@SDL3_0.0.0 3~
  SDL_GetScancodeName@SDL3_0.0.0 3~
+ SDL_GetSemaphoreValue@SDL3_0.0.0 3~
  SDL_GetSensorData@SDL3_0.0.0 3~
  SDL_GetSensorFromInstanceID@SDL3_0.0.0 3~
  SDL_GetSensorInstanceID@SDL3_0.0.0 3~
@@ -323,6 +329,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetSurfaceColorMod@SDL3_0.0.0 3~
  SDL_GetSystemRAM@SDL3_0.0.0 3~
  SDL_GetSystemTheme@SDL3_0.0.0 3~
+ SDL_GetTLS@SDL3_0.0.0 3~
  SDL_GetTextureAlphaMod@SDL3_0.0.0 3~
  SDL_GetTextureBlendMode@SDL3_0.0.0 3~
  SDL_GetTextureColorMod@SDL3_0.0.0 3~
@@ -340,6 +347,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetVideoDriver@SDL3_0.0.0 3~
  SDL_GetWindowBordersSize@SDL3_0.0.0 3~
  SDL_GetWindowData@SDL3_0.0.0 3~
+ SDL_GetWindowDisplayScale@SDL3_0.0.0 3~
  SDL_GetWindowFlags@SDL3_0.0.0 3~
  SDL_GetWindowFromID@SDL3_0.0.0 3~
  SDL_GetWindowFullscreenMode@SDL3_0.0.0 3~
@@ -353,6 +361,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetWindowMouseRect@SDL3_0.0.0 3~
  SDL_GetWindowOpacity@SDL3_0.0.0 3~
  SDL_GetWindowParent@SDL3_0.0.0 3~
+ SDL_GetWindowPixelDensity@SDL3_0.0.0 3~
  SDL_GetWindowPixelFormat@SDL3_0.0.0 3~
  SDL_GetWindowPosition@SDL3_0.0.0 3~
  SDL_GetWindowSize@SDL3_0.0.0 3~
@@ -394,6 +403,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_HasAVX512F@SDL3_0.0.0 3~
  SDL_HasAVX@SDL3_0.0.0 3~
  SDL_HasAltiVec@SDL3_0.0.0 3~
+ SDL_HasClipboardData@SDL3_0.0.0 3~
  SDL_HasClipboardText@SDL3_0.0.0 3~
  SDL_HasEvent@SDL3_0.0.0 3~
  SDL_HasEvents@SDL3_0.0.0 3~
@@ -435,6 +445,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_LockAudioDevice@SDL3_0.0.0 3~
  SDL_LockJoysticks@SDL3_0.0.0 3~
  SDL_LockMutex@SDL3_0.0.0 3~
+ SDL_LockRWLockForReading@SDL3_0.0.0 3~
+ SDL_LockRWLockForWriting@SDL3_0.0.0 3~
  SDL_LockSurface@SDL3_0.0.0 3~
  SDL_LockTexture@SDL3_0.0.0 3~
  SDL_LockTextureToSurface@SDL3_0.0.0 3~
@@ -480,6 +492,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_PeepEvents@SDL3_0.0.0 3~
  SDL_PlayAudioDevice@SDL3_0.0.0 3~
  SDL_PollEvent@SDL3_0.0.0 3~
+ SDL_PostSemaphore@SDL3_0.0.0 3~
  SDL_PremultiplyAlpha@SDL3_0.0.0 3~
  SDL_PumpEvents@SDL3_0.0.0 3~
  SDL_PushEvent@SDL3_0.0.0 3~
@@ -541,14 +554,11 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SaveBMP_RW@SDL3_0.0.0 3~
  SDL_ScreenKeyboardShown@SDL3_0.0.0 3~
  SDL_ScreenSaverEnabled@SDL3_0.0.0 3~
- SDL_SemPost@SDL3_0.0.0 3~
- SDL_SemTryWait@SDL3_0.0.0 3~
- SDL_SemValue@SDL3_0.0.0 3~
- SDL_SemWait@SDL3_0.0.0 3~
- SDL_SemWaitTimeout@SDL3_0.0.0 3~
  SDL_SendGamepadEffect@SDL3_0.0.0 3~
  SDL_SendJoystickEffect@SDL3_0.0.0 3~
  SDL_SetAssertionHandler@SDL3_0.0.0 3~
+ SDL_SetAudioStreamFormat@SDL3_0.0.0 3~
+ SDL_SetClipboardData@SDL3_0.0.0 3~
  SDL_SetClipboardText@SDL3_0.0.0 3~
  SDL_SetCursor@SDL3_0.0.0 3~
  SDL_SetError@SDL3_0.0.0 3~
@@ -588,6 +598,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetSurfaceColorMod@SDL3_0.0.0 3~
  SDL_SetSurfacePalette@SDL3_0.0.0 3~
  SDL_SetSurfaceRLE@SDL3_0.0.0 3~
+ SDL_SetTLS@SDL3_0.0.0 3~
  SDL_SetTextInputRect@SDL3_0.0.0 3~
  SDL_SetTextureAlphaMod@SDL3_0.0.0 3~
  SDL_SetTextureBlendMode@SDL3_0.0.0 3~
@@ -621,24 +632,25 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ShowMessageBox@SDL3_0.0.0 3~
  SDL_ShowSimpleMessageBox@SDL3_0.0.0 3~
  SDL_ShowWindow@SDL3_0.0.0 3~
+ SDL_SignalCondition@SDL3_0.0.0 3~
  SDL_SoftStretch@SDL3_0.0.0 3~
  SDL_SoftStretchLinear@SDL3_0.0.0 3~
  SDL_StartTextInput@SDL3_0.0.0 3~
  SDL_StopTextInput@SDL3_0.0.0 3~
  SDL_SurfaceHasColorKey@SDL3_0.0.0 3~
  SDL_SurfaceHasRLE@SDL3_0.0.0 3~
- SDL_TLSCleanup@SDL3_0.0.0 3~
- SDL_TLSCreate@SDL3_0.0.0 3~
- SDL_TLSGet@SDL3_0.0.0 3~
- SDL_TLSSet@SDL3_0.0.0 3~
  SDL_TextInputActive@SDL3_0.0.0 3~
  SDL_TextInputShown@SDL3_0.0.0 3~
  SDL_ThreadID@SDL3_0.0.0 3~
  SDL_TryLockMutex@SDL3_0.0.0 3~
+ SDL_TryLockRWLockForReading@SDL3_0.0.0 3~
+ SDL_TryLockRWLockForWriting@SDL3_0.0.0 3~
+ SDL_TryWaitSemaphore@SDL3_0.0.0 3~
  SDL_UnloadObject@SDL3_0.0.0 3~
  SDL_UnlockAudioDevice@SDL3_0.0.0 3~
  SDL_UnlockJoysticks@SDL3_0.0.0 3~
  SDL_UnlockMutex@SDL3_0.0.0 3~
+ SDL_UnlockRWLock@SDL3_0.0.0 3~
  SDL_UnlockSurface@SDL3_0.0.0 3~
  SDL_UnlockTexture@SDL3_0.0.0 3~
  SDL_UpdateGamepads@SDL3_0.0.0 3~
@@ -654,8 +666,12 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_Vulkan_GetVkGetInstanceProcAddr@SDL3_0.0.0 3~
  SDL_Vulkan_LoadLibrary@SDL3_0.0.0 3~
  SDL_Vulkan_UnloadLibrary@SDL3_0.0.0 3~
+ SDL_WaitCondition@SDL3_0.0.0 3~
+ SDL_WaitConditionTimeout@SDL3_0.0.0 3~
  SDL_WaitEvent@SDL3_0.0.0 3~
  SDL_WaitEventTimeout@SDL3_0.0.0 3~
+ SDL_WaitSemaphore@SDL3_0.0.0 3~
+ SDL_WaitSemaphoreTimeout@SDL3_0.0.0 3~
  SDL_WaitThread@SDL3_0.0.0 3~
  SDL_WarpMouseGlobal@SDL3_0.0.0 3~
  SDL_WarpMouseInWindow@SDL3_0.0.0 3~
@@ -707,10 +723,13 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_hid_enumerate@SDL3_0.0.0 3~
  SDL_hid_exit@SDL3_0.0.0 3~
  SDL_hid_free_enumeration@SDL3_0.0.0 3~
+ SDL_hid_get_device_info@SDL3_0.0.0 3~
  SDL_hid_get_feature_report@SDL3_0.0.0 3~
  SDL_hid_get_indexed_string@SDL3_0.0.0 3~
+ SDL_hid_get_input_report@SDL3_0.0.0 3~
  SDL_hid_get_manufacturer_string@SDL3_0.0.0 3~
  SDL_hid_get_product_string@SDL3_0.0.0 3~
+ SDL_hid_get_report_descriptor@SDL3_0.0.0 3~
  SDL_hid_get_serial_number_string@SDL3_0.0.0 3~
  SDL_hid_init@SDL3_0.0.0 3~
  SDL_hid_open@SDL3_0.0.0 3~
@@ -789,6 +808,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_strtoul@SDL3_0.0.0 3~
  SDL_strtoull@SDL3_0.0.0 3~
  SDL_strupr@SDL3_0.0.0 3~
+ SDL_swprintf@SDL3_0.0.0 3~
  SDL_tan@SDL3_0.0.0 3~
  SDL_tanf@SDL3_0.0.0 3~
  SDL_tolower@SDL3_0.0.0 3~
@@ -804,6 +824,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_vasprintf@SDL3_0.0.0 3~
  SDL_vsnprintf@SDL3_0.0.0 3~
  SDL_vsscanf@SDL3_0.0.0 3~
+ SDL_vswprintf@SDL3_0.0.0 3~
  SDL_wcscasecmp@SDL3_0.0.0 3~
  SDL_wcscmp@SDL3_0.0.0 3~
  SDL_wcsdup@SDL3_0.0.0 3~
@@ -813,3 +834,4 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_wcsncasecmp@SDL3_0.0.0 3~
  SDL_wcsncmp@SDL3_0.0.0 3~
  SDL_wcsstr@SDL3_0.0.0 3~
+ SDL_wcstol@SDL3_0.0.0 3~
