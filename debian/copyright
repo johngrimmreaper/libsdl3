@@ -53,8 +53,8 @@ Files: include/SDL3/SDL_hidapi.h
        src/hidapi/*
 Copyright: 2009-2010 Alan Ott, Signal 11 Software
            1997-2021 Sam Lantinga
+           2009-2023 libusb/hidapi Team
            2021 Valve Corporation
-           2022 libusb/hidapi Team
 License: BSD-3-clause or GPL-3 or hidapi-orig, and zlib/libpng
 
 Files: src/libm/*
