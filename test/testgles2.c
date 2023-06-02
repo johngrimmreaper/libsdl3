@@ -28,7 +28,7 @@
 
 typedef struct GLES2_Context
 {
-#define SDL_PROC(ret, func, params) ret(APIENTRY *func) params;
+#define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
 #include "../src/render/opengles2/SDL_gles2funcs.h"
 #undef SDL_PROC
 } GLES2_Context;
@@ -100,7 +100,10 @@ quit(int rc)
     }
 
     SDLTest_CommonQuit(state);
-    exit(rc);
+    /* Let 'main()' return normally */
+    if (rc != 0) {
+        exit(rc);
+    }
 }
 
 #define GL_CHECK(x)                                                                         \
