@@ -4,25 +4,25 @@ Upstream-Contact: Sam Lantinga <slouken@libsdl.org>
 Source: https://www.libsdl.org/
 Files-Excluded: Android.mk
                 android-project
-                src/hidapi/windows/ddk_build
+                src/hidapi/documentation/*.png
                 src/render/metal/SDL_shaders_metal_*.h
                 test/unifont-*
                 VisualC
                 VisualC-GDK
                 VisualC-WinRT
                 Xcode
-                Xcode-iOS
 
 Files: *
 Copyright:
  1997-2023 Sam Lantinga <slouken@libsdl.org>
+ 2007 Red Hat, Inc.
  2012 Raspberry Pi Foundation
  2012-2018 RISC OS Open Ltd
  2017 BlackBerry Limited
  2018-2019 EXL
- 2020-2022 Valve Corporation
+ 2020-2023 Valve Corporation
  2019-2022 Collabora Ltd.
-License: zlib/libpng and zlib-libpng-like-permissive
+License: zlib/libpng and zlib-libpng-like-permissive and Expat
 
 Files:
  cmake/GetGitRevisionDescription.cmake
