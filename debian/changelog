@@ -6,8 +6,11 @@ libsdl3 (3~git20230601+dfsg-1) UNRELEASED; urgency=medium
   * d/control: Remove libsamplerate0-dev dependency, no longer used
   * d/p/test-template.test.in-Pass-SDL_NONINTERACTIVE_ARGUMENTS-t.patch:
     Drop patch, applied upstream
+  * d/libsdl3-0.symbols: Update.
+    Accept/ignore ABI breaks, since this is a development snapshot targeting
+    experimental.
 
- -- Simon McVittie <smcv@debian.org>  Fri, 02 Jun 2023 11:37:55 +0100
+ -- Simon McVittie <smcv@debian.org>  Fri, 02 Jun 2023 11:45:49 +0100
 
 libsdl3 (3~git20230412+dfsg-2) experimental; urgency=medium
 
