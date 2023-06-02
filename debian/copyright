@@ -5,6 +5,8 @@ Source: https://www.libsdl.org/
 Files-Excluded: Android.mk
                 android-project
                 src/hidapi/documentation/*.png
+                src/hidapi/*/*.sln
+                src/hidapi/*/*.vcproj
                 src/render/metal/SDL_shaders_metal_*.h
                 test/unifont-*
                 VisualC
