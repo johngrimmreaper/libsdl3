@@ -39,7 +39,11 @@
 #include "../../core/windows/SDL_hid.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
-#ifdef HAVE_XINPUT_H
+/* SDL_JOYSTICK_RAWINPUT_XINPUT is disabled because using XInput at the same time as
+   raw input will turn off the Xbox Series X controller when it is connected via the
+   Xbox One Wireless Adapter.
+ */
+#if 0 /*def HAVE_XINPUT_H*/
 #define SDL_JOYSTICK_RAWINPUT_XINPUT
 #endif
 #ifdef HAVE_WINDOWS_GAMING_INPUT_H
@@ -878,14 +882,12 @@ static int RAWINPUT_JoystickGetCount(void)
     return SDL_RAWINPUT_numjoysticks;
 }
 
-SDL_bool
-RAWINPUT_IsEnabled()
+SDL_bool RAWINPUT_IsEnabled()
 {
     return SDL_RAWINPUT_inited;
 }
 
-SDL_bool
-RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+SDL_bool RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     SDL_RAWINPUT_Device *device;
 
@@ -1602,7 +1604,7 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
     if (!ctx->wgi_correlated) {
         SDL_bool new_correlation_count = 0;
         if (RAWINPUT_MissingWindowsGamingInputSlot()) {
-            Uint8 correlation_id;
+            Uint8 correlation_id = 0;
             WindowsGamingInputGamepadState *slot_idx = NULL;
             if (RAWINPUT_GuessWindowsGamingInputSlot(&match_state_xinput, &correlation_id, &slot_idx, xinput_correlated)) {
                 /* we match exactly one WindowsGamingInput device */
@@ -1886,8 +1888,7 @@ static void RAWINPUT_JoystickClose(SDL_Joystick *joystick)
     }
 }
 
-SDL_bool
-RAWINPUT_RegisterNotifications(HWND hWnd)
+SDL_bool RAWINPUT_RegisterNotifications(HWND hWnd)
 {
     RAWINPUTDEVICE rid[SDL_arraysize(subscribed_devices)];
     int i;
