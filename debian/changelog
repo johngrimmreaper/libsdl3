@@ -1,7 +1,10 @@
-libsdl3 (3~git20230601+dfsg-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20230601+dfsg-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-1660-gf082c68b2
   * d/copyright, d/gbp.conf: Update file exclusions
+  * d/copyright, d/gbp.conf: Exclude Microsoft Visual Studio projects.
+    We don't need these, and their CRLF line endings are annoying when
+    using dgit.
   * d/copyright: Update
   * d/control: Remove libsamplerate0-dev dependency, no longer used
   * d/p/test-template.test.in-Pass-SDL_NONINTERACTIVE_ARGUMENTS-t.patch:
@@ -10,7 +13,7 @@ libsdl3 (3~git20230601+dfsg-1) UNRELEASED; urgency=medium
     Accept/ignore ABI breaks, since this is a development snapshot targeting
     experimental.
 
- -- Simon McVittie <smcv@debian.org>  Fri, 02 Jun 2023 11:45:49 +0100
+ -- Simon McVittie <smcv@debian.org>  Fri, 02 Jun 2023 15:04:26 +0100
 
 libsdl3 (3~git20230412+dfsg-2) experimental; urgency=medium
 
