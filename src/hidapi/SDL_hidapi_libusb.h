@@ -20,22 +20,55 @@
 */
 
 /* Define standard library functions in terms of SDL */
-#define free    SDL_free
+
+/* #pragma push_macro/pop_macro works correctly only as of gcc >= 4.4.3
+   clang-3.0 _seems_ to be OK. */
+#pragma push_macro("malloc")
+#pragma push_macro("realloc")
+#pragma push_macro("free")
+#pragma push_macro("iconv_t")
+#pragma push_macro("iconv")
+#pragma push_macro("iconv_open")
+#pragma push_macro("iconv_close")
+#pragma push_macro("setlocale")
+#pragma push_macro("snprintf")
+#pragma push_macro("strcmp")
+#pragma push_macro("strdup")
+#pragma push_macro("strncpy")
+#pragma push_macro("tolower")
+#pragma push_macro("wcsdup")
+
+#undef malloc
+#undef realloc
+#undef free
+#undef iconv_t
+#undef iconv
+#undef iconv_open
+#undef iconv_close
+#undef setlocale
+#undef snprintf
+#undef strcmp
+#undef strdup
+#undef strncpy
+#undef tolower
+#undef wcsdup
+
+#define malloc          SDL_malloc
+#define realloc         SDL_realloc
+#define free            SDL_free
 #define iconv_t         SDL_iconv_t
+#ifndef ICONV_CONST
 #define ICONV_CONST
+#define UNDEF_ICONV_CONST
+#endif
 #define iconv(a,b,c,d,e) SDL_iconv(a, (const char **)b, c, d, e)
 #define iconv_open      SDL_iconv_open
 #define iconv_close     SDL_iconv_close
-#define malloc          SDL_malloc
-#define realloc         SDL_realloc
 #define setlocale(X, Y) NULL
 #define snprintf        SDL_snprintf
 #define strcmp          SDL_strcmp
 #define strdup          SDL_strdup
 #define strncpy         SDL_strlcpy
-#ifdef tolower
-#undef tolower
-#endif
 #define tolower         SDL_tolower
 #define wcsdup          SDL_wcsdup
 
@@ -54,6 +87,36 @@ static int SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 #endif /* __FreeBSD__ */
 
 #define HIDAPI_THREAD_MODEL_INCLUDE "hidapi_thread_sdl.h"
+#ifndef LIBUSB_API_VERSION
+#ifdef LIBUSBX_API_VERSION
+#define LIBUSB_API_VERSION LIBUSBX_API_VERSION
+#else
+#define LIBUSB_API_VERSION 0x0
+#endif
+#endif
+/* we need libusb >= 1.0.16 because of libusb_get_port_numbers */
+/* we don't need libusb_wrap_sys_device: */
+#define HIDAPI_TARGET_LIBUSB_API_VERSION 0x01000102
 
 #undef HIDAPI_H__
 #include "libusb/hid.c"
+
+/* restore libc function macros */
+#ifdef UNDEF_ICONV_CONST
+#undef ICONV_CONST
+#undef UNDEF_ICONV_CONST
+#endif
+#pragma pop_macro("malloc")
+#pragma pop_macro("realloc")
+#pragma pop_macro("free")
+#pragma pop_macro("iconv_t")
+#pragma pop_macro("iconv")
+#pragma pop_macro("iconv_open")
+#pragma pop_macro("iconv_close")
+#pragma pop_macro("setlocale")
+#pragma pop_macro("snprintf")
+#pragma pop_macro("strcmp")
+#pragma pop_macro("strdup")
+#pragma pop_macro("strncpy")
+#pragma pop_macro("tolower")
+#pragma pop_macro("wcsdup")

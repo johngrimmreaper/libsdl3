@@ -531,8 +531,8 @@ static void HIDAPI_ShutdownDiscovery(void)
 /* Platform HIDAPI Implementation */
 
 #define HIDAPI_USING_SDL_RUNTIME
-#define HIDAPI_IGNORE_DEVICE(VID, PID, USAGE_PAGE, USAGE) \
-        SDL_HIDAPI_ShouldIgnoreDevice(VID, PID, USAGE_PAGE, USAGE)
+#define HIDAPI_IGNORE_DEVICE(BUS, VID, PID, USAGE_PAGE, USAGE) \
+        SDL_HIDAPI_ShouldIgnoreDevice(BUS, VID, PID, USAGE_PAGE, USAGE)
 
 struct PLATFORM_hid_device_;
 typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
@@ -710,7 +710,6 @@ static struct
     uint8_t (LIBUSB_CALL *get_bus_number)(libusb_device *dev);
     int (LIBUSB_CALL *get_port_numbers)(libusb_device *dev, uint8_t *port_numbers, int port_numbers_len);
     uint8_t (LIBUSB_CALL *get_device_address)(libusb_device *dev);
-    int (LIBUSB_CALL *wrap_sys_device)(libusb_context *ctx, intptr_t sys_dev, libusb_device_handle **dev_handle);
     int (LIBUSB_CALL *open)(libusb_device *dev, libusb_device_handle **dev_handle);
     void (LIBUSB_CALL *close)(libusb_device_handle *dev_handle);
     libusb_device *(LIBUSB_CALL *get_device)(libusb_device_handle *dev_handle);
@@ -760,7 +759,6 @@ static struct
 #define libusb_get_bus_number               libusb_ctx.get_bus_number
 #define libusb_get_port_numbers             libusb_ctx.get_port_numbers
 #define libusb_get_device_address           libusb_ctx.get_device_address
-#define libusb_wrap_sys_device              libusb_ctx.wrap_sys_device
 #define libusb_open                         libusb_ctx.open
 #define libusb_close                        libusb_ctx.close
 #define libusb_get_device                   libusb_ctx.get_device
@@ -826,7 +824,6 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
 #undef libusb_get_bus_number
 #undef libusb_get_port_numbers
 #undef libusb_get_device_address
-#undef libusb_wrap_sys_device
 #undef libusb_open
 #undef libusb_close
 #undef libusb_get_device
@@ -1056,13 +1053,21 @@ static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, cons
     }
 }
 
-SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage)
+SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage)
 {
     /* See if there are any devices we should skip in enumeration */
     if (SDL_hidapi_only_controllers && usage_page) {
         if (vendor_id == USB_VENDOR_VALVE) {
             /* Ignore the mouse/keyboard interface on Steam Controllers */
-            if (usage == USB_USAGE_GENERIC_KEYBOARD || usage == USB_USAGE_GENERIC_MOUSE) {
+            if (
+#ifdef __WIN32__
+                /* Check the usage page and usage on both USB and Bluetooth */
+#else
+                /* Only check the usage page and usage on USB */
+                bus == HID_API_BUS_USB &&
+#endif
+                usage_page == USB_USAGEPAGE_GENERIC_DESKTOP &&
+                (usage == USB_USAGE_GENERIC_KEYBOARD || usage == USB_USAGE_GENERIC_MOUSE)) {
                 return SDL_TRUE;
             }
         } else if (usage_page == USB_USAGEPAGE_GENERIC_DESKTOP &&
@@ -1146,7 +1151,6 @@ int SDL_hid_init(void)
             LOAD_LIBUSB_SYMBOL(uint8_t (LIBUSB_CALL *)(libusb_device *), get_bus_number)
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device *dev, uint8_t *port_numbers, int port_numbers_len), get_port_numbers)
             LOAD_LIBUSB_SYMBOL(uint8_t (LIBUSB_CALL *)(libusb_device *), get_device_address)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_context *ctx, intptr_t sys_dev, libusb_device_handle **dev_handle), wrap_sys_device)
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device *, libusb_device_handle **), open)
             LOAD_LIBUSB_SYMBOL(void (LIBUSB_CALL *)(libusb_device_handle *), close)
             LOAD_LIBUSB_SYMBOL(libusb_device * (LIBUSB_CALL *)(libusb_device_handle *dev_handle), get_device)
@@ -1198,6 +1202,10 @@ int SDL_hid_init(void)
     if (attempts > 0 && success == 0) {
         return -1;
     }
+
+#ifdef __MACOS__
+    hid_darwin_set_open_exclusive(0);
+#endif
 
     ++SDL_hidapi_refcount;
     return 0;
