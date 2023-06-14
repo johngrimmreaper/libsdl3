@@ -1,6 +1,8 @@
 libSDL3.so.0 libsdl3-0 #MINVER#
 * Build-Depends-Package: libsdl3-dev
  SDL3_0.0.0@SDL3_0.0.0 3~
+ (arch=linux-any)SDL_LinuxSetThreadPriority@SDL3_0.0.0 3~
+ (arch=linux-any)SDL_LinuxSetThreadPriorityAndPolicy@SDL3_0.0.0 3~
  SDL_AddEventWatch@SDL3_0.0.0 3~
  SDL_AddGamepadMapping@SDL3_0.0.0 3~
  SDL_AddGamepadMappingsFromRW@SDL3_0.0.0 3~
@@ -86,6 +88,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_DestroySurface@SDL3_0.0.0 3~
  SDL_DestroyTexture@SDL3_0.0.0 3~
  SDL_DestroyWindow@SDL3_0.0.0 3~
+ SDL_DestroyWindowSurface@SDL3_0.0.0 3~
  SDL_DetachThread@SDL3_0.0.0 3~
  SDL_DetachVirtualJoystick@SDL3_0.0.0 3~
  SDL_DisableScreenSaver@SDL3_0.0.0 3~
@@ -420,6 +423,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_HasSSE42@SDL3_0.0.0 3~
  SDL_HasSSE@SDL3_0.0.0 3~
  SDL_HasScreenKeyboardSupport@SDL3_0.0.0 3~
+ SDL_HasWindowSurface@SDL3_0.0.0 3~
  SDL_HideCursor@SDL3_0.0.0 3~
  SDL_HideWindow@SDL3_0.0.0 3~
  SDL_Init@SDL3_0.0.0 3~
@@ -434,8 +438,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_JoystickHasRumble@SDL3_0.0.0 3~
  SDL_JoystickHasRumbleTriggers@SDL3_0.0.0 3~
  SDL_JoystickIsHaptic@SDL3_0.0.0 3~
- (arch=linux-any)SDL_LinuxSetThreadPriority@SDL3_0.0.0 3~
- (arch=linux-any)SDL_LinuxSetThreadPriorityAndPolicy@SDL3_0.0.0 3~
  SDL_LoadBMP_RW@SDL3_0.0.0 3~
  SDL_LoadFile@SDL3_0.0.0 3~
  SDL_LoadFile_RW@SDL3_0.0.0 3~
@@ -772,6 +774,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_memset@SDL3_0.0.0 3~
  SDL_modf@SDL3_0.0.0 3~
  SDL_modff@SDL3_0.0.0 3~
+ SDL_nextafter@SDL3_0.0.0 3~
+ SDL_nextafterf@SDL3_0.0.0 3~
  SDL_pow@SDL3_0.0.0 3~
  SDL_powf@SDL3_0.0.0 3~
  SDL_qsort@SDL3_0.0.0 3~

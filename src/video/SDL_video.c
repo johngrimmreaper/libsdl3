@@ -160,6 +160,7 @@ extern SDL_bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window);
 extern SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, SDL_bool state);
 #endif
 
+static void SDL_CheckWindowDisplayChanged(SDL_Window *window);
 static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window);
 
 /* Convenience functions for reading driver flags */
@@ -692,6 +693,16 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
         SDL_OutOfMemory();
     }
     return id;
+}
+
+void SDL_OnDisplayConnected(SDL_VideoDisplay *display)
+{
+    SDL_Window *window;
+
+    /* See if any windows have changed to the new display */
+    for (window = _this->windows; window; window = window->next) {
+        SDL_CheckWindowDisplayChanged(window);
+    }
 }
 
 void SDL_DelVideoDisplay(SDL_DisplayID displayID, SDL_bool send_event)
@@ -1451,6 +1462,10 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
     /* Get the correct display for this operation */
     if (fullscreen) {
         display = SDL_GetVideoDisplayForWindow(window);
+        if (!display) {
+            /* This should never happen, but it did... */
+            goto done;
+        }
     } else {
         for (i = 0; i < _this->num_displays; ++i) {
             display = &_this->displays[i];
@@ -1736,9 +1751,12 @@ static void ApplyWindowFlags(SDL_Window *window, Uint32 flags)
     if (flags & SDL_WINDOW_MINIMIZED) {
         SDL_MinimizeWindow(window);
     }
-    if (flags & SDL_WINDOW_FULLSCREEN) {
-        SDL_SetWindowFullscreen(window, SDL_TRUE);
+    if (!(flags & (SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED))) {
+        SDL_RestoreWindow(window);
     }
+
+    SDL_SetWindowFullscreen(window, (flags & SDL_WINDOW_FULLSCREEN) != 0);
+
     if (flags & SDL_WINDOW_MOUSE_GRABBED) {
         /* We must specifically call SDL_SetWindowGrab() and not
            SDL_SetWindowMouseGrab() here because older applications may use
@@ -2130,12 +2148,7 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
     }
 
     /* Tear down the old native window */
-    if (window->surface) {
-        window->surface->flags &= ~SDL_DONTFREE;
-        SDL_DestroySurface(window->surface);
-        window->surface = NULL;
-        window->surface_valid = SDL_FALSE;
-    }
+    SDL_DestroyWindowSurface(window);
 
     if (_this->checked_texture_framebuffer) { /* never checked? No framebuffer to destroy. Don't risk calling the wrong implementation. */
         if (_this->DestroyWindowFramebuffer) {
@@ -2774,10 +2787,8 @@ int SDL_ShowWindow(SDL_Window *window)
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
 
     /* Set window state if we have pending window flags cached */
-    if (window->pending_flags) {
-        ApplyWindowFlags(window, window->pending_flags);
-        window->pending_flags = 0;
-    }
+    ApplyWindowFlags(window, window->pending_flags);
+    window->pending_flags = 0;
 
     /* Restore child windows */
     for (child = window->first_child; child != NULL; child = child->next_sibling) {
@@ -2808,6 +2819,9 @@ int SDL_HideWindow(SDL_Window *window)
         SDL_HideWindow(child);
         child->restore_on_show = SDL_TRUE;
     }
+
+    /* Store the flags for restoration later. */
+    window->pending_flags = window->flags;
 
     window->is_hiding = SDL_TRUE;
     if (_this->HideWindow) {
@@ -2895,6 +2909,11 @@ int SDL_RestoreWindow(SDL_Window *window)
     CHECK_WINDOW_NOT_POPUP(window, -1);
 
     if (!(window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED))) {
+        return 0;
+    }
+
+    if (window->flags & SDL_WINDOW_HIDDEN) {
+        window->pending_flags &= ~(SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED);
         return 0;
     }
 
@@ -3029,16 +3048,19 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
     return SDL_CreateSurfaceFrom(pixels, w, h, pitch, format);
 }
 
+SDL_bool SDL_HasWindowSurface(SDL_Window *window)
+{
+    CHECK_WINDOW_MAGIC(window, SDL_FALSE);
+
+    return window->surface ? SDL_TRUE : SDL_FALSE;
+}
+
 SDL_Surface *SDL_GetWindowSurface(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, NULL);
 
     if (!window->surface_valid) {
-        if (window->surface) {
-            window->surface->flags &= ~SDL_DONTFREE;
-            SDL_DestroySurface(window->surface);
-            window->surface = NULL;
-        }
+        SDL_DestroyWindowSurface(window);
         window->surface = SDL_CreateWindowFramebuffer(window);
         if (window->surface) {
             window->surface_valid = SDL_TRUE;
@@ -3096,6 +3118,19 @@ int SDL_SetWindowOpacity(SDL_Window *window, float opacity)
     }
 
     return retval;
+}
+
+int SDL_DestroyWindowSurface(SDL_Window *window)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (window->surface) {
+        window->surface->flags &= ~SDL_DONTFREE;
+        SDL_DestroySurface(window->surface);
+        window->surface = NULL;
+        window->surface_valid = SDL_FALSE;
+    }
+    return 0;
 }
 
 int SDL_GetWindowOpacity(SDL_Window *window, float *out_opacity)
@@ -3529,12 +3564,7 @@ void SDL_DestroyWindow(SDL_Window *window)
         SDL_SetMouseFocus(NULL);
     }
 
-    if (window->surface) {
-        window->surface->flags &= ~SDL_DONTFREE;
-        SDL_DestroySurface(window->surface);
-        window->surface = NULL;
-        window->surface_valid = SDL_FALSE;
-    }
+    SDL_DestroyWindowSurface(window);
 
     if (_this->checked_texture_framebuffer) { /* never checked? No framebuffer to destroy. Don't risk calling the wrong implementation. */
         if (_this->DestroyWindowFramebuffer) {

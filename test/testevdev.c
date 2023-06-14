@@ -81,7 +81,8 @@ typedef struct
  * Trailing zeroes can be omitted.
  *
  * The evemu-describe tool is a convenient way to add a test-case for
- * a physically available device.
+ * a physically available device. To contribute new test-cases, see:
+ * https://github.com/libsdl-org/SDL/issues/7801#issuecomment-1589114910
  */
 #define ZEROx4 0, 0, 0, 0
 #define ZEROx8 ZEROx4, ZEROx4
@@ -94,6 +95,8 @@ static const GuessTest guess_tests[] =
 {
     {
       .name = "Xbox 360 wired USB controller",
+      /* 8BitDo N30 Pro 2 v0114 via USB-C (with the xpad driver) is
+       * reported as 0003:045e:028e v0114, and is functionally equivalent */
       .bus_type = 0x0003,
       .vendor_id = 0x045e,
       .product_id = 0x028e,
@@ -122,6 +125,30 @@ static const GuessTest guess_tests[] =
           /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
           /* A, B, X, Y, TL, TR, SELECT, START, MODE, THUMBL, THUMBR */
           /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x7c,
+      },
+    },
+    { /* Reference: https://github.com/libsdl-org/SDL/issues/7814 */
+      .name = "X-Box One Elite 2",
+      .bus_type = 0x0003,
+      .vendor_id = 0x045e,
+      .product_id = 0x0b00,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS, FF */
+      .ev = { 0x0b, 0x00, 0x20 },
+      /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
+      .abs = { 0x3f, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* A, B, X, Y, TL, TR, SELECT, START, MODE, THUMBL, THUMBR */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x7c,
+          /* 0x140 */ ZEROx8,
+          /* 0x180 */ ZEROx8,
+          /* 0x1c0 */ ZEROx8,
+          /* 0x200 */ ZEROx8,
+          /* 0x240 */ ZEROx8,
+          /* 0x280 */ ZEROx8,
+          /* BTN_TRIGGER_HAPPY5 up to BTN_TRIGGER_HAPPY8 inclusive */
+          /* 0x2c0 */ 0xf0,
       },
     },
     {
@@ -159,10 +186,51 @@ static const GuessTest guess_tests[] =
       },
     },
     {
+      .name = "DualSense (PS5) - gamepad",
+      .bus_type = 0x0003,
+      .vendor_id = 0x054c,
+      .product_id = 0x0ce6,
+      .version = 0x111,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS */
+      .ev = { 0x0b },
+      /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
+      .abs = { 0x3f, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2, select, start, mode, thumbl,
+           * thumbr; note that C and Z don't physically exist */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0x7f,
+      },
+    },
+    {
+      .name = "DualSense (PS5) v8111 - gamepad",
+      /* Same physical device via Bluetooth is 0005:054c:0ce6 v8100,
+       * but otherwise equivalent */
+      .bus_type = 0x0003,
+      .vendor_id = 0x054c,
+      .product_id = 0x0ce6,
+      .version = 0x8111,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS */
+      .ev = { 0x0b },
+      /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
+      .abs = { 0x3f, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* A, B, X, Y, TL, TR, TL2, TR2, SELECT, START, MODE,
+           * THUMBL, THUMBR */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x7f,
+      },
+    },
+    {
       .name = "DualShock 4 - gamepad",
+      /* Same physical device via Bluetooth is 0005:054c:09cc v8100,
+       * but otherwise equivalent */
       .bus_type = 0x0003,
       .vendor_id = 0x054c,
       .product_id = 0x09cc,
+      .version = 0x8111,
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS, MSC, FF */
       /* Some versions only have 0x0b, SYN, KEY, ABS, like the
@@ -178,7 +246,7 @@ static const GuessTest guess_tests[] =
       },
     },
     {
-      .name = "DualShock 4 - gamepad via Bluetooth",
+      .name = "DualShock 4 - gamepad via Bluetooth (unknown version)",
       .bus_type = 0x0005,
       .vendor_id = 0x054c,
       .product_id = 0x09cc,
@@ -196,9 +264,15 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualShock 4 - touchpad",
+      /* Same physical device via Bluetooth is 0005:054c:09cc v8100 and is
+       * functionally equivalent. */
+      /* DualSense (PS5), 0003:054c:0ce6 v8111, is functionally equivalent.
+       * Same physical device via Bluetooth is 0005:054c:0ce6 v8100 and also
+       * functionally equivalent. */
       .bus_type = 0x0003,
       .vendor_id = 0x054c,
       .product_id = 0x09cc,
+      .version = 0x8111,
       .expected = SDL_UDEV_DEVICE_TOUCHPAD,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
@@ -216,9 +290,15 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualShock 4 - accelerometer",
+      /* Same physical device via Bluetooth is 0005:054c:09cc v8100 and is
+       * functionally equivalent. */
+      /* DualSense (PS5), 0003:054c:0ce6 v8111, is functionally equivalent.
+       * Same physical device via Bluetooth is 0005:054c:0ce6 v8100 and also
+       * functionally equivalent. */
       .bus_type = 0x0003,
       .vendor_id = 0x054c,
       .product_id = 0x09cc,
+      .version = 0x8111,
       .expected = SDL_UDEV_DEVICE_ACCELEROMETER,
       /* SYN, ABS, MSC */
       .ev = { 0x19 },
@@ -326,6 +406,10 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Guitar Hero for PS3",
+      /* SWITCH CO.,LTD. Controller (Dinput) off-brand N64-style USB controller
+       * 0003:2563:0575 v0111 is functionally equivalent.
+       * https://linux-hardware.org/?id=usb:2563-0575 reports the same IDs as
+       * ShenZhen ShanWan Technology ZD-V+ Wired Gaming Controller */
       .bus_type = 0x0003,
       .vendor_id = 0x12ba,
       .product_id = 0x0100,
@@ -395,7 +479,9 @@ static const GuessTest guess_tests[] =
        * except for having force feedback, which we don't use in our
        * heuristic */
       /* Jess Tech GGE909 PC Recoil Pad, 0003:0f30:010b v0110, is the same */
-      /* 8BitDo SNES30, 0003:2dc8:ab20 v0110, is the same */
+      /* 8BitDo SNES30 via USB, 0003:2dc8:ab20 v0110, is the same;
+       * see below for the same physical device via Bluetooth,
+       * 0005:2dc8:2840 v0100 */
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
@@ -406,6 +492,29 @@ static const GuessTest guess_tests[] =
           /* 12 buttons: TRIGGER, THUMB, THUMB2, TOP, TOP2, PINKIE, BASE,
            * BASE2..BASE6 */
           /* 0x100 */ ZEROx4, 0xff, 0x0f, 0x00, 0x00,
+      },
+    },
+    {
+      .name = "8BitDo SNES30 v0100 via Bluetooth",
+      /* The same physical device via USB, 0003:2dc8:ab20 v0110,
+       * is reported differently (above). */
+      /* 8BitDo NES30 Pro (aka N30 Pro) via Bluetooth, 0005:2dc8:3820 v0100,
+       * is functionally equivalent; but the same physical device via USB,
+       * 0003:2dc8:9001 v0111, matches N30 Pro 2 v0111. */
+      .bus_type = 0x0005,
+      .vendor_id = 0x2dc8,
+      .product_id = 0x2840,
+      .version = 0x0100,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS, MSC */
+      .ev = { 0x1b },
+      /* XYZ, RZ, GAS, BRAKE, HAT0X, HAT0Y */
+      .abs = { 0x27, 0x06, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2, SELECT, START, MODE, THUMBL, THUMBR,
+           * and an unassigned button code */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0xff,
       },
     },
     {
@@ -567,6 +676,24 @@ static const GuessTest guess_tests[] =
       },
     },
     {
+      .name = "Switch Pro Controller via Bluetooth (Linux 6.2.11)",
+      .bus_type = 0x0005,
+      .vendor_id = 0x057e,
+      .product_id = 0x2009,
+      .version = 0x0001,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS */
+      .ev = { 0x0b },
+      /* X, Y, RX, RY, hat 0 */
+      .abs = { 0x1b, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2, SELECT, START, MODE, THUMBL, THUMBR,
+           * and an unassigned button code */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0xff,
+      },
+    },
+    {
       .name = "Switch Pro Controller via USB",
       .bus_type = 0x0003,
       .vendor_id = 0x057e,
@@ -579,13 +706,53 @@ static const GuessTest guess_tests[] =
       .abs = { 0x27, 0x00, 0x03 },
       .keys = {
           /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* 16 buttons: TRIGGER, THUMB, THUMB2, TOP, TOP2, PINKIE, BASE,
+           * BASE2..BASE6, unregistered event codes 0x12c-0x12e, DEAD */
+          /* 0x100 */ ZEROx4, 0xff, 0xff, 0x00, 0x00,
+          /* 0x140 */ ZEROx8,
+          /* 0x180 */ ZEROx8,
+          /* 0x1c0 */ ZEROx8,
+          /* 0x200 */ ZEROx8,
+          /* 0x240 */ ZEROx8,
+          /* 0x280 */ ZEROx8,
+          /* TRIGGER_HAPPY1..TRIGGER_HAPPY2 */
+          /* 0x2c0 */ 0x03,
+      },
+    },
+    {
+      .name = "NES Controller (R) NES-style Joycon from Nintendo Online",
+      /* Joy-Con (L), 0005:057e:2006 v0001, is functionally equivalent.
+       * Ordinary Joy-Con (R) and NES-style Joy-Con (L) are assumed to be
+       * functionally equivalent as well. */
+      .bus_type = 0x0005,   /* Bluetooth-only */
+      .vendor_id = 0x057e,
+      .product_id = 0x2007,
+      .version = 0x0001,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS */
+      .ev = { 0x0b },
+      /* X, Y, RX, RY, hat 0 */
+      .abs = { 0x1b, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2, SELECT, START, MODE, THUMBL, THUMBR,
+           * and an unassigned button code */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0xff,
       },
     },
     {
       .name = "Thrustmaster Racing Wheel FFB",
-      /* Mad Catz FightStick TE S+ PS4, 0003:0738:8384:0111 v0111
+      /* Several devices intended for PS4 are functionally equivalent to this:
+       * https://github.com/ValveSoftware/steam-devices/pull/34
+       * Mad Catz FightStick TE S+ PS4, 0003:0738:8384:0111 v0111
        * (aka Street Fighter V Arcade FightStick TES+)
-       * is functionally the same */
+       * Mad Catz FightStick TE2+ PS4, 0003:0738:8481 v0100
+       * (aka Street Fighter V Arcade FightStick TE2+)
+       * Bigben Interactive DAIJA Arcade Stick, 0003:146b:0d09 v0111
+       * (aka Nacon Daija PS4 Arcade Stick)
+       * Razer Razer Raiju Ultimate Wired, 0003:1532:1009 v0000
+       * Razer Razer Raiju Ultimate (Bluetooth), 0005:1532:1009 v0001
+       */
       .bus_type = 0x0003,
       .vendor_id = 0x044f,
       .product_id = 0xb66d,
@@ -619,12 +786,34 @@ static const GuessTest guess_tests[] =
       },
     },
     {
-      .name = "8BitDo N30 Pro 2",
+      .name = "8BitDo N30 Pro via Bluetooth",
+      /* This device has also been seen reported with an additional
+       * unassigned button code, the same as the SNES30 v0100 via Bluetooth */
+      .bus_type = 0x0005,
+      .vendor_id = 0x2dc8,
+      .product_id = 0x3820,
+      .version = 0x0100,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS, MSC */
+      .ev = { 0x1b },
+      /* XYZ, RZ, gas, brake, hat0 */
+      .abs = { 0x27, 0x06, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2, select, start, mode, thumbl,
+           * thumbr */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0x7f,
+      },
+    },
+    {
+      .name = "8BitDo N30 Pro 2 v0111",
       .bus_type = 0x0003,
       .vendor_id = 0x2dc8,
       .product_id = 0x9015,
       .version = 0x0111,
-      /* 8BitDo NES30 Pro, 0003:2dc8:9001 v0111, is the same */
+      /* 8BitDo NES30 Pro via USB, 0003:2dc8:9001 v0111, is the same;
+       * but the same physical device via Bluetooth, 0005:2dc8:3820 v0100,
+       * matches 8BitDo SNES30 v0100 via Bluetooth instead (see above). */
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
       .ev = { 0x0b },
       /* XYZ, RZ, gas, brake, hat0 */
@@ -634,6 +823,29 @@ static const GuessTest guess_tests[] =
           /* ABC, XYZ, TL, TR, TL2, TR2, select, start, mode, thumbl,
            * thumbr */
           /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0x7f,
+      },
+    },
+    {
+      .name = "8BitDo N30 Pro 2 via Bluetooth",
+      /* Physically the same device as the one that mimics an Xbox 360
+       * USB controller when wired */
+      .bus_type = 0x0005,
+      .vendor_id = 0x045e,
+      .product_id = 0x02e0,
+      .version = 0x0903,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      /* SYN, KEY, ABS, MSC, FF */
+      .ev = { 0x1b, 0x00, 0x20 },
+      /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
+      .abs = { 0x3f, 0x00, 0x03 },
+      .keys = {
+          /* 0x00 */ ZEROx8,
+          /* 0x40 */ ZEROx8,
+          /* KEY_MENU */
+          /* 0x80 */ 0x00, 0x08, 0x00, 0x00, ZEROx4,
+          /* 0xc0 */ ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2 */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0x03,
       },
     },
     {
@@ -651,6 +863,82 @@ static const GuessTest guess_tests[] =
           /* trigger, thumb, thumb2, top, top2, pinkie, base,
            * base2..base4 */
           /* 0x100 */ ZEROx4, 0xff, 0x03, 0x00, 0x00,
+      },
+    },
+    {
+      .name = "Google Stadia Controller rev.A",
+      /* This data is with USB-C, but the same physical device via Bluetooth,
+       * 0005:18d1:9400 v0000, is functionally equivalent */
+      .bus_type = 0x0003,
+      .vendor_id = 0x18d1,
+      .product_id = 0x9400,
+      .version = 0x0100,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      .ev = { 0x0b },
+      /* XYZ, RZ, gas, brake, hat0 */
+      .abs = { 0x27, 0x06, 0x03 },
+      .keys = {
+          /* 0x00 */ ZEROx8,
+          /* Volume up/down */
+          /* 0x40 */ ZEROx4, 0x00, 0x00, 0x0c, 0x00,
+          /* Media play/pause */
+          /* 0x80 */ ZEROx4, 0x10, 0x00, 0x00, 0x00,
+          /* 0xc0 */ ZEROx8,
+          /* ABXY, TL, TR, SELECT, START, MODE, THUMBL, THUMBR */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x7c,
+          /* 0x140 */ ZEROx8,
+          /* 0x180 */ ZEROx8,
+          /* 0x1c0 */ ZEROx8,
+          /* 0x200 */ ZEROx8,
+          /* 0x240 */ ZEROx8,
+          /* 0x280 */ ZEROx8,
+          /* TRIGGER_HAPPY 1-4 */
+          /* 0x2c0 */ 0x0f, 0x00, 0x00, 0x00, ZEROx4,
+      },
+    },
+    {
+      .name = "Microsoft Xbox Series S|X Controller (model 1914) via USB",
+      /* Physically the same device as 0003:045e:0b13 v0515 below,
+       * but some functionality is mapped differently */
+      .bus_type = 0x0003,
+      .vendor_id = 0x045e,
+      .product_id = 0x0b12,
+      .version = 0x050f,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      .ev = { 0x0b },
+      /* X, Y, Z, RX, RY, RZ, hat 0 */
+      .abs = { 0x3f, 0x00, 0x03 },
+      .keys = {
+          /* 0x00 */ ZEROx8,
+          /* 0x40 */ ZEROx8,
+          /* Record */
+          /* 0x80 */ ZEROx4, 0x80, 0x00, 0x00, 0x00,
+          /* 0xc0 */ ZEROx8,
+          /* ABXY, TL, TR, SELECT, START, MODE, THUMBL, THUMBR */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x7c,
+      },
+    },
+    {
+      .name = "Microsoft Xbox Series S|X Controller (model 1914) via Bluetooth",
+      /* Physically the same device as 0003:045e:0b12 v050f above,
+       * but some functionality is mapped differently */
+      .bus_type = 0x0003,
+      .vendor_id = 0x045e,
+      .product_id = 0x0b13,
+      .version = 0x0515,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      .ev = { 0x0b },
+      /* XYZ, RZ, gas, brake, hat0 */
+      .abs = { 0x27, 0x06, 0x03 },
+      .keys = {
+          /* 0x00 */ ZEROx8,
+          /* 0x40 */ ZEROx8,
+          /* Record */
+          /* 0x80 */ ZEROx4, 0x80, 0x00, 0x00, 0x00,
+          /* 0xc0 */ ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2, select, start, mode, thumbl,
+           * thumbr */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0x7f,
       },
     },
     {
@@ -790,6 +1078,26 @@ static const GuessTest guess_tests[] =
       .ev = { 0x0b },
       /* X, Y, pressure, multitouch */
       .abs = { 0x03, 0x00, 0x00, 0x01, 0x00, 0x80, 0xf3, 0x06 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* Left mouse button */
+          /* 0x100 */ 0x00, 0x00, 0x01, 0x00, ZEROx4,
+          /* BTN_TOOL_FINGER and some multitouch gestures */
+          /* 0x140 */ 0x20, 0xe5
+      },
+      /* POINTER, BUTTONPAD */
+      .props = { 0x05 },
+    },
+    {
+      .name = "DELL08AF:00 (Dell XPS laptop touchpad)",
+      .bus_type = 0x18,
+      .vendor_id = 0x6cb,
+      .product_id = 0x76af,
+      .version = 0x100,
+      .ev = { 0x0b },
+      .expected = SDL_UDEV_DEVICE_TOUCHPAD,
+      /* X, Y, multitouch */
+      .abs = { 0x03, 0x00, 0x00, 0x00, 0x00, 0x80, 0xe0, 0x02 },
       .keys = {
           /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
           /* Left mouse button */
