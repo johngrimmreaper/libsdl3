@@ -190,7 +190,7 @@
 #define SDL_GetDisplayForPoint SDL_GetDisplayForPoint_REAL
 #define SDL_GetDisplayForRect SDL_GetDisplayForRect_REAL
 #define SDL_GetDisplayName SDL_GetDisplayName_REAL
-#define SDL_GetDisplayOrientation SDL_GetDisplayOrientation_REAL
+#define SDL_GetCurrentDisplayOrientation SDL_GetCurrentDisplayOrientation_REAL
 #define SDL_GetDisplayUsableBounds SDL_GetDisplayUsableBounds_REAL
 #define SDL_GetError SDL_GetError_REAL
 #define SDL_GetErrorMsg SDL_GetErrorMsg_REAL
@@ -892,5 +892,4 @@
 #define SDL_hid_get_report_descriptor SDL_hid_get_report_descriptor_REAL
 #define SDL_HasWindowSurface SDL_HasWindowSurface_REAL
 #define SDL_DestroyWindowSurface SDL_DestroyWindowSurface_REAL
-#define SDL_nextafter SDL_nextafter_REAL
-#define SDL_nextafterf SDL_nextafterf_REAL
+#define SDL_GetNaturalDisplayOrientation SDL_GetNaturalDisplayOrientation_REAL
