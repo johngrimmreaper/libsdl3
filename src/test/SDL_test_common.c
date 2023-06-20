@@ -2464,8 +2464,13 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
         textY += lineHeight;
     }
 
-    (void)SDL_snprintf(text, sizeof(text), "SDL_GetDisplayOrientation: ");
-    SDLTest_PrintDisplayOrientation(text, sizeof(text), SDL_GetDisplayOrientation(windowDisplayID));
+    (void)SDL_snprintf(text, sizeof(text), "SDL_GetNaturalDisplayOrientation: ");
+    SDLTest_PrintDisplayOrientation(text, sizeof(text), SDL_GetNaturalDisplayOrientation(windowDisplayID));
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
+    textY += lineHeight;
+
+    (void)SDL_snprintf(text, sizeof(text), "SDL_GetCurrentDisplayOrientation: ");
+    SDLTest_PrintDisplayOrientation(text, sizeof(text), SDL_GetCurrentDisplayOrientation(windowDisplayID));
     SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 

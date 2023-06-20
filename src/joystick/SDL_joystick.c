@@ -31,6 +31,7 @@
 #include "../events/SDL_events_c.h"
 #endif
 #include "../video/SDL_sysvideo.h"
+#include "../sensor/SDL_sensor_c.h"
 #include "hidapi/SDL_hidapijoystick_c.h"
 
 /* This is included in only one place because it has a large static list of controllers */
@@ -510,6 +511,203 @@ static SDL_bool SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
 #endif /* __WINRT__ */
 }
 
+static SDL_bool IsROGAlly(SDL_Joystick *joystick)
+{
+    Uint16 vendor, product;
+    SDL_JoystickGUID guid = SDL_GetJoystickGUID(joystick);
+
+    /* The ROG Ally controller spoofs an Xbox 360 controller */
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
+    if (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX360_WIRED_CONTROLLER) {
+        /* Check to see if this system has the expected sensors */
+        SDL_bool has_ally_accel = SDL_FALSE;
+        SDL_bool has_ally_gyro = SDL_FALSE;
+
+        if (SDL_InitSubSystem(SDL_INIT_SENSOR) == 0) {
+            SDL_SensorID *sensors = SDL_GetSensors(NULL);
+            if (sensors) {
+                int i;
+                for (i = 0; sensors[i]; ++i) {
+                    SDL_SensorID sensor = sensors[i];
+
+                    if (!has_ally_accel && SDL_GetSensorInstanceType(sensor) == SDL_SENSOR_ACCEL) {
+                        const char *sensor_name = SDL_GetSensorInstanceName(sensor);
+                        if (sensor_name && SDL_strcmp(sensor_name, "Sensor BMI320 Acc") == 0) {
+                            has_ally_accel = SDL_TRUE;
+                        }
+                    }
+                    if (!has_ally_gyro && SDL_GetSensorInstanceType(sensor) == SDL_SENSOR_GYRO) {
+                        const char *sensor_name = SDL_GetSensorInstanceName(sensor);
+                        if (sensor_name && SDL_strcmp(sensor_name, "Sensor BMI320 Gyr") == 0) {
+                            has_ally_gyro = SDL_TRUE;
+                        }
+                    }
+                }
+                SDL_free(sensors);
+            }
+            SDL_QuitSubSystem(SDL_INIT_SENSOR);
+        }
+        if (has_ally_accel && has_ally_gyro) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool ShouldAttemptSensorFusion(SDL_Joystick *joystick, SDL_bool *invert_sensors)
+{
+    const char *hint;
+    int hint_value;
+
+    *invert_sensors = SDL_FALSE;
+
+    /* The SDL controller sensor API is only available for gamepads (at the moment) */
+    if (!joystick->is_gamepad) {
+        return SDL_FALSE;
+    }
+
+    /* If the controller already has sensors, use those */
+    if (joystick->nsensors > 0) {
+        return SDL_FALSE;
+    }
+
+    hint = SDL_GetHint(SDL_HINT_GAMECONTROLLER_SENSOR_FUSION);
+    hint_value = SDL_GetStringInteger(hint, -1);
+    if (hint_value > 0) {
+        return SDL_TRUE;
+    }
+    if (hint_value == 0) {
+        return SDL_FALSE;
+    }
+
+    if (hint) {
+        SDL_vidpid_list gamepads;
+        SDL_JoystickGUID guid;
+        Uint16 vendor, product;
+        SDL_bool enabled;
+
+        /* See if the gamepad is in our list of devices to enable */
+        guid = SDL_GetJoystickGUID(joystick);
+        SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
+        SDL_LoadVIDPIDListFromHint(hint, &gamepads);
+        enabled = SDL_VIDPIDInList(vendor, product, &gamepads);
+        SDL_FreeVIDPIDList(&gamepads);
+        if (enabled) {
+            return SDL_TRUE;
+        }
+    }
+
+    /* See if this is another known wraparound gamepad */
+    if (joystick->name &&
+        (SDL_strstr(joystick->name, "Backbone One") ||
+         SDL_strstr(joystick->name, "Kishi"))) {
+        return SDL_TRUE;
+    }
+    if (IsROGAlly(joystick)) {
+        /* I'm not sure if this is a Windows thing, or a quirk for ROG Ally,
+         * but we need to invert the sensor data on all axes.
+         */
+        *invert_sensors = SDL_TRUE;
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
+static void AttemptSensorFusion(SDL_Joystick *joystick, SDL_bool invert_sensors)
+{
+    SDL_SensorID *sensors;
+    unsigned int i, j;
+
+    if (SDL_InitSubSystem(SDL_INIT_SENSOR) < 0) {
+        return;
+    }
+
+    sensors = SDL_GetSensors(NULL);
+    if (sensors) {
+        for (i = 0; sensors[i]; ++i) {
+            SDL_SensorID sensor = sensors[i];
+
+            if (!joystick->accel_sensor && SDL_GetSensorInstanceType(sensor) == SDL_SENSOR_ACCEL) {
+                /* Increment the sensor subsystem reference count */
+                SDL_InitSubSystem(SDL_INIT_SENSOR);
+
+                joystick->accel_sensor = sensor;
+                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
+            }
+            if (!joystick->gyro_sensor && SDL_GetSensorInstanceType(sensor) == SDL_SENSOR_GYRO) {
+                /* Increment the sensor subsystem reference count */
+                SDL_InitSubSystem(SDL_INIT_SENSOR);
+
+                joystick->gyro_sensor = sensor;
+                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 0.0f);
+            }
+        }
+        SDL_free(sensors);
+    }
+    SDL_QuitSubSystem(SDL_INIT_SENSOR);
+
+    /* SDL defines sensor orientation for phones relative to the natural
+       orientation, and for gamepads relative to being held in front of you.
+       When a phone is being used as a gamepad, its orientation changes,
+       so adjust sensor axes to match.
+     */
+    if (SDL_GetNaturalDisplayOrientation(SDL_GetPrimaryDisplay()) == SDL_ORIENTATION_LANDSCAPE) {
+        /* When a device in landscape orientation is laid flat, the axes change
+           orientation as follows:
+            -X to +X becomes -X to +X
+            -Y to +Y becomes +Z to -Z
+            -Z to +Z becomes -Y to +Y
+        */
+        joystick->sensor_transform[0][0] = 1.0f;
+        joystick->sensor_transform[1][2] = 1.0f;
+        joystick->sensor_transform[2][1] = -1.0f;
+    } else {
+        /* When a device in portrait orientation is rotated left and laid flat,
+           the axes change orientation as follows:
+            -X to +X becomes +Z to -Z
+            -Y to +Y becomes +X to -X
+            -Z to +Z becomes -Y to +Y
+        */
+        joystick->sensor_transform[0][1] = -1.0f;
+        joystick->sensor_transform[1][2] = 1.0f;
+        joystick->sensor_transform[2][0] = -1.0f;
+    }
+
+    if (invert_sensors) {
+        for (i = 0; i < SDL_arraysize(joystick->sensor_transform); ++i) {
+            for (j = 0; j < SDL_arraysize(joystick->sensor_transform[i]); ++j) {
+                joystick->sensor_transform[i][j] *= -1.0f;
+            }
+        }
+    }
+}
+
+static void CleanupSensorFusion(SDL_Joystick *joystick)
+{
+    if (joystick->accel_sensor || joystick->gyro_sensor) {
+        if (joystick->accel_sensor) {
+            if (joystick->accel) {
+                SDL_CloseSensor(joystick->accel);
+                joystick->accel = NULL;
+            }
+            joystick->accel_sensor = 0;
+
+            /* Decrement the sensor subsystem reference count */
+            SDL_QuitSubSystem(SDL_INIT_SENSOR);
+        }
+        if (joystick->gyro_sensor) {
+            if (joystick->gyro) {
+                SDL_CloseSensor(joystick->gyro);
+                joystick->gyro = NULL;
+            }
+            joystick->gyro_sensor = 0;
+
+            /* Decrement the sensor subsystem reference count */
+            SDL_QuitSubSystem(SDL_INIT_SENSOR);
+        }
+    }
+}
+
 /*
  * Open a joystick for use - the index passed as an argument refers to
  * the N'th joystick on the system.  This index is the value which will
@@ -526,6 +724,7 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     const char *joystickname = NULL;
     const char *joystickpath = NULL;
     SDL_JoystickPowerLevel initial_power_level;
+    SDL_bool invert_sensors = SDL_FALSE;
 
     SDL_LockJoysticks();
 
@@ -610,6 +809,11 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     }
 
     joystick->is_gamepad = SDL_IsGamepad(instance_id);
+
+    /* Use system gyro and accelerometer if the gamepad doesn't have built-in sensors */
+    if (ShouldAttemptSensorFusion(joystick, &invert_sensors)) {
+        AttemptSensorFusion(joystick, invert_sensors);
+    }
 
     /* Add joystick to list */
     ++joystick->ref_count;
@@ -1253,6 +1457,8 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
             SDL_RumbleJoystickTriggers(joystick, 0, 0, 0);
         }
 
+        CleanupSensorFusion(joystick);
+
         joystick->driver->Close(joystick);
         joystick->hwdata = NULL;
         joystick->magic = NULL;
@@ -1273,11 +1479,10 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
             joysticklist = joysticklist->next;
         }
 
+        /* Free the data associated with this joystick */
         SDL_free(joystick->name);
         SDL_free(joystick->path);
         SDL_free(joystick->serial);
-
-        /* Free the data associated with this joystick */
         SDL_free(joystick->axes);
         SDL_free(joystick->hats);
         SDL_free(joystick->buttons);
@@ -3038,4 +3243,70 @@ int SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorT
         }
     }
     return posted;
+}
+
+void SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
+{
+    Uint32 entry;
+    char *spot;
+    char *file = NULL;
+
+    list->num_entries = 0;
+
+    if (hint && *hint == '@') {
+        spot = file = (char *)SDL_LoadFile(hint + 1, NULL);
+    } else {
+        spot = (char *)hint;
+    }
+
+    if (spot == NULL) {
+        return;
+    }
+
+    while ((spot = SDL_strstr(spot, "0x")) != NULL) {
+        entry = (Uint16)SDL_strtol(spot, &spot, 0);
+        entry <<= 16;
+        spot = SDL_strstr(spot, "0x");
+        if (spot == NULL) {
+            break;
+        }
+        entry |= (Uint16)SDL_strtol(spot, &spot, 0);
+
+        if (list->num_entries == list->max_entries) {
+            int max_entries = list->max_entries + 16;
+            Uint32 *entries = (Uint32 *)SDL_realloc(list->entries, max_entries * sizeof(*list->entries));
+            if (entries == NULL) {
+                /* Out of memory, go with what we have already */
+                break;
+            }
+            list->entries = entries;
+            list->max_entries = max_entries;
+        }
+        list->entries[list->num_entries++] = entry;
+    }
+
+    if (file) {
+        SDL_free(file);
+    }
+}
+
+SDL_bool SDL_VIDPIDInList(Uint16 vendor_id, Uint16 product_id, const SDL_vidpid_list *list)
+{
+    int i;
+    Uint32 vidpid = MAKE_VIDPID(vendor_id, product_id);
+
+    for (i = 0; i < list->num_entries; ++i) {
+        if (vidpid == list->entries[i]) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+void SDL_FreeVIDPIDList(SDL_vidpid_list *list)
+{
+    if (list->entries) {
+        SDL_free(list->entries);
+        SDL_zerop(list);
+    }
 }
