@@ -154,6 +154,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetClosestFullscreenDisplayMode@SDL3_0.0.0 3~
  SDL_GetCurrentAudioDriver@SDL3_0.0.0 3~
  SDL_GetCurrentDisplayMode@SDL3_0.0.0 3~
+ SDL_GetCurrentDisplayOrientation@SDL3_0.0.0 3~
  SDL_GetCurrentRenderOutputSize@SDL3_0.0.0 3~
  SDL_GetCurrentVideoDriver@SDL3_0.0.0 3~
  SDL_GetCursor@SDL3_0.0.0 3~
@@ -167,7 +168,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetDisplayForRect@SDL3_0.0.0 3~
  SDL_GetDisplayForWindow@SDL3_0.0.0 3~
  SDL_GetDisplayName@SDL3_0.0.0 3~
- SDL_GetDisplayOrientation@SDL3_0.0.0 3~
  SDL_GetDisplayUsableBounds@SDL3_0.0.0 3~
  SDL_GetDisplays@SDL3_0.0.0 3~
  SDL_GetError@SDL3_0.0.0 3~
@@ -256,6 +256,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetModState@SDL3_0.0.0 3~
  SDL_GetMouseFocus@SDL3_0.0.0 3~
  SDL_GetMouseState@SDL3_0.0.0 3~
+ SDL_GetNaturalDisplayOrientation@SDL3_0.0.0 3~
  SDL_GetNumAllocations@SDL3_0.0.0 3~
  SDL_GetNumAudioDevices@SDL3_0.0.0 3~
  SDL_GetNumAudioDrivers@SDL3_0.0.0 3~
@@ -774,8 +775,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_memset@SDL3_0.0.0 3~
  SDL_modf@SDL3_0.0.0 3~
  SDL_modff@SDL3_0.0.0 3~
- SDL_nextafter@SDL3_0.0.0 3~
- SDL_nextafterf@SDL3_0.0.0 3~
  SDL_pow@SDL3_0.0.0 3~
  SDL_powf@SDL3_0.0.0 3~
  SDL_qsort@SDL3_0.0.0 3~
