@@ -48,6 +48,7 @@ static const struct
     }
     CLS(MOUSE),
     CLS(KEYBOARD),
+    CLS(HAS_KEYS),
     CLS(JOYSTICK),
     CLS(SOUND),
     CLS(TOUCHSCREEN),
@@ -60,6 +61,9 @@ static const struct
 typedef struct
 {
     const char *name;
+    const char *eviocgname;
+    const char *usb_vendor_name;
+    const char *usb_product_name;
     uint16_t bus_type;
     uint16_t vendor_id;
     uint16_t product_id;
@@ -69,9 +73,11 @@ typedef struct
     uint8_t abs[(ABS_MAX + 1) / 8];
     uint8_t rel[(REL_MAX + 1) / 8];
     uint8_t ff[(FF_MAX + 1) / 8];
-    uint8_t props[INPUT_PROP_MAX / 8];
+    uint8_t props[(INPUT_PROP_MAX + 1) / 8];
     int expected;
     const char *todo;
+    size_t hid_report_descriptor_length;
+    const unsigned char *hid_report_descriptor;
 } GuessTest;
 
 /*
@@ -89,17 +95,203 @@ typedef struct
 #define FFx4   0xff, 0xff, 0xff, 0xff
 #define FFx8   FFx4, FFx4
 
+static unsigned char xbox_one_elite_2_hid_report_descriptor[] =
+{
+    /* Generic Desktop / Game Pad, Generic Desktop / Keyboard */
+    0x05, 0x01, 0x09, 0x05, 0xa1, 0x01, 0x85, 0x01,
+    0x09, 0x01, 0xa1, 0x00, 0x09, 0x30, 0x09, 0x31,
+    0x15, 0x00, 0x27, 0xff, 0xff, 0x00, 0x00, 0x95,
+    0x02, 0x75, 0x10, 0x81, 0x02, 0xc0, 0x09, 0x01,
+    0xa1, 0x00, 0x09, 0x32, 0x09, 0x35, 0x15, 0x00,
+    0x27, 0xff, 0xff, 0x00, 0x00, 0x95, 0x02, 0x75,
+    0x10, 0x81, 0x02, 0xc0, 0x05, 0x02, 0x09, 0xc5,
+    0x15, 0x00, 0x26, 0xff, 0x03, 0x95, 0x01, 0x75,
+    0x0a, 0x81, 0x02, 0x15, 0x00, 0x25, 0x00, 0x75,
+    0x06, 0x95, 0x01, 0x81, 0x03, 0x05, 0x02, 0x09,
+    0xc4, 0x15, 0x00, 0x26, 0xff, 0x03, 0x95, 0x01,
+    0x75, 0x0a, 0x81, 0x02, 0x15, 0x00, 0x25, 0x00,
+    0x75, 0x06, 0x95, 0x01, 0x81, 0x03, 0x05, 0x01,
+    0x09, 0x39, 0x15, 0x01, 0x25, 0x08, 0x35, 0x00,
+    0x46, 0x3b, 0x01, 0x66, 0x14, 0x00, 0x75, 0x04,
+    0x95, 0x01, 0x81, 0x42, 0x75, 0x04, 0x95, 0x01,
+    0x15, 0x00, 0x25, 0x00, 0x35, 0x00, 0x45, 0x00,
+    0x65, 0x00, 0x81, 0x03, 0x05, 0x09, 0x19, 0x01,
+    0x29, 0x0f, 0x15, 0x00, 0x25, 0x01, 0x75, 0x01,
+    0x95, 0x0f, 0x81, 0x02, 0x15, 0x00, 0x25, 0x00,
+    0x75, 0x01, 0x95, 0x01, 0x81, 0x03, 0x05, 0x0c,
+    0x0a, 0xb2, 0x00, 0x15, 0x00, 0x25, 0x01, 0x95,
+    0x01, 0x75, 0x01, 0x81, 0x02, 0x15, 0x00, 0x25,
+    0x00, 0x75, 0x07, 0x95, 0x01, 0x81, 0x03, 0x05,
+    0x0c, 0x09, 0x01, 0xa1, 0x01, 0x0a, 0x85, 0x00,
+    0x15, 0x00, 0x26, 0xff, 0x00, 0x95, 0x01, 0x75,
+    0x08, 0x81, 0x02, 0x0a, 0x99, 0x00, 0x15, 0x00,
+    0x26, 0xff, 0x00, 0x95, 0x01, 0x75, 0x04, 0x81,
+    0x02, 0x15, 0x00, 0x25, 0x00, 0x95, 0x01, 0x75,
+    0x04, 0x81, 0x03, 0x0a, 0x81, 0x00, 0x15, 0x00,
+    0x26, 0xff, 0x00, 0x95, 0x01, 0x75, 0x04, 0x81,
+    0x02, 0x15, 0x00, 0x25, 0x00, 0x95, 0x01, 0x75,
+    0x04, 0x81, 0x03, 0xc0, 0x05, 0x0f, 0x09, 0x21,
+    0x85, 0x03, 0xa1, 0x02, 0x09, 0x97, 0x15, 0x00,
+    0x25, 0x01, 0x75, 0x04, 0x95, 0x01, 0x91, 0x02,
+    0x15, 0x00, 0x25, 0x00, 0x75, 0x04, 0x95, 0x01,
+    0x91, 0x03, 0x09, 0x70, 0x15, 0x00, 0x25, 0x64,
+    0x75, 0x08, 0x95, 0x04, 0x91, 0x02, 0x09, 0x50,
+    0x66, 0x01, 0x10, 0x55, 0x0e, 0x15, 0x00, 0x26,
+    0xff, 0x00, 0x75, 0x08, 0x95, 0x01, 0x91, 0x02,
+    0x09, 0xa7, 0x15, 0x00, 0x26, 0xff, 0x00, 0x75,
+    0x08, 0x95, 0x01, 0x91, 0x02, 0x65, 0x00, 0x55,
+    0x00, 0x09, 0x7c, 0x15, 0x00, 0x26, 0xff, 0x00,
+    0x75, 0x08, 0x95, 0x01, 0x91, 0x02, 0xc0, 0x05,
+    0x0c, 0x09, 0x01, 0x85, 0x0c, 0xa1, 0x01, 0x0a,
+    0x9e, 0x00, 0x15, 0x00, 0x26, 0xff, 0x00, 0x95,
+    0x01, 0x75, 0x08, 0x81, 0x02, 0x0a, 0xa1, 0x00,
+    0x15, 0x00, 0x26, 0xff, 0x00, 0x95, 0x01, 0x75,
+    0x08, 0x81, 0x02, 0x0a, 0xa2, 0x00, 0x15, 0x00,
+    0x26, 0xff, 0x00, 0x95, 0x01, 0x75, 0x08, 0x81,
+    0x02, 0x0a, 0xa3, 0x00, 0x15, 0x00, 0x26, 0xff,
+    0x00, 0x95, 0x01, 0x75, 0x08, 0x81, 0x02, 0xc0,
+    0xc0, 0x05, 0x01, 0x09, 0x06, 0xa1, 0x01, 0x85,
+    0x05, 0x05, 0x07, 0x19, 0xe0, 0x29, 0xe7, 0x15,
+    0x00, 0x25, 0x01, 0x75, 0x01, 0x95, 0x08, 0x81,
+    0x02, 0x95, 0x01, 0x75, 0x08, 0x81, 0x03, 0x95,
+    0x06, 0x75, 0x08, 0x15, 0x00, 0x25, 0x65, 0x05,
+    0x07, 0x19, 0x00, 0x29, 0x65, 0x81, 0x00, 0xc0,
+};
+SDL_COMPILE_TIME_ASSERT (xbox_one_elite_2, sizeof (xbox_one_elite_2_hid_report_descriptor) == 0720);
+
+static unsigned char ps3_hid_report_descriptor[] =
+{
+    /* Generic Desktop / Joystick */
+    0x05, 0x01, 0x09, 0x04, 0xa1, 0x01, 0xa1, 0x02,
+    0x85, 0x01, 0x75, 0x08, 0x95, 0x01, 0x15, 0x00,
+    0x26, 0xff, 0x00, 0x81, 0x03, 0x75, 0x01, 0x95,
+    0x13, 0x15, 0x00, 0x25, 0x01, 0x35, 0x00, 0x45,
+    0x01, 0x05, 0x09, 0x19, 0x01, 0x29, 0x13, 0x81,
+    0x02, 0x75, 0x01, 0x95, 0x0d, 0x06, 0x00, 0xff,
+    0x81, 0x03, 0x15, 0x00, 0x26, 0xff, 0x00, 0x05,
+    0x01, 0x09, 0x01, 0xa1, 0x00, 0x75, 0x08, 0x95,
+    0x04, 0x35, 0x00, 0x46, 0xff, 0x00, 0x09, 0x30,
+    0x09, 0x31, 0x09, 0x32, 0x09, 0x35, 0x81, 0x02,
+    0xc0, 0x05, 0x01, 0x75, 0x08, 0x95, 0x27, 0x09,
+    0x01, 0x81, 0x02, 0x75, 0x08, 0x95, 0x30, 0x09,
+    0x01, 0x91, 0x02, 0x75, 0x08, 0x95, 0x30, 0x09,
+    0x01, 0xb1, 0x02, 0xc0, 0xa1, 0x02, 0x85, 0x02,
+    0x75, 0x08, 0x95, 0x30, 0x09, 0x01, 0xb1, 0x02,
+    0xc0, 0xa1, 0x02, 0x85, 0xee, 0x75, 0x08, 0x95,
+    0x30, 0x09, 0x01, 0xb1, 0x02, 0xc0, 0xa1, 0x02,
+    0x85, 0xef, 0x75, 0x08, 0x95, 0x30, 0x09, 0x01,
+    0xb1, 0x02, 0xc0, 0xc0, 0x00,
+};
+SDL_COMPILE_TIME_ASSERT (ps3, sizeof (ps3_hid_report_descriptor) == 149);
+
+#if 0 /* unused for now */
+static unsigned char vrs_pedals_hid_report_descriptor[] =
+{
+    /* Generic Desktop / Joystick */
+    0x05, 0x01, 0x09, 0x04, 0xa1, 0x01, 0x05, 0x01,
+    0xa1, 0x02, 0x85, 0x01, 0x09, 0x30, 0x09, 0x31,
+    0x09, 0x32, 0x15, 0x00, 0x27, 0xff, 0xff, 0x00,
+    0x00, 0x35, 0x00, 0x47, 0xff, 0xff, 0x00, 0x00,
+    0x75, 0x10, 0x95, 0x03, 0x81, 0x02, 0x06, 0x00,
+    0xff, 0x09, 0x01, 0x95, 0x39, 0x75, 0x08, 0x26,
+    0xff, 0x00, 0x15, 0x00, 0x81, 0x02, 0xc0, 0x06,
+    0x00, 0xff, 0x09, 0x01, 0xa1, 0x01, 0x85, 0x64,
+    0x95, 0x3f, 0x75, 0x08, 0x26, 0xff, 0x00, 0x15,
+    0x00, 0x09, 0x01, 0x91, 0x02, 0x85, 0x65, 0x95,
+    0x3f, 0x75, 0x08, 0x26, 0xff, 0x00, 0x15, 0x00,
+    0x09, 0x01, 0x81, 0x02, 0xc0, 0xc0,
+};
+SDL_COMPILE_TIME_ASSERT (vrs_pedals, sizeof (vrs_pedals_hid_report_descriptor) == 0136);
+#endif
+
+static unsigned char thinkpad_usb_keyboard_hid_report_descriptor[] =
+{
+    /* Generic Desktop / Keyboard */
+    0x05, 0x01, 0x09, 0x06, 0xa1, 0x01, 0x05, 0x07,
+    0x19, 0xe0, 0x29, 0xe7, 0x15, 0x00, 0x25, 0x01,
+    0x95, 0x08, 0x75, 0x01, 0x81, 0x02, 0x95, 0x08,
+    0x75, 0x01, 0x81, 0x01, 0x05, 0x08, 0x19, 0x01,
+    0x29, 0x03, 0x95, 0x03, 0x75, 0x01, 0x91, 0x02,
+    0x95, 0x01, 0x75, 0x05, 0x91, 0x01, 0x05, 0x07,
+    0x19, 0x00, 0x2a, 0xff, 0x00, 0x15, 0x00, 0x26,
+    0xff, 0x00, 0x95, 0x06, 0x75, 0x08, 0x81, 0x00,
+    0xc0,
+};
+SDL_COMPILE_TIME_ASSERT (thinkpad_usb_keyboard, sizeof (thinkpad_usb_keyboard_hid_report_descriptor) == 65);
+
+static unsigned char thinkpad_usb_trackpoint_hid_report_descriptor[] =
+{
+    /* Generic Desktop / Mouse, Generic Desktop / System Control,
+     * Consumer Devices / Consumer Control */
+    0x05, 0x01, 0x09, 0x02, 0xa1, 0x01, 0x85, 0x01,
+    0x09, 0x01, 0xa1, 0x00, 0x05, 0x09, 0x19, 0x01,
+    0x29, 0x03, 0x15, 0x00, 0x25, 0x01, 0x95, 0x03,
+    0x75, 0x01, 0x81, 0x02, 0x95, 0x01, 0x75, 0x05,
+    0x81, 0x01, 0x05, 0x01, 0x09, 0x30, 0x09, 0x31,
+    0x15, 0x81, 0x25, 0x7f, 0x95, 0x02, 0x75, 0x08,
+    0x81, 0x06, 0xc0, 0xc0, 0x05, 0x01, 0x09, 0x80,
+    0xa1, 0x01, 0x85, 0x02, 0x05, 0x01, 0x15, 0x00,
+    0x25, 0x01, 0x95, 0x08, 0x75, 0x01, 0x19, 0x81,
+    0x29, 0x88, 0x81, 0x02, 0xc0, 0x05, 0x0c, 0x09,
+    0x01, 0xa1, 0x01, 0x85, 0x03, 0x95, 0x08, 0x75,
+    0x01, 0x15, 0x00, 0x25, 0x01, 0x09, 0xe9, 0x09,
+    0xea, 0x09, 0xe2, 0x09, 0xb7, 0x09, 0xcd, 0x09,
+    0xb5, 0x09, 0xb6, 0x0a, 0x94, 0x01, 0x81, 0x02,
+    0x09, 0x03, 0xa1, 0x02, 0x05, 0x09, 0x19, 0x10,
+    0x29, 0x17, 0x81, 0x02, 0x05, 0x09, 0x19, 0x18,
+    0x29, 0x1f, 0x81, 0x02, 0xc0, 0x05, 0x08, 0x95,
+    0x02, 0x09, 0x09, 0x09, 0x21, 0x91, 0x02, 0x95,
+    0x01, 0x75, 0x06, 0x91, 0x03, 0xc0, 0x06, 0x01,
+    0xff, 0x09, 0x01, 0xa1, 0x01, 0x85, 0x04, 0x95,
+    0x01, 0x75, 0x08, 0x15, 0x00, 0x26, 0xff, 0x00,
+    0x09, 0x20, 0xb1, 0x03, 0x09, 0x21, 0xb1, 0x03,
+    0x09, 0x22, 0xb1, 0x03, 0x09, 0x23, 0xb1, 0x03,
+    0xc0,
+};
+SDL_COMPILE_TIME_ASSERT (thinkpad_usb_trackpoint, sizeof (thinkpad_usb_trackpoint_hid_report_descriptor) == 185);
+
+#if 0 /* unused for now */
+static unsigned char heusinkveld_pedals_hid_report_descriptor[] =
+{
+    /* Generic Desktop / Joystick */
+    0x05, 0x01, 0x09, 0x04, 0xa1, 0x01, 0x09, 0x33,
+    0x09, 0x34, 0x09, 0x35, 0x15, 0x00, 0x26, 0xff,
+    0x0f, 0x85, 0x01, 0x75, 0x10, 0x95, 0x03, 0x81,
+    0x02, 0x09, 0x00, 0x75, 0x10, 0x95, 0x06, 0x82,
+    0x01, 0x01, 0x85, 0x02, 0x75, 0x10, 0x95, 0x03,
+    0x09, 0x00, 0x09, 0x00, 0xb1, 0x02, 0x85, 0x03,
+    0x75, 0x08, 0x95, 0x03, 0x09, 0x00, 0x82, 0x01,
+    0x01, 0xc0,
+};
+SDL_COMPILE_TIME_ASSERT (heusinkveld_pedals, sizeof (heusinkveld_pedals_hid_report_descriptor) == 072);
+#endif
+
+static unsigned char fanatec_handbrake_hid_report_descriptor[] =
+{
+    /* Generic Desktop / Joystick */
+    0x05, 0x01, 0x09, 0x04, 0xa1, 0x01, 0x15, 0x00,
+    0x26, 0xff, 0x00, 0x95, 0x01, 0x75, 0x08, 0x09,
+    0x30, 0x81, 0x02, 0x06, 0x00, 0xff, 0x09, 0x01,
+    0x95, 0x03, 0x81, 0x02, 0x06, 0x00, 0xff, 0x09,
+    0x01, 0x95, 0x02, 0x91, 0x02, 0xc0,
+};
+SDL_COMPILE_TIME_ASSERT (fanatec_handbrake, sizeof (fanatec_handbrake_hid_report_descriptor) == 046);
+
 /* Test-cases derived from real devices or from Linux kernel source */
 /* *INDENT-OFF* */ /* clang-format off */
 static const GuessTest guess_tests[] =
 {
     {
       .name = "Xbox 360 wired USB controller",
+      .eviocgname = "Microsoft X-Box 360 pad",
+      .usb_vendor_name = "©Microsoft Corporation",
+      .usb_product_name = "Controller",
       /* 8BitDo N30 Pro 2 v0114 via USB-C (with the xpad driver) is
        * reported as 0003:045e:028e v0114, and is functionally equivalent */
       .bus_type = 0x0003,
       .vendor_id = 0x045e,
       .product_id = 0x028e,
+      .version = 0x0114,
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS, FF */
       .ev = { 0x0b, 0x00, 0x20 },
@@ -128,14 +320,18 @@ static const GuessTest guess_tests[] =
       },
     },
     { /* Reference: https://github.com/libsdl-org/SDL/issues/7814 */
-      .name = "X-Box One Elite 2",
+      .name = "X-Box One Elite 2 via USB",
+      /* The same physical device via Bluetooth, 0005:045e:0b22 v0517,
+       * is reported differently (below). */
+      /* Version 0407 is functionally equivalent. */
       .bus_type = 0x0003,
       .vendor_id = 0x045e,
       .product_id = 0x0b00,
+      .version = 0x0511,
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS, FF */
       .ev = { 0x0b, 0x00, 0x20 },
-      /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
+      /* XY (left stick), RX/RY (right stick), Z/RZ (triggers), HAT0 (dpad) */
       .abs = { 0x3f, 0x00, 0x03 },
       .keys = {
           /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
@@ -147,9 +343,40 @@ static const GuessTest guess_tests[] =
           /* 0x200 */ ZEROx8,
           /* 0x240 */ ZEROx8,
           /* 0x280 */ ZEROx8,
-          /* BTN_TRIGGER_HAPPY5 up to BTN_TRIGGER_HAPPY8 inclusive */
+          /* BTN_TRIGGER_HAPPY5 up to BTN_TRIGGER_HAPPY8 inclusive are the
+           * back buttons (paddles) */
           /* 0x2c0 */ 0xf0,
       },
+    },
+    { /* Reference: https://github.com/libsdl-org/SDL/issues/7814 */
+      .name = "X-Box One Elite 2 via Bluetooth",
+      /* The same physical device via USB, 0003:045e:0b00 v0511,
+       * is reported differently (above). */
+      .bus_type = 0x0003,
+      .vendor_id = 0x045e,
+      .product_id = 0x0b22,
+      .version = 0x0517,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_HAS_KEYS,
+      /* SYN, KEY, ABS, FF */
+      .ev = { 0x0b, 0x00, 0x20 },
+      /* Android-style mapping:
+       * XY (left stick), Z/RZ (right stick), GAS/BRAKE (triggers), HAT0 (dpad) */
+      .abs = { 0x27, 0x06, 0x03 },
+      .keys = {
+          /* 0x00 */ ZEROx8,
+          /* 0x40 */ ZEROx8,
+          /* KEY_RECORD is advertised but isn't generated in practice */
+          /* 0x80 */ ZEROx4, 0x80, 0x00, 0x00, 0x00,
+          /* KEY_UNKNOWN (240) is reported for the profile selector and all
+           * four back buttons (paddles) */
+          /* 0xc0 */ ZEROx4, 0x00, 0x00, 0x01, 0x00,
+          /* ABXY, TL, TR, TL2, TR2, SELECT, START, MODE, THUMBL,
+           * THUMBR have their obvious meanings; C and Z are also
+           * advertised, but are not generated in practice. */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0x7f,
+      },
+      .hid_report_descriptor_length = sizeof (xbox_one_elite_2_hid_report_descriptor),
+      .hid_report_descriptor = &xbox_one_elite_2_hid_report_descriptor[0],
     },
     {
       .name = "X-Box One S via Bluetooth",
@@ -205,8 +432,11 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualSense (PS5) v8111 - gamepad",
-      /* Same physical device via Bluetooth is 0005:054c:0ce6 v8100,
-       * but otherwise equivalent */
+      .eviocgname = "Sony Interactive Entertainment Wireless Controller",
+      .usb_vendor_name = "Sony Interactive Entertainment",
+      .usb_product_name = "Wireless Controller",
+      /* Same physical device via Bluetooth is 0005:054c:0ce6 v8100
+       * and EVIOCGNAME is just "Wireless Controller", otherwise equivalent */
       .bus_type = 0x0003,
       .vendor_id = 0x054c,
       .product_id = 0x0ce6,
@@ -225,6 +455,10 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualShock 4 - gamepad",
+      /* EVIOCGNAME is just "Wireless Controller" when seen via Bluetooth */
+      .eviocgname = "Sony Interactive Entertainment Wireless Controller",
+      .usb_vendor_name = "Sony Interactive Entertainment",
+      .usb_product_name = "Wireless Controller",
       /* Same physical device via Bluetooth is 0005:054c:09cc v8100,
        * but otherwise equivalent */
       .bus_type = 0x0003,
@@ -264,6 +498,10 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualShock 4 - touchpad",
+      /* EVIOCGNAME is just "Wireless Controller Touchpad" when seen via Bluetooth */
+      .eviocgname = "Sony Interactive Entertainment Wireless Controller Touchpad",
+      .usb_vendor_name = "Sony Interactive Entertainment",
+      .usb_product_name = "Wireless Controller",
       /* Same physical device via Bluetooth is 0005:054c:09cc v8100 and is
        * functionally equivalent. */
       /* DualSense (PS5), 0003:054c:0ce6 v8111, is functionally equivalent.
@@ -290,6 +528,10 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualShock 4 - accelerometer",
+      /* EVIOCGNAME is just "Wireless Controller Motion Sensors" when seen via Bluetooth */
+      .eviocgname = "Sony Interactive Entertainment Wireless Controller Motion Sensors",
+      .usb_vendor_name = "Sony Interactive Entertainment",
+      .usb_product_name = "Wireless Controller",
       /* Same physical device via Bluetooth is 0005:054c:09cc v8100 and is
        * functionally equivalent. */
       /* DualSense (PS5), 0003:054c:0ce6 v8111, is functionally equivalent.
@@ -327,9 +569,13 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "DualShock 3 - gamepad",
+      .eviocgname = "Sony PLAYSTATION(R)3 Controller",
+      .usb_vendor_name = "Sony",
+      .usb_product_name = "PLAYSTATION(R)3 Controller",
       .bus_type = 0x0003,
       .vendor_id = 0x054c,
       .product_id = 0x0268,
+      .version = 0x8111,
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS, MSC, FF */
       .ev = { 0x1b, 0x00, 0x20 },
@@ -346,9 +592,14 @@ static const GuessTest guess_tests[] =
           /* Digital dpad */
           /* 0x200 */ ZEROx4, 0x0f, 0x00, 0x00, 0x00,
       },
+      .hid_report_descriptor_length = sizeof (ps3_hid_report_descriptor),
+      .hid_report_descriptor = &ps3_hid_report_descriptor[0],
     },
     {
       .name = "DualShock 3 - accelerometer",
+      .eviocgname = "Sony PLAYSTATION(R)3 Controller Motion Sensors",
+      .usb_vendor_name = "Sony",
+      .usb_product_name = "PLAYSTATION(R)3 Controller",
       .bus_type = 0x0003,
       .vendor_id = 0x054c,
       .product_id = 0x0268,
@@ -359,6 +610,8 @@ static const GuessTest guess_tests[] =
       .abs = { 0x07 },
       /* ACCELEROMETER */
       .props = { 0x40 },
+      .hid_report_descriptor_length = sizeof (ps3_hid_report_descriptor),
+      .hid_report_descriptor = &ps3_hid_report_descriptor[0],
     },
     {
       .name = "Steam Controller - gamepad",
@@ -390,7 +643,8 @@ static const GuessTest guess_tests[] =
       .bus_type = 0x0003,
       .vendor_id = 0x28de,
       .product_id = 0x1142,
-      .expected = (SDL_UDEV_DEVICE_KEYBOARD
+      .expected = (SDL_UDEV_DEVICE_HAS_KEYS
+                   | SDL_UDEV_DEVICE_KEYBOARD
                    | SDL_UDEV_DEVICE_MOUSE),
       /* SYN, KEY, REL, MSC, LED, REP */
       .ev = { 0x17, 0x00, 0x12 },
@@ -496,6 +750,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "8BitDo SNES30 v0100 via Bluetooth",
+      .eviocgname = "8Bitdo SNES30 GamePad",
       /* The same physical device via USB, 0003:2dc8:ab20 v0110,
        * is reported differently (above). */
       /* 8BitDo NES30 Pro (aka N30 Pro) via Bluetooth, 0005:2dc8:3820 v0100,
@@ -677,6 +932,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Switch Pro Controller via Bluetooth (Linux 6.2.11)",
+      .eviocgname = "Pro Controller",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x2009,
@@ -695,6 +951,9 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Switch Pro Controller via USB",
+      .eviocgname = "Nintendo Co., Ltd. Pro Controller",
+      .usb_vendor_name = "Nintendo Co., Ltd.",
+      .usb_product_name = "Pro Controller",
       .bus_type = 0x0003,
       .vendor_id = 0x057e,
       .product_id = 0x2009,
@@ -721,6 +980,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "NES Controller (R) NES-style Joycon from Nintendo Online",
+      .eviocgname = "NES Controller (R)",
       /* Joy-Con (L), 0005:057e:2006 v0001, is functionally equivalent.
        * Ordinary Joy-Con (R) and NES-style Joy-Con (L) are assumed to be
        * functionally equivalent as well. */
@@ -833,7 +1093,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x045e,
       .product_id = 0x02e0,
       .version = 0x0903,
-      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY, ABS, MSC, FF */
       .ev = { 0x1b, 0x00, 0x20 },
       /* X, Y, Z, RX, RY, RZ, HAT0X, HAT0Y */
@@ -867,13 +1127,18 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Google Stadia Controller rev.A",
+      .eviocgname = "Google LLC Stadia Controller rev. A",
+      .usb_vendor_name = "Google LLC",
+      .usb_product_name = "Stadia Controller rev. A",
       /* This data is with USB-C, but the same physical device via Bluetooth,
-       * 0005:18d1:9400 v0000, is functionally equivalent */
+       * 0005:18d1:9400 v0000, is functionally equivalent other than having
+       * EVIOCGNAME = StadiaXXXX-YYYY where XXXX is the last 4 digits of
+       * the serial number and YYYY is some other mystery number */
       .bus_type = 0x0003,
       .vendor_id = 0x18d1,
       .product_id = 0x9400,
       .version = 0x0100,
-      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_HAS_KEYS,
       .ev = { 0x0b },
       /* XYZ, RZ, gas, brake, hat0 */
       .abs = { 0x27, 0x06, 0x03 },
@@ -898,13 +1163,16 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Microsoft Xbox Series S|X Controller (model 1914) via USB",
+      .eviocgname = "Microsoft Xbox Series S|X Controller",
+      .usb_vendor_name = "Microsoft",
+      .usb_product_name = "Controller",
       /* Physically the same device as 0003:045e:0b13 v0515 below,
        * but some functionality is mapped differently */
       .bus_type = 0x0003,
       .vendor_id = 0x045e,
       .product_id = 0x0b12,
       .version = 0x050f,
-      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_HAS_KEYS,
       .ev = { 0x0b },
       /* X, Y, Z, RX, RY, RZ, hat 0 */
       .abs = { 0x3f, 0x00, 0x03 },
@@ -920,13 +1188,14 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Microsoft Xbox Series S|X Controller (model 1914) via Bluetooth",
+      .eviocgname = "Xbox Wireless Controller",
       /* Physically the same device as 0003:045e:0b12 v050f above,
        * but some functionality is mapped differently */
-      .bus_type = 0x0003,
+      .bus_type = 0x0005,
       .vendor_id = 0x045e,
       .product_id = 0x0b13,
       .version = 0x0515,
-      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_HAS_KEYS,
       .ev = { 0x0b },
       /* XYZ, RZ, gas, brake, hat0 */
       .abs = { 0x27, 0x06, 0x03 },
@@ -943,17 +1212,18 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Wiimote - buttons",
+      .eviocgname = "Nintendo Wii Remote",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
-      .version = 0x8600,
+      .version = 0x0600,
       /* This one is a bit weird because some of the buttons are mapped
        * to the arrow, page up and page down keys, so it's a joystick
        * with a subset of a keyboard attached. */
-      /* TODO: Should this be JOYSTICK, or even JOYSTICK|KEYBOARD? */
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
-      /* SYN, KEY */
-      .ev = { 0x03 },
+      /* TODO: Should this be JOYSTICK, or even JOYSTICK|HAS_KEYS? */
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
+      /* SYN, KEY, FF */
+      .ev = { 0x03, 0x00, 0x20 },
       .keys = {
           /* 0x00 */ ZEROx8,
           /* left, right, up down */
@@ -968,11 +1238,27 @@ static const GuessTest guess_tests[] =
       },
     },
     {
-      .name = "Wiimote - Motion Plus or accelerometer",
+      .name = "Wiimote - accelerometer",
+      .eviocgname = "Nintendo Wii Remote Accelerometer",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
-      .version = 0x8600,
+      .version = 0x0600,
+      .expected = SDL_UDEV_DEVICE_ACCELEROMETER,
+      /* SYN, ABS */
+      .ev = { 0x09 },
+      /* RX, RY, RZ - even though it would more conventionally be X, Y, Z */
+      .abs = { 0x38 },
+    },
+    {
+      .name = "Wiimote - Motion Plus gyroscope",
+      .eviocgname = "Nintendo Wii Remote Motion Plus",
+      /* Note that if we only look at the bus type, vendor, product, version
+       * and axes, this is indistinguishable from the accelerometer */
+      .bus_type = 0x0005,
+      .vendor_id = 0x057e,
+      .product_id = 0x0306,
+      .version = 0x0600,
       .expected = SDL_UDEV_DEVICE_ACCELEROMETER,
       /* SYN, ABS */
       .ev = { 0x09 },
@@ -981,27 +1267,31 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Wiimote - IR positioning",
+      .eviocgname = "Nintendo Wii Remote IR",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
-      .version = 0x8600,
+      .version = 0x0600,
       .expected = SDL_UDEV_DEVICE_UNKNOWN,
       /* SYN, ABS */
       .ev = { 0x09 },
-      /* HAT0 to HAT3 */
-      .abs = { 0x00, 0x1f },
+      /* HAT0X, Y to HAT3X, Y */
+      .abs = { 0x00, 0x00, 0xff },
     },
     {
       .name = "Wiimote - Nunchuck",
+      .eviocgname = "Nintendo Wii Remote Nunchuk",
       .bus_type = 0x0005,
       .vendor_id = 0x057e,
       .product_id = 0x0306,
-      .version = 0x8600,
+      .version = 0x0600,
       /* TODO: Should this be JOYSTICK? It has one stick and two buttons */
       .expected = SDL_UDEV_DEVICE_UNKNOWN,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
-      /* RX, RY, RZ, hat 0 */
+      /* RX, RY, RZ, hat 0 - even though this is an accelerometer, which
+       * would more conventionally be X, Y, Z, and a left joystick, which
+       * would more conventionally be X, Y */
       .abs = { 0x38, 0x00, 0x03 },
       .keys = {
           /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
@@ -1010,15 +1300,15 @@ static const GuessTest guess_tests[] =
       },
     },
     {
-      /* Flags guessed from kernel source code */
       .name = "Wiimote - Classic Controller",
-      /* TODO: Should this be JOYSTICK, or maybe JOYSTICK|KEYBOARD?
+      .eviocgname = "Nintendo Wii Remote Classic Controller",
+      /* TODO: Should this be JOYSTICK, or maybe JOYSTICK|HAS_KEYS?
        * It's unusual in the same ways as the Wiimote */
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
-      /* Hat 1-3 */
-      .abs = { 0x00, 0x1c },
+      /* Hat 1-3 X and Y */
+      .abs = { 0x00, 0x00, 0xfc },
       .keys = {
           /* 0x00 */ ZEROx8,
           /* left, right, up down */
@@ -1026,29 +1316,31 @@ static const GuessTest guess_tests[] =
           /* 0x80 */ ZEROx8,
           /* 0xc0 */ ZEROx8,
           /* A, B, X, Y, MODE, TL, TL2, TR, TR2 */
-          /* 0x100 */ ZEROx4, 0x00, 0x13, 0xdb, 0x10,
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x13,
           /* 0x140 */ ZEROx8,
           /* next (keyboard page down), previous (keyboard page up) */
           /* 0x180 */ 0x00, 0x00, 0x80, 0x10, ZEROx4,
       },
     },
     {
-      /* Flags guessed from kernel source code */
+      /* Flags guessed from kernel source code, not confirmed with real
+       * hardware */
       .name = "Wiimote - Balance Board",
       /* TODO: Should this be JOYSTICK? */
       .expected = SDL_UDEV_DEVICE_UNKNOWN,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
       /* Hat 0-1 */
-      .abs = { 0x00, 0x0f },
+      .abs = { 0x00, 0x00, 0x0f },
       .keys = {
           /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
-          /* A */
+          /* BTN_A */
           /* 0x100 */ ZEROx4, 0x00, 0x00, 0x01, 0x00,
       },
     },
     {
-      /* Flags guessed from kernel source code */
+      /* Flags guessed from kernel source code, not confirmed with real
+       * hardware */
       .name = "Wiimote - Wii U Pro Controller",
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS */
@@ -1069,6 +1361,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Synaptics TM3381-002 (Thinkpad X280 trackpad)",
+      .eviocgname = "Synaptics TM3381-002",
       .bus_type = 0x001d,   /* BUS_RMI */
       .vendor_id = 0x06cb,
       .product_id = 0x0000,
@@ -1110,6 +1403,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "TPPS/2 Elan TrackPoint (Thinkpad X280)",
+      .eviocgname = "TPPS/2 Elan TrackPoint",
       .bus_type = 0x0011,   /* BUS_I8042 */
       .vendor_id = 0x0002,
       .product_id = 0x000a,
@@ -1129,8 +1423,12 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Thinkpad ACPI buttons",
-      /* SDL treats this as a keyboard because it has a power button */
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .eviocgname = "ThinkPad Extra Buttons",
+      .bus_type = 0x0019,
+      .vendor_id = 0x17aa,
+      .product_id = 0x5054,
+      .version = 0x4101,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY, MSC, SW */
       .ev = { 0x33 },
       .keys = {
@@ -1147,7 +1445,31 @@ static const GuessTest guess_tests[] =
       },
     },
     {
+      .name = "Thinkpad ACPI buttons (Linux 6.1)",
+      .eviocgname = "ThinkPad Extra Buttons",
+      .bus_type = 0x0019,
+      .vendor_id = 0x17aa,
+      .product_id = 0x5054,
+      .version = 0x4101,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
+      /* SYN, KEY, MSC, SW */
+      .ev = { 0x33 },
+      .keys = {
+          /* 0x00 */ ZEROx8,
+          /* 0x40 */ ZEROx4, 0x00, 0x00, 0x0e, 0x01,
+          /* 0x80 */ 0x00, 0x50, 0x11, 0x51, 0x00, 0x28, 0x00, 0xc0,
+          /* 0xc0 */ 0x04, 0x20, 0x10, 0x02, 0x1b, 0x70, 0x01, 0x00,
+          /* 0x100 */ ZEROx8,
+          /* 0x140 */ ZEROx4, 0x00, 0x00, 0x50, 0x00,
+          /* 0x180 */ ZEROx4, 0x00, 0x00, 0x00, 0x70,
+          /* 0x1c0 */ 0x00, 0x00, 0x04, 0x18, 0x20, 0x00, 0x00, 0x00,
+          /* 0x200 */ ZEROx8,
+          /* 0x240 */ ZEROx8,
+      },
+    },
+    {
       .name = "PC speaker",
+      .eviocgname = "PC Speaker",
       .bus_type = 0x0010,   /* BUS_ISA */
       .vendor_id = 0x001f,
       .product_id = 0x0001,
@@ -1157,7 +1479,23 @@ static const GuessTest guess_tests[] =
       .ev = { 0x01, 0x00, 0x04 },
     },
     {
+      .name = "HDA Digital PCBeep",
+      .eviocgname = "HDA Digital PCBeep",
+      .bus_type = 0x0001,
+      .vendor_id = 0x10ec,
+      .product_id = 0x0257,
+      .version = 0x0001,
+      .expected = SDL_UDEV_DEVICE_UNKNOWN,
+      /* SYN, SND */
+      .ev = { 0x01, 0x00, 0x04 },
+    },
+    {
       .name = "ALSA headphone detection, etc.",
+      .eviocgname = "HDA Intel PCH Mic",
+      /* HDA Intel PCH Headphone is functionally equivalent */
+      /* HDA Intel PCH HDMI/DP,pcm=3 is functionally equivalent */
+      /* HDA Intel PCH HDMI/DP,pcm=7 is functionally equivalent */
+      /* HDA Intel PCH HDMI/DP,pcm=8 is functionally equivalent */
       .bus_type = 0x0000,
       .vendor_id = 0x0000,
       .product_id = 0x0000,
@@ -1169,11 +1507,12 @@ static const GuessTest guess_tests[] =
     {
       /* Assumed to be a reasonably typical i8042 (PC AT) keyboard */
       .name = "Thinkpad T520 and X280 keyboards",
+      .eviocgname = "AT Translated Set 2 keyboard",
       .bus_type = 0x0011,   /* BUS_I8042 */
       .vendor_id = 0x0001,
       .product_id = 0x0001,
       .version = 0xab54,
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS | SDL_UDEV_DEVICE_KEYBOARD,
       /* SYN, KEY, MSC, LED, REP */
       .ev = { 0x13, 0x00, 0x12 },
       .keys = {
@@ -1185,12 +1524,12 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Thinkpad X280 sleep button",
+      .eviocgname = "Sleep Button",
       .bus_type = 0x0019,   /* BUS_HOST */
       .vendor_id = 0x0000,
       .product_id = 0x0003,
       .version = 0x0000,
-      /* SDL treats KEY_SLEEP as indicating a keyboard */
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY */
       .ev = { 0x03 },
       .keys = {
@@ -1202,6 +1541,7 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Thinkpad X280 lid switch",
+      .eviocgname = "Lid Switch",
       .bus_type = 0x0019,   /* BUS_HOST */
       .vendor_id = 0x0000,
       .product_id = 0x0005,
@@ -1212,12 +1552,12 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Thinkpad X280 power button",
+      .eviocgname = "Power Button",
       .bus_type = 0x0019,   /* BUS_HOST */
       .vendor_id = 0x0000,
       .product_id = 0x0001,
       .version = 0x0000,
-      /* SDL treats KEY_POWER as indicating a keyboard */
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY */
       .ev = { 0x03 },
       .keys = {
@@ -1228,12 +1568,12 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Thinkpad X280 video bus",
+      .eviocgname = "Video Bus",
       .bus_type = 0x0019,   /* BUS_HOST */
       .vendor_id = 0x0000,
       .product_id = 0x0006,
       .version = 0x0000,
-      /* SDL treats brightness control, etc. as keyboard keys */
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY */
       .ev = { 0x03 },
       .keys = {
@@ -1245,12 +1585,32 @@ static const GuessTest guess_tests[] =
       },
     },
     {
+      .name = "Thinkpad X280 webcam",
+      .eviocgname = "Integrated Camera: Integrated C",
+      .usb_vendor_name = "Chicony Electronics Co.,Ltd.",
+      .usb_product_name = "Integrated Camera",
+      .bus_type = 0x0003,
+      .vendor_id = 0x04f2,
+      .product_id = 0xb604,
+      .version = 0x0027,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
+      /* SYN, KEY */
+      .ev = { 0x03 },
+      .keys = {
+          /* 0x00 */ ZEROx8,
+          /* 0x40 */ ZEROx8,
+          /* 0x80 */ ZEROx8,
+          /* KEY_CAMERA */
+          /* 0xc0 */ 0x00, 0x00, 0x10, 0x00, ZEROx4,
+      },
+    },
+    {
       .name = "Thinkpad X280 extra buttons",
       .bus_type = 0x0019,   /* BUS_HOST */
       .vendor_id = 0x17aa,
       .product_id = 0x5054,
       .version = 0x4101,
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY */
       .ev = { 0x03 },
       .keys = {
@@ -1268,10 +1628,13 @@ static const GuessTest guess_tests[] =
     },
     {
       .name = "Thinkpad USB keyboard with Trackpoint - keyboard",
+      .eviocgname = "Lite-On Technology Corp. ThinkPad USB Keyboard with TrackPoint",
+      .usb_vendor_name = "Lite-On Technology Corp.",
+      .usb_product_name = "ThinkPad USB Keyboard with TrackPoint",
       .bus_type = 0x0003,
       .vendor_id = 0x17ef,
       .product_id = 0x6009,
-      .expected = SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_HAS_KEYS | SDL_UDEV_DEVICE_KEYBOARD,
       /* SYN, KEY, MSC, LED, REP */
       .ev = { 0x13, 0x00, 0x12 },
       .keys = {
@@ -1280,16 +1643,22 @@ static const GuessTest guess_tests[] =
           /* 0x80 */ 0xff, 0x57, 0x40, 0xc1, 0x7a, 0x20, 0x9f, 0xff,
           /* 0xc0 */ 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00,
       },
+      .hid_report_descriptor_length = sizeof (thinkpad_usb_keyboard_hid_report_descriptor),
+      .hid_report_descriptor = &thinkpad_usb_keyboard_hid_report_descriptor[0],
     },
     {
       .name = "Thinkpad USB keyboard with Trackpoint - Trackpoint",
+      .eviocgname = "Lite-On Technology Corp. ThinkPad USB Keyboard with TrackPoint",
+      .usb_vendor_name = "Lite-On Technology Corp.",
+      .usb_product_name = "ThinkPad USB Keyboard with TrackPoint",
       .bus_type = 0x0003,
       .vendor_id = 0x17ef,
       .product_id = 0x6009,
+      .version = 0x0110,
       /* For some reason the special keys like mute and wlan toggle
        * show up here instead of, or in addition to, as part of
        * the keyboard - so both udev and SDL report this as having keys too. */
-      .expected = SDL_UDEV_DEVICE_MOUSE | SDL_UDEV_DEVICE_KEYBOARD,
+      .expected = SDL_UDEV_DEVICE_MOUSE | SDL_UDEV_DEVICE_HAS_KEYS,
       /* SYN, KEY, REL, MSC, LED */
       .ev = { 0x17, 0x00, 0x02 },
       /* X, Y */
@@ -1304,6 +1673,8 @@ static const GuessTest guess_tests[] =
           /* 0x140 */ ZEROx4, 0x00, 0x00, 0x10, 0x00,
           /* 0x180 */ ZEROx4, 0x00, 0x00, 0x40, 0x00,
       },
+      .hid_report_descriptor_length = sizeof (thinkpad_usb_trackpoint_hid_report_descriptor),
+      .hid_report_descriptor = &thinkpad_usb_trackpoint_hid_report_descriptor[0],
     },
     { /* https://github.com/ValveSoftware/Proton/issues/5126 */
       .name = "Smarty Co. VRS DirectForce Pro Pedals",
@@ -1373,6 +1744,54 @@ static const GuessTest guess_tests[] =
       /* RX, RY, RZ */
       .abs = { 0x38 },
     },
+    { /* https://github.com/ValveSoftware/Proton/issues/5126 */
+      .name = "FANATEC ClubSport USB Handbrake",
+      .bus_type = 0x0003,
+      .vendor_id = 0x0eb7,
+      .product_id = 0x1a93,
+      .version = 0x0111,
+      /* TODO: Ideally we would identify this as a joystick, but there
+       * isn't currently enough information to do that without a table
+       * of known devices. */
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
+      /* SYN, ABS */
+      .ev = { 0x09 },
+      /* X only */
+      .abs = { 0x01 },
+      .hid_report_descriptor_length = sizeof (fanatec_handbrake_hid_report_descriptor),
+      .hid_report_descriptor = &fanatec_handbrake_hid_report_descriptor[0],
+    },
+    { /* Artificial test data, not a real device */
+      .name = "Fake accelerometer with fewer than usual axes reported",
+      .expected = SDL_UDEV_DEVICE_ACCELEROMETER,
+      /* SYN, ABS */
+      .ev = { 0x09 },
+      /* X only */
+      .abs = { 0x01 },
+      /* ACCELEROMETER */
+      .props = { 0x40 },
+    },
+    { /* Artificial test data, not a real device */
+      .name = "Fake pointing stick with no buttons",
+      .expected = SDL_UDEV_DEVICE_MOUSE,
+      /* SYN, REL */
+      .ev = { 0x05 },
+      /* X,Y */
+      .rel = { 0x03 },
+      /* POINTER, POINTING_STICK */
+      .props = { 0x21 },
+    },
+    { /* Artificial test data, not a real device */
+      .name = "Fake buttonpad",
+      .expected = SDL_UDEV_DEVICE_TOUCHPAD,
+      /* SYN, ABS */
+      .ev = { 0x09 },
+      /* X,Y */
+      .abs = { 0x03 },
+      /* POINTER, BUTTONPAD */
+      .props = { 0x05 },
+    },
     {
       .name = "No information",
       .expected = SDL_UDEV_DEVICE_UNKNOWN,
@@ -1409,6 +1828,7 @@ run_test(void)
         int actual;
         struct
         {
+            unsigned long props[NBITS(INPUT_PROP_MAX)];
             unsigned long ev[NBITS(EV_MAX)];
             unsigned long abs[NBITS(ABS_MAX)];
             unsigned long keys[NBITS(KEY_MAX)];
@@ -1418,10 +1838,15 @@ run_test(void)
         printf("%s...\n", t->name);
 
         memset(&caps, '\0', sizeof(caps));
+        memcpy(caps.props, t->props, sizeof(t->props));
         memcpy(caps.ev, t->ev, sizeof(t->ev));
         memcpy(caps.keys, t->keys, sizeof(t->keys));
         memcpy(caps.abs, t->abs, sizeof(t->abs));
         memcpy(caps.rel, t->rel, sizeof(t->rel));
+
+        for (j = 0; j < SDL_arraysize(caps.props); j++) {
+            caps.props[j] = SwapLongLE(caps.props[j]);
+        }
 
         for (j = 0; j < SDL_arraysize(caps.ev); j++) {
             caps.ev[j] = SwapLongLE(caps.ev[j]);
@@ -1439,8 +1864,8 @@ run_test(void)
             caps.rel[j] = SwapLongLE(caps.rel[j]);
         }
 
-        actual = SDL_EVDEV_GuessDeviceClass(caps.ev, caps.abs, caps.keys,
-                                            caps.rel);
+        actual = SDL_EVDEV_GuessDeviceClass(caps.props, caps.ev, caps.abs,
+                                            caps.keys, caps.rel);
 
         if (actual == t->expected) {
             printf("\tOK\n");

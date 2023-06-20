@@ -617,6 +617,25 @@ extern "C" {
 #define SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS "SDL_GAMECONTROLLER_USE_BUTTON_LABELS"
 
 /**
+ *  \brief  Controls whether the device's built-in accelerometer and gyro should be used as sensors for gamepads.
+ *
+ *  The variable can be set to the following values:
+ *    "0"       - Sensor fusion is disabled
+ *    "1"       - Sensor fusion is enabled for all controllers that lack sensors
+ *
+ *  Or the variable can be a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ *
+ *  This hint is checked when a gamepad is opened.
+ */
+#define SDL_HINT_GAMECONTROLLER_SENSOR_FUSION "SDL_GAMECONTROLLER_SENSOR_FUSION"
+
+/**
  *  \brief  A variable controlling whether grabbing input grabs the keyboard
  *
  *  This variable can be set to the following values:
@@ -1918,6 +1937,13 @@ extern "C" {
  *
  */
 #define SDL_HINT_VIDEO_X11_WINDOW_VISUALID      "SDL_VIDEO_X11_WINDOW_VISUALID"
+
+/**
+ *  \brief  A variable forcing the scaling factor for X11 windows
+ *
+ *  This variable can be set to a floating point value in the range 1.0-10.0f
+ */
+#define SDL_HINT_VIDEO_X11_SCALING_FACTOR      "SDL_VIDEO_X11_SCALING_FACTOR"
 
 /**
  *  \brief  A variable controlling whether the X11 XRandR extension should be used.

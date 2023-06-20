@@ -329,24 +329,6 @@ float SDL_modff(float x, float *y)
 #endif
 }
 
-double SDL_nextafter(double from, double to)
-{
-#ifdef HAVE_NEXTAFTER
-    return nextafter(from, to);
-#else
-    return SDL_uclibc_nextafter(from, to);
-#endif
-}
-
-float SDL_nextafterf(float from, float to)
-{
-#ifdef HAVE_NEXTAFTERF
-    return nextafterf(from, to);
-#else
-    return SDL_uclibc_nextafterf(from, to);
-#endif
-}
-
 double SDL_pow(double x, double y)
 {
 #ifdef HAVE_POW
