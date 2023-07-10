@@ -28,6 +28,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_CaptureMouse@SDL3_0.0.0 3~
  SDL_CleanupTLS@SDL3_0.0.0 3~
  SDL_ClearAudioStream@SDL3_0.0.0 3~
+ SDL_ClearClipboardData@SDL3_0.0.0 3~
  SDL_ClearComposition@SDL3_0.0.0 3~
  SDL_ClearError@SDL3_0.0.0 3~
  SDL_ClearHints@SDL3_0.0.0 3~
@@ -150,7 +151,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetCPUCount@SDL3_0.0.0 3~
  SDL_GetClipboardData@SDL3_0.0.0 3~
  SDL_GetClipboardText@SDL3_0.0.0 3~
- SDL_GetClipboardUserdata@SDL3_0.0.0 3~
  SDL_GetClosestFullscreenDisplayMode@SDL3_0.0.0 3~
  SDL_GetCurrentAudioDriver@SDL3_0.0.0 3~
  SDL_GetCurrentDisplayMode@SDL3_0.0.0 3~
@@ -439,6 +439,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_JoystickHasRumble@SDL3_0.0.0 3~
  SDL_JoystickHasRumbleTriggers@SDL3_0.0.0 3~
  SDL_JoystickIsHaptic@SDL3_0.0.0 3~
+ SDL_LoadBMP@SDL3_0.0.0 3~
  SDL_LoadBMP_RW@SDL3_0.0.0 3~
  SDL_LoadFile@SDL3_0.0.0 3~
  SDL_LoadFile_RW@SDL3_0.0.0 3~
@@ -554,6 +555,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_RumbleJoystickTriggers@SDL3_0.0.0 3~
  SDL_RunApp@SDL3_0.0.0 3~
  SDL_SIMDGetAlignment@SDL3_0.0.0 3~
+ SDL_SaveBMP@SDL3_0.0.0 3~
  SDL_SaveBMP_RW@SDL3_0.0.0 3~
  SDL_ScreenKeyboardShown@SDL3_0.0.0 3~
  SDL_ScreenSaverEnabled@SDL3_0.0.0 3~
@@ -805,7 +807,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_strrev@SDL3_0.0.0 3~
  SDL_strstr@SDL3_0.0.0 3~
  SDL_strtod@SDL3_0.0.0 3~
- SDL_strtokr@SDL3_0.0.0 3~
+ SDL_strtok_r@SDL3_0.0.0 3~
  SDL_strtol@SDL3_0.0.0 3~
  SDL_strtoll@SDL3_0.0.0 3~
  SDL_strtoul@SDL3_0.0.0 3~
