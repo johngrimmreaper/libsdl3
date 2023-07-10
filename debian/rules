@@ -56,8 +56,8 @@ endif
 	dh $@ --buildsystem=cmake+ninja
 
 override_dh_auto_configure:
-	if [ $(DEB_VERSION_UPSTREAM) = 3~git20230614+dfsg ]; then \
-		echo prerelease-3.0.0-1733-g23e007d3b > VERSION.txt; \
+	if [ $(DEB_VERSION_UPSTREAM) = 3~git20230710+dfsg ]; then \
+		echo prerelease-3.0.0-1908-gefd530827 > VERSION.txt; \
 	fi
 	dh_auto_configure -- $(confflags)
 
