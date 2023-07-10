@@ -367,31 +367,41 @@ void SDL_DBus_ScreensaverTickle(void)
     }
 }
 
-static SDL_bool SDL_DBus_AppendDictWithKeyValue(DBusMessageIter *iterInit, const char *key, const char *value)
+static SDL_bool SDL_DBus_AppendDictWithKeysAndValues(DBusMessageIter *iterInit, const char **keys, const char **values, int count)
 {
-    DBusMessageIter iterDict, iterEntry, iterValue;
+    DBusMessageIter iterDict;
 
     if (!dbus.message_iter_open_container(iterInit, DBUS_TYPE_ARRAY, "{sv}", &iterDict)) {
         goto failed;
     }
 
-    if (!dbus.message_iter_open_container(&iterDict, DBUS_TYPE_DICT_ENTRY, NULL, &iterEntry)) {
-        goto failed;
+    for (int i = 0; i < count; i++) {
+        DBusMessageIter iterEntry, iterValue;
+        const char *key = keys[i];
+        const char *value = values[i];
+
+        if (!dbus.message_iter_open_container(&iterDict, DBUS_TYPE_DICT_ENTRY, NULL, &iterEntry)) {
+            goto failed;
+        }
+
+        if (!dbus.message_iter_append_basic(&iterEntry, DBUS_TYPE_STRING, &key)) {
+            goto failed;
+        }
+
+        if (!dbus.message_iter_open_container(&iterEntry, DBUS_TYPE_VARIANT, DBUS_TYPE_STRING_AS_STRING, &iterValue)) {
+            goto failed;
+        }
+
+        if (!dbus.message_iter_append_basic(&iterValue, DBUS_TYPE_STRING, &value)) {
+            goto failed;
+        }
+
+        if (!dbus.message_iter_close_container(&iterEntry, &iterValue) || !dbus.message_iter_close_container(&iterDict, &iterEntry)) {
+            goto failed;
+        }
     }
 
-    if (!dbus.message_iter_append_basic(&iterEntry, DBUS_TYPE_STRING, &key)) {
-        goto failed;
-    }
-
-    if (!dbus.message_iter_open_container(&iterEntry, DBUS_TYPE_VARIANT, DBUS_TYPE_STRING_AS_STRING, &iterValue)) {
-        goto failed;
-    }
-
-    if (!dbus.message_iter_append_basic(&iterValue, DBUS_TYPE_STRING, &value)) {
-        goto failed;
-    }
-
-    if (!dbus.message_iter_close_container(&iterEntry, &iterValue) || !dbus.message_iter_close_container(&iterDict, &iterEntry) || !dbus.message_iter_close_container(iterInit, &iterDict)) {
+    if (!dbus.message_iter_close_container(iterInit, &iterDict)) {
         goto failed;
     }
 
@@ -402,6 +412,16 @@ failed:
      * missing if libdbus is too old. Instead, we just return without cleaning up any eventual
      * open container */
     return SDL_FALSE;
+}
+
+static SDL_bool SDL_DBus_AppendDictWithKeyValue(DBusMessageIter *iterInit, const char *key, const char *value)
+{
+   const char *keys[1];
+   const char *values[1];
+
+   keys[0] = key;
+   values[0] = value;
+   return SDL_DBus_AppendDictWithKeysAndValues(iterInit, keys, values, 1);
 }
 
 SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
@@ -447,6 +467,8 @@ SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
             }
 
             dbus.message_iter_init_append(msg, &iterInit);
+
+            /* a{sv} */
             if (!SDL_DBus_AppendDictWithKeyValue(&iterInit, key, reason)) {
                 dbus.message_unref(msg);
                 return SDL_FALSE;

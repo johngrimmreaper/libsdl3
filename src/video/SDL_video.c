@@ -1732,7 +1732,7 @@ Uint32 SDL_GetWindowPixelFormat(SDL_Window *window)
 }
 
 #define CREATE_FLAGS \
-    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN | SDL_WINDOW_MINIMIZED | SDL_WINDOW_METAL | SDL_WINDOW_TRANSPARENT)
+    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN | SDL_WINDOW_MINIMIZED | SDL_WINDOW_METAL | SDL_WINDOW_TRANSPARENT)
 
 static SDL_INLINE SDL_bool IsAcceptingDragAndDrop(void)
 {
@@ -2053,7 +2053,7 @@ SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y
     }
 
     /* Remove invalid flags */
-    flags &= ~(SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_SKIP_TASKBAR);
+    flags &= ~(SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS);
 
     return SDL_CreateWindowInternal(NULL, offset_x, offset_y, w, h, parent, flags);
 }
@@ -3695,6 +3695,9 @@ void SDL_VideoQuit(void)
         return;
     }
 
+    /* Make sure we don't try to serve clipboard data after this */
+    SDL_ClearClipboardData();
+
     /* Halt event processing before doing anything else */
     SDL_QuitTouch();
     SDL_QuitMouse();
@@ -3719,8 +3722,10 @@ void SDL_VideoQuit(void)
         _this->displays = NULL;
         _this->num_displays = 0;
     }
-    SDL_free(_this->clipboard_text);
-    _this->clipboard_text = NULL;
+    if (_this->primary_selection_text) {
+        SDL_free(_this->primary_selection_text);
+        _this->primary_selection_text = NULL;
+    }
     _this->free(_this);
     _this = NULL;
 }

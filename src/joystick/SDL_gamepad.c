@@ -22,6 +22,7 @@
 
 /* This is the gamepad API for Simple DirectMedia Layer */
 
+#include "../SDL_utils_c.h"
 #include "SDL_sysjoystick.h"
 #include "SDL_joystick_c.h"
 #include "SDL_gamepad_c.h"
@@ -392,6 +393,22 @@ static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
             SDL_PushEvent(&deviceevent);
         }
     } break;
+    case SDL_EVENT_JOYSTICK_UPDATE_COMPLETE:
+    {
+        SDL_AssertJoysticksLocked();
+
+        for (gamepad = SDL_gamepads; gamepad; gamepad = gamepad->next) {
+            if (gamepad->joystick->instance_id == event->jdevice.which) {
+                SDL_Event deviceevent;
+
+                deviceevent.type = SDL_EVENT_GAMEPAD_UPDATE_COMPLETE;
+                deviceevent.common.timestamp = event->jdevice.timestamp;
+                deviceevent.gdevice.which = event->jdevice.which;
+                SDL_PushEvent(&deviceevent);
+                break;
+            }
+        }
+    } break;
     default:
         break;
     }
@@ -567,7 +584,9 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_JoystickGUID guid
         /* GameCube driver has 12 buttons and 6 axes */
         SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b6,dpleft:b4,dpright:b5,dpup:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b9,righttrigger:a5,rightx:a2,righty:a3,start:b8,x:b2,y:b3,", sizeof(mapping_string));
     } else if (vendor == USB_VENDOR_NINTENDO &&
-               (guid.data[15] == k_eSwitchDeviceInfoControllerType_NESLeft ||
+               (guid.data[15] == k_eSwitchDeviceInfoControllerType_HVCLeft ||
+                guid.data[15] == k_eSwitchDeviceInfoControllerType_HVCRight ||
+                guid.data[15] == k_eSwitchDeviceInfoControllerType_NESLeft ||
                 guid.data[15] == k_eSwitchDeviceInfoControllerType_NESRight ||
                 guid.data[15] == k_eSwitchDeviceInfoControllerType_SNES ||
                 guid.data[15] == k_eSwitchDeviceInfoControllerType_N64 ||
@@ -577,6 +596,11 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_JoystickGUID guid
                 guid.data[15] == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
                 guid.data[15] == k_eSwitchDeviceInfoControllerType_JoyConRight)) {
         switch (guid.data[15]) {
+        case k_eSwitchDeviceInfoControllerType_HVCLeft:
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,rightshoulder:b10,start:b6,", sizeof(mapping_string));
+        case k_eSwitchDeviceInfoControllerType_HVCRight:
+            SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,rightshoulder:b10,", sizeof(mapping_string));
+            break;
         case k_eSwitchDeviceInfoControllerType_NESLeft:
         case k_eSwitchDeviceInfoControllerType_NESRight:
             SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,rightshoulder:b10,start:b6,", sizeof(mapping_string));
@@ -2053,21 +2077,6 @@ SDL_bool SDL_IsGamepad(SDL_JoystickID instance_id)
     return retval;
 }
 
-#ifdef __LINUX__
-static SDL_bool SDL_endswith(const char *string, const char *suffix)
-{
-    size_t string_length = string ? SDL_strlen(string) : 0;
-    size_t suffix_length = suffix ? SDL_strlen(suffix) : 0;
-
-    if (suffix_length > 0 && suffix_length <= string_length) {
-        if (SDL_memcmp(string + string_length - suffix_length, suffix, suffix_length) == 0) {
-            return SDL_TRUE;
-        }
-    }
-    return SDL_FALSE;
-}
-#endif
-
 /*
  * Return 1 if the gamepad should be ignored by SDL
  */
@@ -3195,6 +3204,11 @@ void SDL_GamepadHandleDelayedGuideButton(SDL_Joystick *joystick)
     for (gamepad = SDL_gamepads; gamepad; gamepad = gamepad->next) {
         if (gamepad->joystick == joystick) {
             SDL_SendGamepadButton(0, gamepad, SDL_GAMEPAD_BUTTON_GUIDE, SDL_RELEASED);
+
+            /* Make sure we send an update complete event for this change */
+            if (!gamepad->joystick->update_complete) {
+                gamepad->joystick->update_complete = SDL_GetTicksNS();
+            }
             break;
         }
     }
