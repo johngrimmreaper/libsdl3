@@ -218,10 +218,10 @@ static int SDL_FindFreePlayerIndex(void)
 
     for (player_index = 0; player_index < SDL_joystick_player_count; ++player_index) {
         if (SDL_joystick_players[player_index] == 0) {
-            return player_index;
+            break;
         }
     }
-    return -1;
+    return player_index;
 }
 
 static int SDL_GetPlayerIndexForJoystickID(SDL_JoystickID instance_id)
@@ -585,6 +585,7 @@ static SDL_bool ShouldAttemptSensorFusion(SDL_Joystick *joystick, SDL_bool *inve
         SDL_JoystickGUID guid;
         Uint16 vendor, product;
         SDL_bool enabled;
+        SDL_zero(gamepads);
 
         /* See if the gamepad is in our list of devices to enable */
         guid = SDL_GetJoystickGUID(joystick);
@@ -1753,6 +1754,7 @@ int SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, S
 
     /* Update internal joystick state */
     info->value = value;
+    joystick->update_complete = timestamp;
 
     /* Post the event, if desired */
     posted = 0;
@@ -1795,6 +1797,7 @@ int SDL_SendJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, Uin
 
     /* Update internal joystick state */
     joystick->hats[hat] = value;
+    joystick->update_complete = timestamp;
 
     /* Post the event, if desired */
     posted = 0;
@@ -1853,6 +1856,7 @@ int SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 butto
 
     /* Update internal joystick state */
     joystick->buttons[button] = state;
+    joystick->update_complete = timestamp;
 
     /* Post the event, if desired */
     posted = 0;
@@ -1910,6 +1914,21 @@ void SDL_UpdateJoysticks(void)
 
         if (joystick->trigger_rumble_expiration && now >= joystick->trigger_rumble_expiration) {
             SDL_RumbleJoystickTriggers(joystick, 0, 0, 0);
+        }
+    }
+
+    if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE)) {
+        for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
+            if (joystick->update_complete) {
+                SDL_Event event;
+
+                event.type = SDL_EVENT_JOYSTICK_UPDATE_COMPLETE;
+                event.common.timestamp = joystick->update_complete;
+                event.gdevice.which = joystick->instance_id;
+                SDL_PushEvent(&event);
+
+                joystick->update_complete = 0;
+            }
         }
     }
 
@@ -3178,6 +3197,7 @@ int SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int touch
     finger_info->x = x;
     finger_info->y = y;
     finger_info->pressure = pressure;
+    joystick->update_complete = timestamp;
 
     /* Post the event, if desired */
     posted = 0;
@@ -3219,6 +3239,7 @@ int SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorT
 
                 /* Update internal sensor state */
                 SDL_memcpy(sensor->data, data, num_values * sizeof(*data));
+                joystick->update_complete = timestamp;
 
                 /* Post the event, if desired */
 #ifndef SDL_EVENTS_DISABLED

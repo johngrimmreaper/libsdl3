@@ -275,10 +275,8 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
             (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                                data[6], data[5], data[4], data[3], data[2], data[1]);
         }
-        device->is_bluetooth = SDL_FALSE;
         ctx->enhanced_mode = SDL_TRUE;
     } else if (device->vendor_id == USB_VENDOR_SONY && device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
-        device->is_bluetooth = SDL_FALSE;
         ctx->enhanced_mode = SDL_TRUE;
 
     } else if (device->vendor_id == USB_VENDOR_SONY) {
@@ -287,11 +285,8 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
             (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                                data[6], data[5], data[4], data[3], data[2], data[1]);
-            device->is_bluetooth = SDL_FALSE;
             ctx->enhanced_mode = SDL_TRUE;
         } else {
-            device->is_bluetooth = SDL_TRUE;
-
             /* Read a report to see if we're in enhanced mode */
             size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 16);
 #ifdef DEBUG_PS4_PROTOCOL
@@ -309,12 +304,8 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         }
     } else {
         /* Third party controllers appear to all be wired */
-        device->is_bluetooth = SDL_FALSE;
         ctx->enhanced_mode = SDL_TRUE;
     }
-#ifdef DEBUG_PS4
-    SDL_Log("PS4 dongle = %s, bluetooth = %s\n", ctx->is_dongle ? "TRUE" : "FALSE", device->is_bluetooth ? "TRUE" : "FALSE");
-#endif
 
     size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof(data));
     /* Get the device capabilities */
@@ -387,16 +378,12 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         /* The Razer Raiju doesn't respond to the detection protocol, but has a touchpad and vibration */
         ctx->vibration_supported = SDL_TRUE;
         ctx->touchpad_supported = SDL_TRUE;
-
-        if (device->product_id == USB_PRODUCT_RAZER_TOURNAMENT_EDITION_BLUETOOTH ||
-            device->product_id == USB_PRODUCT_RAZER_ULTIMATE_EDITION_BLUETOOTH) {
-            device->is_bluetooth = SDL_TRUE;
-        }
     }
     ctx->effects_supported = (ctx->lightbar_supported || ctx->vibration_supported);
 
     if (device->vendor_id == USB_VENDOR_PDP &&
-        device->product_id == USB_PRODUCT_VICTRIX_FS_PRO_V2) {
+        (device->product_id == USB_PRODUCT_VICTRIX_FS_PRO ||
+         device->product_id == USB_PRODUCT_VICTRIX_FS_PRO_V2)) {
         /* The Victrix FS Pro V2 reports that it has lightbar support,
          * but it doesn't respond to the effects packet, and will hang
          * on reboot if we send it.
@@ -656,16 +643,25 @@ static int HIDAPI_DriverPS4_UpdateEffects(SDL_HIDAPI_Device *device)
 
 static void HIDAPI_DriverPS4_TickleBluetooth(SDL_HIDAPI_Device *device)
 {
-    /* This is just a dummy packet that should have no effect, since we don't set the CRC */
-    Uint8 data[78];
+    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
 
-    SDL_zeroa(data);
+    if (ctx->enhanced_mode) {
+        /* This is just a dummy packet that should have no effect, since we don't set the CRC */
+        Uint8 data[78];
 
-    data[0] = k_EPS4ReportIdBluetoothEffects;
-    data[1] = 0xC0; /* Magic value HID + CRC */
+        SDL_zeroa(data);
 
-    if (SDL_HIDAPI_LockRumble() == 0) {
-        SDL_HIDAPI_SendRumbleAndUnlock(device, data, sizeof(data));
+        data[0] = k_EPS4ReportIdBluetoothEffects;
+        data[1] = 0xC0; /* Magic value HID + CRC */
+
+        if (SDL_HIDAPI_LockRumble() == 0) {
+            SDL_HIDAPI_SendRumbleAndUnlock(device, data, sizeof(data));
+        }
+    } else {
+        /* We can't even send an invalid effects packet, or it will put the controller in enhanced mode */
+        if (device->num_joysticks > 0) {
+            HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+        }
     }
 }
 
