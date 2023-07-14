@@ -186,6 +186,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetGamepadFromInstanceID@SDL3_0.0.0 3~
  SDL_GetGamepadFromPlayerIndex@SDL3_0.0.0 3~
  SDL_GetGamepadInstanceGUID@SDL3_0.0.0 3~
+ SDL_GetGamepadInstanceID@SDL3_0.0.0 3~
  SDL_GetGamepadInstanceMapping@SDL3_0.0.0 3~
  SDL_GetGamepadInstanceName@SDL3_0.0.0 3~
  SDL_GetGamepadInstancePath@SDL3_0.0.0 3~
@@ -201,6 +202,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetGamepadName@SDL3_0.0.0 3~
  SDL_GetGamepadPath@SDL3_0.0.0 3~
  SDL_GetGamepadPlayerIndex@SDL3_0.0.0 3~
+ SDL_GetGamepadPowerLevel@SDL3_0.0.0 3~
  SDL_GetGamepadProduct@SDL3_0.0.0 3~
  SDL_GetGamepadProductVersion@SDL3_0.0.0 3~
  SDL_GetGamepadSensorData@SDL3_0.0.0 3~
