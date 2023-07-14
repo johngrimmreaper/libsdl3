@@ -2655,6 +2655,16 @@ int SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_SensorType type, float *d
     return SDL_Unsupported();
 }
 
+SDL_JoystickID SDL_GetGamepadInstanceID(SDL_Gamepad *gamepad)
+{
+    SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
+
+    if (joystick == NULL) {
+        return 0;
+    }
+    return SDL_GetJoystickInstanceID(joystick);
+}
+
 const char *SDL_GetGamepadName(SDL_Gamepad *gamepad)
 {
     const char *retval = NULL;
@@ -2766,6 +2776,16 @@ const char * SDL_GetGamepadSerial(SDL_Gamepad *gamepad)
         return NULL;
     }
     return SDL_GetJoystickSerial(joystick);
+}
+
+SDL_JoystickPowerLevel SDL_GetGamepadPowerLevel(SDL_Gamepad *gamepad)
+{
+    SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
+
+    if (joystick == NULL) {
+        return SDL_JOYSTICK_POWER_UNKNOWN;
+    }
+    return SDL_GetJoystickPowerLevel(joystick);
 }
 
 /*
