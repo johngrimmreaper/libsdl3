@@ -178,8 +178,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetGamepadAppleSFSymbolsNameForButton@SDL3_0.0.0 3~
  SDL_GetGamepadAxis@SDL3_0.0.0 3~
  SDL_GetGamepadAxisFromString@SDL3_0.0.0 3~
- SDL_GetGamepadBindForAxis@SDL3_0.0.0 3~
- SDL_GetGamepadBindForButton@SDL3_0.0.0 3~
  SDL_GetGamepadButton@SDL3_0.0.0 3~
  SDL_GetGamepadButtonFromString@SDL3_0.0.0 3~
  SDL_GetGamepadFirmwareVersion@SDL3_0.0.0 3~
@@ -573,6 +571,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetEventFilter@SDL3_0.0.0 3~
  SDL_SetGamepadEventsEnabled@SDL3_0.0.0 3~
  SDL_SetGamepadLED@SDL3_0.0.0 3~
+ SDL_SetGamepadMapping@SDL3_0.0.0 3~
  SDL_SetGamepadPlayerIndex@SDL3_0.0.0 3~
  SDL_SetGamepadSensorEnabled@SDL3_0.0.0 3~
  SDL_SetHint@SDL3_0.0.0 3~
@@ -805,6 +804,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_strlwr@SDL3_0.0.0 3~
  SDL_strncasecmp@SDL3_0.0.0 3~
  SDL_strncmp@SDL3_0.0.0 3~
+ SDL_strndup@SDL3_0.0.0 3~
  SDL_strrchr@SDL3_0.0.0 3~
  SDL_strrev@SDL3_0.0.0 3~
  SDL_strstr@SDL3_0.0.0 3~

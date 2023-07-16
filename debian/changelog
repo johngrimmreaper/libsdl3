@@ -1,6 +1,6 @@
-libsdl3 (3~git20230714+dfsg-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20230716+dfsg-1) UNRELEASED; urgency=medium
 
-  * New upstream snapshot prerelease-3.0.0-1942-geda2824e6
+  * New upstream snapshot prerelease-3.0.0-1967-g80da0cf06
 
  -- Simon McVittie <smcv@debian.org>  Mon, 10 Jul 2023 15:45:50 +0100
 
