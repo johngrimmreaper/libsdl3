@@ -1,8 +1,10 @@
 libsdl3 (3~git20230716+dfsg-1) UNRELEASED; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-1967-g80da0cf06
+  * Remove version constraints unnecessary since Debian 11
+  * debian/libsdl3-0.symbols: Update
 
- -- Simon McVittie <smcv@debian.org>  Mon, 10 Jul 2023 15:45:50 +0100
+ -- Simon McVittie <smcv@debian.org>  Sun, 16 Jul 2023 17:38:55 +0100
 
 libsdl3 (3~git20230620+dfsg-1) experimental; urgency=medium
 
