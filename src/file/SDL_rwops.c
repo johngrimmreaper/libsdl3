@@ -254,8 +254,9 @@ windows_file_write(SDL_RWops *context, const void *ptr, Sint64 size)
 
     /* if in append mode, we must go to the EOF before write */
     if (context->hidden.windowsio.append) {
-        if (SetFilePointer(context->hidden.windowsio.h, 0L, NULL, FILE_END) ==
-            INVALID_SET_FILE_POINTER) {
+        LARGE_INTEGER windowsoffset;
+        windowsoffset.QuadPart = 0;
+        if (!SetFilePointerEx(context->hidden.windowsio.h, windowsoffset, &windowsoffset, FILE_END)) {
             return SDL_Error(SDL_EFWRITE);
         }
     }
@@ -592,7 +593,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     return rwops;
 }
 
-SDL_RWops *SDL_RWFromMem(void *mem, int size)
+SDL_RWops *SDL_RWFromMem(void *mem, size_t size)
 {
     SDL_RWops *rwops = NULL;
     if (mem == NULL) {
@@ -619,7 +620,7 @@ SDL_RWops *SDL_RWFromMem(void *mem, int size)
     return rwops;
 }
 
-SDL_RWops *SDL_RWFromConstMem(const void *mem, int size)
+SDL_RWops *SDL_RWFromConstMem(const void *mem, size_t size)
 {
     SDL_RWops *rwops = NULL;
     if (mem == NULL) {
@@ -665,7 +666,7 @@ void SDL_DestroyRW(SDL_RWops *area)
 }
 
 /* Load all the data from an SDL data stream */
-void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
+void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, SDL_bool freesrc)
 {
     static const Sint64 FILE_CHUNK_SIZE = 1024;
     Sint64 size;

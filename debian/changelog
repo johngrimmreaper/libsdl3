@@ -1,3 +1,14 @@
+libsdl3 (3~git20230716+dfsg-1) experimental; urgency=medium
+
+  * New upstream snapshot prerelease-3.0.0-1967-g80da0cf06
+  * Remove version constraints unnecessary since Debian 11
+  * debian/libsdl3-0.symbols: Update
+  * d/rules, d/clean: Regenerate hexdumps of gamepad-related bitmaps.
+    These are used in the new testcontroller utility, which replaces
+    testgamepad and testjoystick.
+
+ -- Simon McVittie <smcv@debian.org>  Sun, 16 Jul 2023 17:49:00 +0100
+
 libsdl3 (3~git20230620+dfsg-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-1780-g6306ee9f4

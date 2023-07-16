@@ -56,9 +56,12 @@ endif
 	dh $@ --buildsystem=cmake+ninja
 
 override_dh_auto_configure:
-	if [ $(DEB_VERSION_UPSTREAM) = 3~git20230614+dfsg ]; then \
-		echo prerelease-3.0.0-1733-g23e007d3b > VERSION.txt; \
+	if [ $(DEB_VERSION_UPSTREAM) = 3~git20230716+dfsg ]; then \
+		echo prerelease-3.0.0-1967-g80da0cf06 > VERSION.txt; \
 	fi
+	set -e; for bmp in test/gamepad_*.bmp; do \
+		python3 cmake/xxd.py -i "$${bmp}" -o "$${bmp%.bmp}.h"; \
+	done
 	dh_auto_configure -- $(confflags)
 
 execute_after_dh_auto_build:

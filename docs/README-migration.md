@@ -53,7 +53,7 @@ The following structures have been renamed:
 
 ## SDL_audio.h
 
-SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_InitSubSytem() and SDL_QuitSubSytem() with SDL_INIT_AUDIO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_AUDIO_DRIVER hint.
+SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_AUDIO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_AUDIO_DRIVER hint.
 
 SDL_PauseAudioDevice() is only used to pause audio playback. Use SDL_PlayAudioDevice() to start playing audio.
 
@@ -250,7 +250,36 @@ The SDL_EVENT_GAMEPAD_ADDED event now provides the joystick instance ID in the w
 
 The functions SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadInstancePath(), SDL_GetGamepadInstancePlayerIndex(), SDL_GetGamepadInstanceGUID(), SDL_GetGamepadInstanceVendor(), SDL_GetGamepadInstanceProduct(), SDL_GetGamepadInstanceProductVersion(), and SDL_GetGamepadInstanceType() have been added to directly query the list of available gamepads.
 
+The gamepad binding structure has been removed in favor of exchanging bindings in text format.
+
 SDL_GameControllerGetSensorDataWithTimestamp() has been removed. If you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_EVENT_GAMEPAD_SENSOR_UPDATE events.
+
+SDL_CONTROLLER_TYPE_VIRTUAL has been removed, so virtual controllers can emulate other gamepad types. If you need to know whether a controller is virtual, you can use SDL_IsJoystickVirtual().
+
+SDL_CONTROLLER_TYPE_AMAZON_LUNA has been removed, and can be replaced with this code:
+```c
+SDL_bool SDL_IsJoystickAmazonLunaController(Uint16 vendor_id, Uint16 product_id)
+{
+    return ((vendor_id == 0x1949 && product_id == 0x0419) ||
+            (vendor_id == 0x0171 && product_id == 0x0419));
+}
+```
+
+SDL_CONTROLLER_TYPE_GOOGLE_STADIA has been removed, and can be replaced with this code:
+```c
+SDL_bool SDL_IsJoystickGoogleStadiaController(Uint16 vendor_id, Uint16 product_id)
+{
+    return (vendor_id == 0x18d1 && product_id == 0x9400);
+}
+```
+
+SDL_CONTROLLER_TYPE_NVIDIA_SHIELD has been removed, and can be replaced with this code:
+```c
+SDL_bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 product_id)
+{
+    return (vendor_id == 0x0955 && (product_id == 0x7210 || product_id == 0x7214));
+}
+```
 
 The following enums have been renamed:
 * SDL_GameControllerAxis => SDL_GamepadAxis
@@ -318,6 +347,8 @@ The following functions have been renamed:
 
 The following functions have been removed:
 * SDL_GameControllerEventState() - replaced with SDL_SetGamepadEventsEnabled() and SDL_GamepadEventsEnabled()
+* SDL_GameControllerGetBindForAxis()
+* SDL_GameControllerGetBindForButton()
 * SDL_GameControllerMappingForDeviceIndex() - replaced with SDL_GetGamepadInstanceMapping()
 * SDL_GameControllerNameForIndex() - replaced with SDL_GetGamepadInstanceName()
 * SDL_GameControllerPathForIndex() - replaced with SDL_GetGamepadInstancePath()
@@ -385,6 +416,8 @@ functionality to your app and aid migration. That is located in the
 ## SDL_hints.h
 
 SDL_AddHintCallback() now returns a standard int result instead of void, returning 0 if the function succeeds or a negative error code if there was an error.
+
+Calling SDL_GetHint() with the name of the hint being changed from within a hint callback will now return the new value rather than the old value. The old value is still passed as a parameter to the hint callback.
 
 The following hints have been removed:
 * SDL_HINT_VIDEO_HIGHDPI_DISABLED - high DPI support is always enabled
@@ -947,6 +980,9 @@ The standard C headers like stdio.h and stdlib.h are no longer included, you sho
 M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D (double) and SDL_PI_F (float) instead.
 
 
+The following functions have been renamed:
+* SDL_strtokr() => SDL_strtok_r()
+
 ## SDL_surface.h
 
 Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat.
@@ -1066,7 +1102,7 @@ SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in S
 
 ## SDL_video.h
 
-SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSytem() and SDL_QuitSubSytem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific video driver using SDL_VIDEO_DRIVER hint.
+SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific video driver using SDL_VIDEO_DRIVER hint.
 
 Rather than iterating over displays using display index, there is a new function SDL_GetDisplays() to get the current list of displays, and functions which used to take a display index now take SDL_DisplayID, with an invalid ID being 0.
 ```c
@@ -1093,6 +1129,8 @@ SDL_CreateWindow() has been simplified and no longer takes a window position. Yo
 The SDL_WINDOWPOS_UNDEFINED_DISPLAY() and SDL_WINDOWPOS_CENTERED_DISPLAY() macros take a display ID instead of display index. The display ID 0 has a special meaning in this case, and is used to indicate the primary display.
 
 The SDL_WINDOW_SHOWN flag has been removed. Windows are shown by default and can be created hidden by using the SDL_WINDOW_HIDDEN flag.
+
+The SDL_WINDOW_SKIP_TASKBAR flag has been replaced by the SDL_WINDOW_UTILITY flag, which has the same functionality.
 
 SDL_DisplayMode now includes the pixel density which can be greater than 1.0 for display modes that have a higher pixel size than the mode size. You should use SDL_GetWindowSizeInPixels() to get the actual pixel size of the window back buffer.
 

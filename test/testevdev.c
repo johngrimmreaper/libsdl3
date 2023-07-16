@@ -978,6 +978,30 @@ static const GuessTest guess_tests[] =
           /* 0x2c0 */ 0x03,
       },
     },
+    { /* https://github.com/ValveSoftware/steam-devices/pull/40 */
+      .name = "PDP wired Pro Controller for Switch",
+      /* 0003:0e6f:0184 "Performance Designed Products" /
+       * "Faceoff Deluxe+ Audio Wired Controller for Nintendo Switch" appears
+       * to be functionally equivalent */
+      .eviocgname = "PDP CO.,LTD. Faceoff Wired Pro Controller for Nintendo Switch",
+      .usb_vendor_name = "PDP CO.,LTD.",
+      .usb_product_name = "Faceoff Wired Pro Controller for Nintendo Switch",
+      .bus_type = 0x0003,
+      .vendor_id = 0x0e6f,
+      .product_id = 0x0180,
+      .version = 0x0111,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS, MSC */
+      .ev = { 0x1b },
+      /* X, Y, Z, RZ, HAT0X, HAT0Y */
+      .abs = { 0x27, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2, SELECT, START, MODE,
+           * THUMBL */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0x3f,
+      },
+    },
     {
       .name = "NES Controller (R) NES-style Joycon from Nintendo Online",
       .eviocgname = "NES Controller (R)",
@@ -1837,12 +1861,12 @@ run_test(void)
 
         printf("%s...\n", t->name);
 
-        memset(&caps, '\0', sizeof(caps));
-        memcpy(caps.props, t->props, sizeof(t->props));
-        memcpy(caps.ev, t->ev, sizeof(t->ev));
-        memcpy(caps.keys, t->keys, sizeof(t->keys));
-        memcpy(caps.abs, t->abs, sizeof(t->abs));
-        memcpy(caps.rel, t->rel, sizeof(t->rel));
+        SDL_memset(&caps, '\0', sizeof(caps));
+        SDL_memcpy(caps.props, t->props, sizeof(t->props));
+        SDL_memcpy(caps.ev, t->ev, sizeof(t->ev));
+        SDL_memcpy(caps.keys, t->keys, sizeof(t->keys));
+        SDL_memcpy(caps.abs, t->abs, sizeof(t->abs));
+        SDL_memcpy(caps.rel, t->rel, sizeof(t->rel));
 
         for (j = 0; j < SDL_arraysize(caps.props); j++) {
             caps.props[j] = SwapLongLE(caps.props[j]);
