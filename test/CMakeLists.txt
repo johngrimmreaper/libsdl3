@@ -208,8 +208,46 @@ if(SDL3_TESTS_SUBPROJECT)
     endforeach()
 endif()
 
+set(gamepad_images
+    gamepad_axis_arrow.bmp
+    gamepad_axis.bmp
+    gamepad_back.bmp
+    gamepad_battery_empty.bmp
+    gamepad_battery_full.bmp
+    gamepad_battery_low.bmp
+    gamepad_battery_medium.bmp
+    gamepad_battery_unknown.bmp
+    gamepad_battery_wired.bmp
+    gamepad_button_background.bmp
+    gamepad_button.bmp
+    gamepad_button_small.bmp
+    gamepad_face_abxy.bmp
+    gamepad_face_bayx.bmp
+    gamepad_face_sony.bmp
+    gamepad_front.bmp
+    gamepad_touchpad.bmp
+)
+set(gamepad_image_headers)
+find_package(PythonInterp)
+if(PYTHONINTERP_FOUND AND NOT PYTHON_VERSION_STRING VERSION_LESS "3.2")
+    set(xxd "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/xxd.py")
+    foreach(bmp ${gamepad_images})
+        get_filename_component(bmp_we "${bmp}" NAME_WE)
+        set(intermediate "${CMAKE_CURRENT_BINARY_DIR}/${bmp_we}.h")
+        set(final "${CMAKE_CURRENT_SOURCE_DIR}/${bmp_we}.h")
+        # Don't add the 'final' headers to the output, to avoid marking them as GENERATED
+        # (generated files are removed when running the CLEAN target)
+        add_custom_command(OUTPUT "${intermediate}"
+            COMMAND "${PYTHON_EXECUTABLE}" "${xxd}" -i "${CMAKE_CURRENT_SOURCE_DIR}/${bmp}" "-o" "${intermediate}"
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${intermediate}" "${final}"
+            DEPENDS "${xxd}" "${bmp}"
+        )
+        list(APPEND gamepad_image_headers "${intermediate}" "${final}")
+    endforeach()
+endif()
+
 add_sdl_test_executable(testfile NONINTERACTIVE SOURCES testfile.c)
-add_sdl_test_executable(testgamepad TESTUTILS SOURCES testgamepad.c gamepadutils.c)
+add_sdl_test_executable(testcontroller TESTUTILS SOURCES testcontroller.c gamepadutils.c ${gamepad_image_headers})
 add_sdl_test_executable(testgeometry TESTUTILS SOURCES testgeometry.c)
 add_sdl_test_executable(testgl SOURCES testgl.c)
 add_sdl_test_executable(testgles SOURCES testgles.c)
@@ -224,7 +262,6 @@ add_sdl_test_executable(testrumble SOURCES testrumble.c)
 add_sdl_test_executable(testthread NONINTERACTIVE NONINTERACTIVE_TIMEOUT 40 SOURCES testthread.c)
 add_sdl_test_executable(testiconv NEEDS_RESOURCES TESTUTILS SOURCES testiconv.c)
 add_sdl_test_executable(testime NEEDS_RESOURCES TESTUTILS SOURCES testime.c)
-add_sdl_test_executable(testjoystick SOURCES testjoystick.c)
 add_sdl_test_executable(testkeys SOURCES testkeys.c)
 add_sdl_test_executable(testloadso SOURCES testloadso.c)
 add_sdl_test_executable(testlocale NONINTERACTIVE SOURCES testlocale.c)
@@ -258,7 +295,6 @@ add_sdl_test_executable(testdisplayinfo SOURCES testdisplayinfo.c)
 add_sdl_test_executable(testqsort NONINTERACTIVE SOURCES testqsort.c)
 add_sdl_test_executable(testbounds NONINTERACTIVE SOURCES testbounds.c)
 add_sdl_test_executable(testcustomcursor SOURCES testcustomcursor.c)
-add_sdl_test_executable(gamepadmap TESTUTILS SOURCES gamepadmap.c gamepadutils.c)
 add_sdl_test_executable(testvulkan NO_C90 SOURCES testvulkan.c)
 add_sdl_test_executable(testoffscreen SOURCES testoffscreen.c)
 add_sdl_test_executable(testpopup SOURCES testpopup.c)
