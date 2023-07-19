@@ -122,6 +122,10 @@ Multi-Arch: foreign
 Build-Profiles: <!nodoc>
 Depends:
  ${misc:Depends},
+Breaks:
+ libsdl1.2-dev (<< 1.2.64),
+Replaces:
+ libsdl1.2-dev (<< 1.2.64),
 Description: Reference manual for SDL 3
  SDL is a library that allows programs portable low level access to a video
  framebuffer, audio output, mouse, and keyboard.
