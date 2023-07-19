@@ -92,6 +92,24 @@ extern void SetGamepadDisplaySelected(GamepadDisplay *ctx, int element);
 extern void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad);
 extern void DestroyGamepadDisplay(GamepadDisplay *ctx);
 
+/* Gamepad type display */
+
+enum
+{
+    SDL_GAMEPAD_TYPE_UNSELECTED = -1
+};
+
+typedef struct GamepadTypeDisplay GamepadTypeDisplay;
+
+extern GamepadTypeDisplay *CreateGamepadTypeDisplay(SDL_Renderer *renderer);
+extern void SetGamepadTypeDisplayArea(GamepadTypeDisplay *ctx, const SDL_Rect *area);
+extern int GetGamepadTypeDisplayAt(GamepadTypeDisplay *ctx, float x, float y);
+extern void SetGamepadTypeDisplayHighlight(GamepadTypeDisplay *ctx, int type, SDL_bool pressed);
+extern void SetGamepadTypeDisplaySelected(GamepadTypeDisplay *ctx, int type);
+extern void SetGamepadTypeDisplayRealType(GamepadTypeDisplay *ctx, SDL_GamepadType type);
+extern void RenderGamepadTypeDisplay(GamepadTypeDisplay *ctx);
+extern void DestroyGamepadTypeDisplay(GamepadTypeDisplay *ctx);
+
 /* Joystick element display */
 
 typedef struct JoystickDisplay JoystickDisplay;
@@ -131,17 +149,26 @@ extern char *GetMappingName(const char *mapping);
 /* Set the name in a mapping, freeing the mapping passed in and returning a new mapping */
 extern char *SetMappingName(char *mapping, const char *name);
 
-/* Return the type from a mapping, which should be freed using SDL_free(), or NULL if there is no type specified */
-extern char *GetMappingType(const char *mapping);
+/* Get the friendly string for an SDL_GamepadType */
+extern const char *GetGamepadTypeString(SDL_GamepadType type);
 
-/* Set the name in a mapping, freeing the mapping passed in and returning a new mapping */
-extern char *SetMappingType(char *mapping, const char *type);
+/* Return the type from a mapping, which should be freed using SDL_free(), or NULL if there is no type specified */
+extern SDL_GamepadType GetMappingType(const char *mapping);
+
+/* Set the type in a mapping, freeing the mapping passed in and returning a new mapping */
+extern char *SetMappingType(char *mapping, SDL_GamepadType type);
+
+/* Return true if a mapping has this element bound */
+extern SDL_bool MappingHasElement(const char *mapping, int element);
 
 /* Get the binding for an element, which should be freed using SDL_free(), or NULL if the element isn't bound */
 extern char *GetElementBinding(const char *mapping, int element);
 
-/* Set the binding for an element, or NULL to clear it */
+/* Set the binding for an element, or NULL to clear it, freeing the mapping passed in and returning a new mapping */
 extern char *SetElementBinding(char *mapping, int element, const char *binding);
+
+/* Get the element for a binding, or SDL_GAMEPAD_ELEMENT_INVALID if that binding isn't used */
+extern int GetElementForBinding(char *mapping, const char *binding);
 
 /* Return true if a mapping contains this binding */
 extern SDL_bool MappingHasBinding(const char *mapping, const char *binding);
