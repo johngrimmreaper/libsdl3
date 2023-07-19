@@ -1,4 +1,4 @@
-libsdl3 (3~git20230719+dfsg-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20230719~e413457+dfsg-1) UNRELEASED; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-2002-ge413457a7
   * libsdl3-doc Breaks/Replaces older versions of libsdl1.2-dev
