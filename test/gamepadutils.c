@@ -1268,6 +1268,177 @@ void DestroyGamepadDisplay(GamepadDisplay *ctx)
     SDL_free(ctx);
 }
 
+struct GamepadTypeDisplay
+{
+    SDL_Renderer *renderer;
+
+    int type_highlighted;
+    SDL_bool type_pressed;
+    int type_selected;
+    SDL_GamepadType real_type;
+
+    SDL_Rect area;
+};
+
+GamepadTypeDisplay *CreateGamepadTypeDisplay(SDL_Renderer *renderer)
+{
+    GamepadTypeDisplay *ctx = SDL_calloc(1, sizeof(*ctx));
+    if (ctx) {
+        ctx->renderer = renderer;
+
+        ctx->type_highlighted = SDL_GAMEPAD_TYPE_UNSELECTED;
+        ctx->type_selected = SDL_GAMEPAD_TYPE_UNSELECTED;
+        ctx->real_type = SDL_GAMEPAD_TYPE_UNKNOWN;
+    }
+    return ctx;
+}
+
+void SetGamepadTypeDisplayArea(GamepadTypeDisplay *ctx, const SDL_Rect *area)
+{
+    if (!ctx) {
+        return;
+    }
+
+    SDL_copyp(&ctx->area, area);
+}
+
+void SetGamepadTypeDisplayHighlight(GamepadTypeDisplay *ctx, int type, SDL_bool pressed)
+{
+    if (!ctx) {
+        return;
+    }
+
+    ctx->type_highlighted = type;
+    ctx->type_pressed = pressed;
+}
+
+void SetGamepadTypeDisplaySelected(GamepadTypeDisplay *ctx, int type)
+{
+    if (!ctx) {
+        return;
+    }
+
+    ctx->type_selected = type;
+}
+
+void SetGamepadTypeDisplayRealType(GamepadTypeDisplay *ctx, SDL_GamepadType type)
+{
+    if (!ctx) {
+        return;
+    }
+
+    ctx->real_type = type;
+}
+
+int GetGamepadTypeDisplayAt(GamepadTypeDisplay *ctx, float x, float y)
+{
+    int i;
+    const float margin = 8.0f;
+    const float line_height = 16.0f;
+    SDL_FRect highlight;
+    SDL_FPoint point;
+
+    if (!ctx) {
+        return SDL_GAMEPAD_TYPE_UNSELECTED;
+    }
+
+    point.x = x;
+    point.y = y;
+
+    x = ctx->area.x + margin;
+    y = ctx->area.y + margin;
+
+    for (i = SDL_GAMEPAD_TYPE_UNKNOWN; i < SDL_GAMEPAD_TYPE_MAX; ++i) {
+        highlight.x = x;
+        highlight.y = y;
+        highlight.w = (float)ctx->area.w - (margin * 2);
+        highlight.h = (float)line_height;
+
+        if (SDL_PointInRectFloat(&point, &highlight)) {
+            return i;
+        }
+
+        y += line_height;
+    }
+    return SDL_GAMEPAD_TYPE_UNSELECTED;
+}
+
+static void RenderGamepadTypeHighlight(GamepadTypeDisplay *ctx, int type, const SDL_FRect *area)
+{
+    if (type == ctx->type_highlighted || type == ctx->type_selected) {
+        Uint8 r, g, b, a;
+
+        SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
+
+        if (type == ctx->type_highlighted) {
+            if (ctx->type_pressed) {
+                SDL_SetRenderDrawColor(ctx->renderer, PRESSED_COLOR);
+            } else {
+                SDL_SetRenderDrawColor(ctx->renderer, HIGHLIGHT_COLOR);
+            }
+        } else {
+            SDL_SetRenderDrawColor(ctx->renderer, SELECTED_COLOR);
+        }
+        SDL_RenderFillRect(ctx->renderer, area);
+
+        SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+    }
+}
+
+void RenderGamepadTypeDisplay(GamepadTypeDisplay *ctx)
+{
+    float x, y;
+    int i;
+    char text[128];
+    const float margin = 8.0f;
+    const float line_height = 16.0f;
+    SDL_FPoint dst;
+    SDL_FRect highlight;
+
+    if (!ctx) {
+        return;
+    }
+
+    x = ctx->area.x + margin;
+    y = ctx->area.y + margin;
+
+    for (i = SDL_GAMEPAD_TYPE_UNKNOWN; i < SDL_GAMEPAD_TYPE_MAX; ++i) {
+        highlight.x = x;
+        highlight.y = y;
+        highlight.w = (float)ctx->area.w - (margin * 2);
+        highlight.h = (float)line_height;
+        RenderGamepadTypeHighlight(ctx, i, &highlight);
+
+        if (i == SDL_GAMEPAD_TYPE_UNKNOWN) {
+            if (ctx->real_type == SDL_GAMEPAD_TYPE_UNKNOWN ||
+                ctx->real_type == SDL_GAMEPAD_TYPE_STANDARD) {
+                SDL_strlcpy(text, "Auto (Standard)", sizeof(text));
+            } else {
+                SDL_snprintf(text, sizeof(text), "Auto (%s)", GetGamepadTypeString(ctx->real_type));
+            }
+        } else if (i == SDL_GAMEPAD_TYPE_STANDARD) {
+            SDL_strlcpy(text, "Standard", sizeof(text));
+        } else {
+            SDL_strlcpy(text, GetGamepadTypeString((SDL_GamepadType)i), sizeof(text));
+        }
+
+        dst.x = x + margin;
+        dst.y = y + line_height / 2 - FONT_CHARACTER_SIZE / 2;
+        SDLTest_DrawString(ctx->renderer, dst.x, dst.y, text);
+
+        y += line_height;
+    }
+}
+
+void DestroyGamepadTypeDisplay(GamepadTypeDisplay *ctx)
+{
+    if (!ctx) {
+        return;
+    }
+
+    SDL_free(ctx);
+}
+
 
 struct JoystickDisplay
 {
@@ -2120,6 +2291,43 @@ static SDL_bool CombineMappingAxes(MappingParts *parts)
     return SDL_TRUE;
 }
 
+typedef struct
+{
+    MappingParts *parts;
+    int index;
+} MappingSortEntry;
+
+static int SDLCALL SortMapping(const void *a, const void *b)
+{
+    MappingSortEntry *A = (MappingSortEntry *)a;
+    MappingSortEntry *B = (MappingSortEntry *)b;
+    const char *keyA = A->parts->keys[A->index];
+    const char *keyB = B->parts->keys[B->index];
+
+    return SDL_strcmp(keyA, keyB);
+}
+
+static void MoveSortedEntry(const char *key, MappingSortEntry *sort_order, int num_elements, SDL_bool front)
+{
+    int i;
+
+    for (i = 0; i < num_elements; ++i) {
+        MappingSortEntry *entry = &sort_order[i];
+        if (SDL_strcmp(key, entry->parts->keys[entry->index]) == 0) {
+            if (front && i != 0) {
+                MappingSortEntry tmp = sort_order[i];
+                SDL_memmove(&sort_order[1], &sort_order[0], sizeof(*sort_order)*i);
+                sort_order[0] = tmp;
+            } else if (!front && i != (num_elements - 1)) {
+                MappingSortEntry tmp = sort_order[i];
+                SDL_memmove(&sort_order[i], &sort_order[i + 1], sizeof(*sort_order)*(num_elements - i - 1));
+                sort_order[num_elements - 1] = tmp;
+            }
+            break;
+        }
+    }
+}
+
 static char *JoinMapping(MappingParts *parts)
 {
     int i;
@@ -2127,6 +2335,7 @@ static char *JoinMapping(MappingParts *parts)
     char *mapping;
     const char *guid;
     const char *name;
+    MappingSortEntry *sort_order;
 
     CombineMappingAxes(parts);
 
@@ -2147,6 +2356,22 @@ static char *JoinMapping(MappingParts *parts)
     }
     length += 1;
 
+    /* The sort order is: crc, platform, type, *, sdk, hint */
+    sort_order = SDL_stack_alloc(MappingSortEntry, parts->num_elements);
+    for (i = 0; i < parts->num_elements; ++i) {
+        sort_order[i].parts = parts;
+        sort_order[i].index = i;
+    }
+    SDL_qsort(sort_order, parts->num_elements, sizeof(*sort_order), SortMapping);
+    MoveSortedEntry("type", sort_order, parts->num_elements, SDL_TRUE);
+    MoveSortedEntry("platform", sort_order, parts->num_elements, SDL_TRUE);
+    MoveSortedEntry("crc", sort_order, parts->num_elements, SDL_TRUE);
+    MoveSortedEntry("sdk>=", sort_order, parts->num_elements, SDL_FALSE);
+    MoveSortedEntry("sdk<=", sort_order, parts->num_elements, SDL_FALSE);
+    MoveSortedEntry("hint", sort_order, parts->num_elements, SDL_FALSE);
+
+    /* Move platform to the front */
+
     mapping = (char *)SDL_malloc(length);
     if (mapping) {
         *mapping = '\0';
@@ -2155,12 +2380,16 @@ static char *JoinMapping(MappingParts *parts)
         SDL_strlcat(mapping, name, length);
         SDL_strlcat(mapping, ",", length);
         for (i = 0; i < parts->num_elements; ++i) {
-            SDL_strlcat(mapping, parts->keys[i], length);
+            int next = sort_order[i].index;
+            SDL_strlcat(mapping, parts->keys[next], length);
             SDL_strlcat(mapping, ":", length);
-            SDL_strlcat(mapping, parts->values[i], length);
+            SDL_strlcat(mapping, parts->values[next], length);
             SDL_strlcat(mapping, ",", length);
         }
     }
+
+    SDL_stack_free(sort_order);
+
     return mapping;
 }
 
@@ -2177,6 +2406,34 @@ static void FreeMappingParts(MappingParts *parts)
     SDL_free(parts->keys);
     SDL_free(parts->values);
     SDL_zerop(parts);
+}
+
+/* Create a new mapping from the parts and free the old mapping and parts */
+static char *RecreateMapping(MappingParts *parts, char *mapping)
+{
+    char *new_mapping = JoinMapping(parts);
+    if (new_mapping) {
+        SDL_free(mapping);
+        mapping = new_mapping;
+    }
+    FreeMappingParts(parts);
+    return mapping;
+}
+
+static SDL_bool MappingHasKey(const char *mapping, const char *key)
+{
+    int i;
+    MappingParts parts;
+    SDL_bool result = SDL_FALSE;
+
+    SplitMapping(mapping, &parts);
+    i = FindMappingKey(&parts, key);
+    if (i >= 0) {
+        result = SDL_TRUE;
+    }
+    FreeMappingParts(&parts);
+
+    return result;
 }
 
 static char *GetMappingValue(const char *mapping, const char *key)
@@ -2200,7 +2457,6 @@ static char *SetMappingValue(char *mapping, const char *key, const char *value)
 {
     MappingParts parts;
     int i;
-    char *new_mapping;
     char *new_key = NULL;
     char *new_value = NULL;
     char **new_keys = NULL;
@@ -2240,11 +2496,7 @@ static char *SetMappingValue(char *mapping, const char *key, const char *value)
     }
 
     if (result) {
-        new_mapping = JoinMapping(&parts);
-        if (new_mapping) {
-            SDL_free(mapping);
-            mapping = new_mapping;
-        }
+        mapping = RecreateMapping(&parts, mapping);
     } else {
         SDL_free(new_key);
         SDL_free(new_value);
@@ -2254,7 +2506,7 @@ static char *SetMappingValue(char *mapping, const char *key, const char *value)
     return mapping;
 }
 
-static char *RemoveMappingKey(char *mapping, const char *key)
+static char *RemoveMappingValue(char *mapping, const char *key)
 {
     MappingParts parts;
     int i;
@@ -2264,7 +2516,7 @@ static char *RemoveMappingKey(char *mapping, const char *key)
     if (i >= 0) {
         RemoveMappingValueAt(&parts, i);
     }
-    return JoinMapping(&parts);
+    return RecreateMapping(&parts, mapping);
 }
 
 SDL_bool MappingHasBindings(const char *mapping)
@@ -2323,30 +2575,90 @@ char *GetMappingName(const char *mapping)
 char *SetMappingName(char *mapping, const char *name)
 {
     MappingParts parts;
-    char *new_name;
-    char *new_mapping;
+    char *new_name, *spot;
+    size_t length;
+
+    if (!name) {
+        return mapping;
+    }
+
+    /* Remove any leading whitespace */
+    while (*name && SDL_isspace(*name)) {
+        ++name;
+    }
 
     new_name = SDL_strdup(name);
     if (!new_name) {
         return mapping;
     }
 
+    /* Remove any commas, which are field separators in the mapping */
+    length = SDL_strlen(new_name);
+    while ((spot = SDL_strchr(new_name, ',')) != NULL) {
+        SDL_memmove(spot, spot + 1, length - (spot - new_name) + 1);
+        --length;
+    }
+
+    /* Remove any trailing whitespace */
+    while (length > 0 && SDL_isspace(new_name[length - 1])) {
+        --length;
+    }
+
+    /* See if we have anything left */
+    if (length == 0) {
+        SDL_free(new_name);
+        return mapping;
+    }
+
+    /* null terminate to cut off anything we've trimmed */
+    new_name[length] = '\0';
+
     SplitMapping(mapping, &parts);
     SDL_free(parts.name);
     parts.name = new_name;
-    new_mapping = JoinMapping(&parts);
-    FreeMappingParts(&parts);
-    return new_mapping;
+    return RecreateMapping(&parts, mapping);
 }
 
-char *GetMappingType(const char *mapping)
+
+const char *GetGamepadTypeString(SDL_GamepadType type)
 {
-    return GetMappingValue(mapping, "type");
+    switch (type) {
+    case SDL_GAMEPAD_TYPE_XBOX360:
+        return "Xbox 360";
+    case SDL_GAMEPAD_TYPE_XBOXONE:
+        return "Xbox One";
+    case SDL_GAMEPAD_TYPE_PS3:
+        return "PS3";
+    case SDL_GAMEPAD_TYPE_PS4:
+        return "PS4";
+    case SDL_GAMEPAD_TYPE_PS5:
+        return "PS5";
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+        return "Nintendo Switch";
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+        return "Joy-Con (L)";
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+        return "Joy-Con (R)";
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+        return "Joy-Con Pair";
+    default:
+        return "";
+    }
 }
 
-char *SetMappingType(char *mapping, const char *type)
+SDL_GamepadType GetMappingType(const char *mapping)
 {
-    return SetMappingValue(mapping, "type", type);
+    return SDL_GetGamepadTypeFromString(GetMappingValue(mapping, "type"));
+}
+
+char *SetMappingType(char *mapping, SDL_GamepadType type)
+{
+    const char *type_string = SDL_GetGamepadStringForType(type);
+    if (type_string == NULL || type == SDL_GAMEPAD_TYPE_UNKNOWN) {
+        return RemoveMappingValue(mapping, "type");
+    } else {
+        return SetMappingValue(mapping, "type", type_string);
+    }
 }
 
 static const char *GetElementKey(int element)
@@ -2392,6 +2704,17 @@ static const char *GetElementKey(int element)
     }
 }
 
+SDL_bool MappingHasElement(const char *mapping, int element)
+{
+    const char *key;
+
+    key = GetElementKey(element);
+    if (!key) {
+        return SDL_FALSE;
+    }
+    return MappingHasKey(mapping, key);
+}
+
 char *GetElementBinding(const char *mapping, int element)
 {
     const char *key;
@@ -2408,8 +2731,36 @@ char *SetElementBinding(char *mapping, int element, const char *binding)
     if (binding) {
         return SetMappingValue(mapping, GetElementKey(element), binding);
     } else {
-        return RemoveMappingKey(mapping, GetElementKey(element));
+        return RemoveMappingValue(mapping, GetElementKey(element));
     }
+}
+
+int GetElementForBinding(char *mapping, const char *binding)
+{
+    MappingParts parts;
+    int i, element;
+    int result = SDL_GAMEPAD_ELEMENT_INVALID;
+
+    if (!binding) {
+        return SDL_GAMEPAD_ELEMENT_INVALID;
+    }
+
+    SplitMapping(mapping, &parts);
+    for (i = 0; i < parts.num_elements; ++i) {
+        if (SDL_strcmp(binding, parts.values[i]) == 0) {
+            for (element = 0; element < SDL_GAMEPAD_ELEMENT_MAX; ++element) {
+                const char *key = GetElementKey(element);
+                if (key && SDL_strcmp(key, parts.keys[i]) == 0) {
+                    result = element;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    FreeMappingParts(&parts);
+
+    return result;
 }
 
 SDL_bool MappingHasBinding(const char *mapping, const char *binding)
@@ -2423,7 +2774,7 @@ SDL_bool MappingHasBinding(const char *mapping, const char *binding)
     }
 
     SplitMapping(mapping, &parts);
-    for (i = parts.num_elements - 1; i >= 0; --i) {
+    for (i = 0; i < parts.num_elements; ++i) {
         if (SDL_strcmp(binding, parts.values[i]) == 0) {
             result = SDL_TRUE;
             break;
@@ -2438,6 +2789,7 @@ char *ClearMappingBinding(char *mapping, const char *binding)
 {
     MappingParts parts;
     int i;
+    SDL_bool modified = SDL_FALSE;
 
     if (!binding) {
         return mapping;
@@ -2447,7 +2799,13 @@ char *ClearMappingBinding(char *mapping, const char *binding)
     for (i = parts.num_elements - 1; i >= 0; --i) {
         if (SDL_strcmp(binding, parts.values[i]) == 0) {
             RemoveMappingValueAt(&parts, i);
+            modified = SDL_TRUE;
         }
     }
-    return JoinMapping(&parts);
+    if (modified) {
+        return RecreateMapping(&parts, mapping);
+    } else {
+        FreeMappingParts(&parts);
+        return mapping;
+    }
 }
