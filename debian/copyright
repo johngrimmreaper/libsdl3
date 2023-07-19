@@ -101,12 +101,6 @@ Copyright:
  2015-2017 LunarG, Inc.
 License: Apache-2.0
 
-Files:
- src/video/khronos/vulkan/*.hpp
-Copyright:
- 2015-2022 The Khronos Group Inc.
-License: Apache-2.0 or Expat
-
 Files: src/video/haiku/SDL_bkeyboard.cc
        src/video/haiku/SDL_bkeyboard.h
 Copyright: 1997-2012 Sam Lantinga
