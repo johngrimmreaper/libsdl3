@@ -5,6 +5,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  (arch=linux-any)SDL_LinuxSetThreadPriorityAndPolicy@SDL3_0.0.0 3~
  SDL_AddEventWatch@SDL3_0.0.0 3~
  SDL_AddGamepadMapping@SDL3_0.0.0 3~
+ SDL_AddGamepadMappingsFromFile@SDL3_0.0.0 3~
  SDL_AddGamepadMappingsFromRW@SDL3_0.0.0 3~
  SDL_AddHintCallback@SDL3_0.0.0 3~
  SDL_AddTimer@SDL3_0.0.0 3~
@@ -208,8 +209,10 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetGamepadSerial@SDL3_0.0.0 3~
  SDL_GetGamepadStringForAxis@SDL3_0.0.0 3~
  SDL_GetGamepadStringForButton@SDL3_0.0.0 3~
+ SDL_GetGamepadStringForType@SDL3_0.0.0 3~
  SDL_GetGamepadTouchpadFinger@SDL3_0.0.0 3~
  SDL_GetGamepadType@SDL3_0.0.0 3~
+ SDL_GetGamepadTypeFromString@SDL3_0.0.0 3~
  SDL_GetGamepadVendor@SDL3_0.0.0 3~
  SDL_GetGamepads@SDL3_0.0.0 3~
  SDL_GetGlobalMouseState@SDL3_0.0.0 3~
@@ -285,6 +288,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetQueuedAudioSize@SDL3_0.0.0 3~
  SDL_GetRGB@SDL3_0.0.0 3~
  SDL_GetRGBA@SDL3_0.0.0 3~
+ SDL_GetRealGamepadInstanceType@SDL3_0.0.0 3~
+ SDL_GetRealGamepadType@SDL3_0.0.0 3~
  SDL_GetRectAndLineIntersection@SDL3_0.0.0 3~
  SDL_GetRectAndLineIntersectionFloat@SDL3_0.0.0 3~
  SDL_GetRectEnclosingPoints@SDL3_0.0.0 3~
@@ -523,6 +528,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ReadLE64@SDL3_0.0.0 3~
  SDL_ReadU8@SDL3_0.0.0 3~
  SDL_RegisterEvents@SDL3_0.0.0 3~
+ SDL_ReloadGamepadMappings@SDL3_0.0.0 3~
  SDL_RemoveTimer@SDL3_0.0.0 3~
  SDL_RenderClear@SDL3_0.0.0 3~
  SDL_RenderClipEnabled@SDL3_0.0.0 3~
@@ -805,6 +811,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_strncasecmp@SDL3_0.0.0 3~
  SDL_strncmp@SDL3_0.0.0 3~
  SDL_strndup@SDL3_0.0.0 3~
+ SDL_strnlen@SDL3_0.0.0 3~
  SDL_strrchr@SDL3_0.0.0 3~
  SDL_strrev@SDL3_0.0.0 3~
  SDL_strstr@SDL3_0.0.0 3~
@@ -840,5 +847,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_wcslen@SDL3_0.0.0 3~
  SDL_wcsncasecmp@SDL3_0.0.0 3~
  SDL_wcsncmp@SDL3_0.0.0 3~
+ SDL_wcsnlen@SDL3_0.0.0 3~
  SDL_wcsstr@SDL3_0.0.0 3~
  SDL_wcstol@SDL3_0.0.0 3~

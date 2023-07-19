@@ -1,3 +1,13 @@
+libsdl3 (3~git20230719+dfsg-1) UNRELEASED; urgency=medium
+
+  * New upstream snapshot prerelease-3.0.0-2002-ge413457a7
+  * libsdl3-doc Breaks/Replaces older versions of libsdl1.2-dev
+    libsdl1.2-dev from src:libsdl1.2 contained man pages, some of which are
+    for functions with the same name as those in libsdl3-doc. libsdl1.2-dev
+    from src:sdl12-compat no longer has those. (Closes: #1034433)
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 19 Jul 2023 10:05:56 +0100
+
 libsdl3 (3~git20230716+dfsg-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-1967-g80da0cf06
