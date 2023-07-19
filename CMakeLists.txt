@@ -465,8 +465,14 @@ cmake_dependent_option(SDL_FRAMEWORK "Build SDL libraries as Apple Framework" OF
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" "${CMAKE_POSITION_INDEPENDENT_CODE}" "SDL_STATIC" OFF)
 dep_option(SDL_TESTS           "Build the test directory" OFF SDL_TEST OFF)
 dep_option(SDL_INSTALL_TESTS   "Install test-cases" OFF "NOT SDL_DISABLE_INSTALL;NOT SDL_FRAMEWORK" OFF)
+dep_option(SDL_TESTS_LINK_SHARED "link tests to shared SDL library" "${SDL_SHARED}" "SDL_SHARED;SDL_STATIC" "${SDL_SHARED}")
+set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Timeout multiplier to account for really slow machines")
 
 set(HAVE_STATIC_PIC "${SDL_STATIC_PIC}")
+
+if(NOT (SDL_SHARED OR SDL_STATIC))
+  message(FATAL_ERROR "SDL_SHARED and SDL_STATIC cannot both be disabled")
+endif()
 
 if(VITA)
   set_option(VIDEO_VITA_PIB  "Build with PSVita piglet gles2 support" OFF)
@@ -1100,7 +1106,7 @@ if(SDL_LIBC)
       set(${_HAVE_H} 1)
     endforeach()
     set(HAVE_SIGNAL_H 1)
-    foreach(_FN abs acos acosf asin asinf atan atan2 atan2f atanf atof atoi bsearch calloc ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf fmod fmodf free itoa log log10 log10f logf lround lroundf _ltoa malloc memcmp memcpy memmove memset modf modff pow powf qsort realloc round roundf scalbn scalbnf sin sinf sqrt sqrtf sscanf strchr strcmp _stricmp strlen _strlwr strncmp _strnicmp strrchr _strrev strstr strtod strtol strtoll strtoul _strupr tan tanf trunc truncf _ultoa wcscmp _wcsdup wcsdup _wcsicmp wcslen wcsncmp _wcsnicmp wcsstr wcstol)
+    foreach(_FN abs acos acosf asin asinf atan atan2 atan2f atanf atof atoi bsearch calloc ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf fmod fmodf free itoa log log10 log10f logf lround lroundf _ltoa malloc memcmp memcpy memmove memset modf modff pow powf qsort realloc round roundf scalbn scalbnf sin sinf sqrt sqrtf sscanf strchr strcmp _stricmp strlen strnlen _strlwr strncmp _strnicmp strrchr _strrev strstr strtod strtol strtoll strtoul _strupr tan tanf trunc truncf _ultoa wcscmp _wcsdup wcsdup _wcsicmp wcslen wcsnlen wcsncmp _wcsnicmp wcsstr wcstol)
       string(TOUPPER ${_FN} _UPPER)
       set(HAVE_${_UPPER} 1)
     endforeach()
@@ -1144,7 +1150,7 @@ if(SDL_LIBC)
     check_c_source_compiles("#include <sys/types.h>
                              #include <sys/mman.h>
                              int main(void) { return 0; }" HAVE_MPROTECT)
-    foreach(_FN abs atof atoi bcopy bsearch calloc _Exit fopen64 free fseeko fseeko64 getenv _i64toa index itoa _ltoa malloc memcmp memcpy memmove memset putenv qsort realloc rindex setenv sscanf strcasecmp strcasestr strchr strcmp _stricmp strlcat strlcpy strlen _strlwr strncasecmp strncmp _strnicmp strrchr _strrev strstr strtod strtok_r strtol strtoll strtoul strtoull _strupr _ui64toa _uitoa _ultoa unsetenv vsnprintf vsscanf wcscasecmp wcscmp _wcsdup wcsdup _wcsicmp wcslcat wcslcpy wcslen wcsncasecmp wcsncmp _wcsnicmp wcsstr wcstol)
+    foreach(_FN abs atof atoi bcopy bsearch calloc _Exit fopen64 free fseeko fseeko64 getenv _i64toa index itoa _ltoa malloc memcmp memcpy memmove memset putenv qsort realloc rindex setenv sscanf strcasecmp strcasestr strchr strcmp _stricmp strlcat strlcpy strlen strnlen _strlwr strncasecmp strncmp _strnicmp strrchr _strrev strstr strtod strtok_r strtol strtoll strtoul strtoull _strupr _ui64toa _uitoa _ultoa unsetenv vsnprintf vsscanf wcscasecmp wcscmp _wcsdup wcsdup _wcsicmp wcslcat wcslcpy wcslen wcsnlen wcsncasecmp wcsncmp _wcsnicmp wcsstr wcstol)
       string(TOUPPER ${_FN} _UPPER)
       set(LIBC_HAS_VAR "LIBC_HAS_${_UPPER}")
       check_symbol_exists("${_FN}" "${STDC_HEADER_NAMES}" ${LIBC_HAS_VAR})

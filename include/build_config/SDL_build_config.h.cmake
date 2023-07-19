@@ -91,6 +91,7 @@
 #cmakedefine HAVE_MEMMOVE 1
 #cmakedefine HAVE_MEMCMP 1
 #cmakedefine HAVE_WCSLEN 1
+#cmakedefine HAVE_WCSNLEN 1
 #cmakedefine HAVE_WCSLCPY 1
 #cmakedefine HAVE_WCSLCAT 1
 #cmakedefine HAVE__WCSDUP 1
@@ -104,6 +105,7 @@
 #cmakedefine HAVE__WCSNICMP 1
 #cmakedefine HAVE_WCSTOL 1
 #cmakedefine HAVE_STRLEN 1
+#cmakedefine HAVE_STRNLEN 1
 #cmakedefine HAVE_STRLCPY 1
 #cmakedefine HAVE_STRLCAT 1
 #cmakedefine HAVE__STRREV 1
@@ -555,7 +557,7 @@
 #cmakedefine SDL_VIDEO_VITA_PVR @SDL_VIDEO_VITA_PVR@
 #cmakedefine SDL_VIDEO_VITA_PVR_OGL @SDL_VIDEO_VITA_PVR_OGL@
 
-#cmakedefine SDL_HAVE_LIBDECOR_GET_MIN_MAX @SDL_HAVE_LIBDECOR_GET_MIN_MAX@
+#cmakedefine SDL_HAVE_LIBDECOR_VER_0_1_2 @SDL_HAVE_LIBDECOR_VER_0_1_2@
 
 #if !defined(HAVE_STDINT_H) && !defined(_STDINT_H_)
 /* Most everything except Visual Studio 2008 and earlier has stdint.h now */
