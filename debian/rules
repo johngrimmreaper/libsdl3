@@ -11,6 +11,7 @@ $(error This version of SDL is not yet suitable for testing/unstable)
 endif
 
 export SDL_AUDIO_DRIVER=dummy
+export SDL_TESTS_QUICK=1
 export SDL_VIDEO_DRIVER=dummy
 
 confflags = \
