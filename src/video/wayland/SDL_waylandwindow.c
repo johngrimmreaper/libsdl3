@@ -109,20 +109,17 @@ static SDL_bool WindowNeedsViewport(SDL_Window *window)
 {
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *video = wind->waylandData;
-    SDL_DisplayData *output = SDL_GetDisplayDriverDataForWindow(window);
-    const int output_width = wind->requested_window_width ? wind->requested_window_width : output->screen_width;
-    const int output_height = wind->requested_window_height ? wind->requested_window_height : output->screen_height;
 
     /*
      * A viewport is only required when scaling is enabled and:
      *  - The surface scale is fractional.
-     *  - A fullscreen mode is being emulated and the mode does not match the logical desktop dimensions.
+     *  - An exclusive fullscreen mode is being emulated and the mode does not match the requested output size.
      */
     if (video->viewporter != NULL) {
         if (SurfaceScaleIsFractional(window)) {
             return SDL_TRUE;
         } else if (window->fullscreen_exclusive) {
-            if (window->current_fullscreen_mode.w != output_width || window->current_fullscreen_mode.h != output_height) {
+            if (window->current_fullscreen_mode.w != wind->requested_window_width || window->current_fullscreen_mode.h != wind->requested_window_height) {
                 return SDL_TRUE;
             }
         }
@@ -194,8 +191,8 @@ static void SetMinMaxDimensions(SDL_Window *window)
     } else if (window->flags & SDL_WINDOW_RESIZABLE) {
         min_width = SDL_max(window->min_w, wind->system_min_required_width);
         min_height = SDL_max(window->min_h, wind->system_min_required_height);
-        max_width = window->max_w;
-        max_height = window->max_h;
+        max_width = window->max_w ? SDL_max(window->max_w, wind->system_min_required_width) : 0;
+        max_height = window->max_h ? SDL_max(window->max_h, wind->system_min_required_height) : 0;
     } else {
         min_width = wind->wl_window_width;
         min_height = wind->wl_window_height;
@@ -234,11 +231,82 @@ static void SetMinMaxDimensions(SDL_Window *window)
     }
 }
 
+static void EnsurePopupPositionIsValid(SDL_Window *window)
+{
+    int adj_count = 0;
+
+    /* Per the xdg-positioner spec, child popup windows must intersect or at
+     * least be partially adjacent to the parent window.
+     *
+     * Failure to ensure this on a compositor that enforces this restriction
+     * can result in behavior ranging from the window being spuriously closed
+     * to a protocol violation.
+     */
+    if (window->x + window->driverdata->wl_window_width < 0) {
+        window->x = -window->w;
+        ++adj_count;
+    }
+    if (window->y + window->driverdata->wl_window_height < 0) {
+        window->y = -window->h;
+        ++adj_count;
+    }
+    if (window->x > window->parent->driverdata->wl_window_width) {
+        window->x = window->parent->driverdata->wl_window_width;
+        ++adj_count;
+    }
+    if (window->y > window->parent->driverdata->wl_window_height) {
+        window->y = window->parent->driverdata->wl_window_height;
+        ++adj_count;
+    }
+
+    /* If adjustment was required on the x and y axes, the popup is aligned with
+     * the parent corner-to-corner and is neither overlapping nor adjacent, so it
+     * must be nudged by 1 to be considered adjacent.
+     */
+    if (adj_count > 1) {
+        window->x += window->x < 0 ? 1 : -1;
+    }
+}
+
+static void GetPopupPosition(SDL_Window *popup, int x, int y, int *adj_x, int *adj_y)
+{
+    /* Adjust the popup positioning, if necessary */
+#ifdef HAVE_LIBDECOR_H
+    if (popup->parent->driverdata->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
+        libdecor_frame_translate_coordinate(popup->parent->driverdata->shell_surface.libdecor.frame,
+                                            x, y, adj_x, adj_y);
+    } else
+#endif
+    {
+        *adj_x = x;
+        *adj_y = y;
+    }
+}
+
+static void RepositionPopup(SDL_Window *window)
+{
+    SDL_WindowData *wind = window->driverdata;
+
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP &&
+        wind->shell_surface.xdg.roleobj.popup.positioner &&
+        xdg_popup_get_version(wind->shell_surface.xdg.roleobj.popup.popup) >= XDG_POPUP_REPOSITION_SINCE_VERSION) {
+        int x, y;
+
+        EnsurePopupPositionIsValid(window);
+        GetPopupPosition(window, window->x, window->y, &x, &y);
+        xdg_positioner_set_anchor_rect(wind->shell_surface.xdg.roleobj.popup.positioner, 0, 0, window->parent->driverdata->wl_window_width, window->parent->driverdata->wl_window_height);
+        xdg_positioner_set_size(wind->shell_surface.xdg.roleobj.popup.positioner, wind->wl_window_width, wind->wl_window_height);
+        xdg_positioner_set_offset(wind->shell_surface.xdg.roleobj.popup.positioner, x, y);
+        xdg_popup_reposition(wind->shell_surface.xdg.roleobj.popup.popup,
+                             wind->shell_surface.xdg.roleobj.popup.positioner,
+                             0);
+    }
+}
+
 static void ConfigureWindowGeometry(SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     SDL_VideoData *viddata = data->waylandData;
-    SDL_DisplayData *output = SDL_GetDisplayDriverDataForWindow(window);
     const int old_dw = data->drawable_width;
     const int old_dh = data->drawable_height;
     int window_width, window_height;
@@ -257,9 +325,8 @@ static void ConfigureWindowGeometry(SDL_Window *window)
     }
 
     if (data->is_fullscreen && window->fullscreen_exclusive) {
-        /* If the compositor supplied fullscreen dimensions, use them, otherwise fall back to the display dimensions. */
-        int output_width = data->requested_window_width ? data->requested_window_width : output->screen_width;
-        int output_height = data->requested_window_height ? data->requested_window_height : output->screen_height;
+        int output_width = data->requested_window_width;
+        int output_height = data->requested_window_height;
         window_width = window->current_fullscreen_mode.w;
         window_height = window->current_fullscreen_mode.h;
 
@@ -321,7 +388,7 @@ static void ConfigureWindowGeometry(SDL_Window *window)
         window_width = data->requested_window_width;
         window_height = data->requested_window_height;
 
-        window_size_changed = window_width != window->w || window_height != window->h;
+        window_size_changed = window_width != data->wl_window_width || window_height != data->wl_window_height;
 
         if (window_size_changed || drawable_size_changed) {
             if (WindowNeedsViewport(window)) {
@@ -363,6 +430,11 @@ static void ConfigureWindowGeometry(SDL_Window *window)
             wl_region_destroy(region);
         }
 
+        /* Ensure that child popup windows are still in bounds. */
+        for (SDL_Window *child = window->first_child; child != NULL; child = child->next_sibling) {
+            RepositionPopup(child);
+        }
+
         if (data->confined_pointer) {
             Wayland_input_confine_pointer(viddata->input, window);
         }
@@ -392,43 +464,6 @@ static void ConfigureWindowGeometry(SDL_Window *window)
         if (data->suspended) {
             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_OCCLUDED, 0, 0);
         }
-    }
-}
-
-static void EnsurePopupPositionIsValid(SDL_Window *window)
-{
-    int adj_count = 0;
-
-    /* Per the xdg-positioner spec, child popup windows must intersect or at
-     * least be partially adjacent to the parent window.
-     *
-     * Failure to ensure this on a compositor that enforces this restriction
-     * can result in behavior ranging from the window being spuriously closed
-     * to a protocol violation.
-     */
-    if (window->x + window->w < 0) {
-        window->x = -window->w;
-        ++adj_count;
-    }
-    if (window->y + window->h < 0) {
-        window->y = -window->h;
-        ++adj_count;
-    }
-    if (window->x > window->parent->w) {
-        window->x = window->parent->w;
-        ++adj_count;
-    }
-    if (window->y > window->parent->h) {
-        window->y = window->parent->h;
-        ++adj_count;
-    }
-
-    /* If adjustment was required on the x and y axes, the popup is aligned with
-     * the parent corner-to-corner and is neither overlapping nor adjacent, so it
-     * must be nudged by 1 to be considered adjacent.
-     */
-    if (adj_count > 1) {
-        window->x += window->x < 0 ? 1 : -1;
     }
 }
 
@@ -511,40 +546,6 @@ static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
             SDL_SetWindowFullscreen(window, SDL_FALSE);
             wind->in_fullscreen_transition = SDL_FALSE;
         }
-    }
-}
-
-static void GetPopupPosition(SDL_Window *popup, int x, int y, int *adj_x, int *adj_y)
-{
-    /* Adjust the popup positioning, if necessary */
-#ifdef HAVE_LIBDECOR_H
-    if (popup->parent->driverdata->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
-        libdecor_frame_translate_coordinate(popup->parent->driverdata->shell_surface.libdecor.frame,
-                                            x, y, adj_x, adj_y);
-    } else
-#endif
-    {
-        *adj_x = x;
-        *adj_y = y;
-    }
-}
-
-static void RepositionPopup(SDL_Window *window)
-{
-    SDL_WindowData *wind = window->driverdata;
-
-    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP &&
-        wind->shell_surface.xdg.roleobj.popup.positioner &&
-        xdg_popup_get_version(wind->shell_surface.xdg.roleobj.popup.popup) >= XDG_POPUP_REPOSITION_SINCE_VERSION) {
-        int x, y;
-
-        EnsurePopupPositionIsValid(window);
-        GetPopupPosition(window, window->x, window->y, &x, &y);
-        xdg_positioner_set_size(wind->shell_surface.xdg.roleobj.popup.positioner, window->w, window->h);
-        xdg_positioner_set_offset(wind->shell_surface.xdg.roleobj.popup.positioner, x, y);
-        xdg_popup_reposition(wind->shell_surface.xdg.roleobj.popup.popup,
-                             wind->shell_surface.xdg.roleobj.popup.positioner,
-                             0);
     }
 }
 
@@ -736,6 +737,11 @@ static void handle_configure_xdg_toplevel(void *data,
                 wind->fullscreen_was_positioned = SDL_TRUE;
                 xdg_toplevel_set_fullscreen(xdg_toplevel, disp->driverdata->output);
             }
+        }
+
+        if (width == 0 || height == 0) {
+            width = wind->requested_window_width;
+            height = wind->requested_window_height;
         }
     }
 
@@ -982,8 +988,8 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
          * told to do this.
          */
         if (!libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
-            width = 0;
-            height = 0;
+            width = wind->requested_window_width;
+            height = wind->requested_window_height;
         }
     } else {
         if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
@@ -2148,7 +2154,7 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
         int i;
         for (i = 0; i < _this->num_displays; i++) {
-            float scale = _this->displays[i].driverdata->scale_factor;
+            float scale = _this->displays[i]->driverdata->scale_factor;
             data->windowed_scale_factor = SDL_max(data->windowed_scale_factor, scale);
         }
     }
@@ -2307,7 +2313,6 @@ void Wayland_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         wind->requested_window_height = window->windowed.h;
 
         ConfigureWindowGeometry(window);
-        RepositionPopup(window);
     }
 
     /* Always commit, as this may be in response to a min/max limit change. */
@@ -2350,6 +2355,23 @@ void Wayland_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     WAYLAND_wl_display_flush(viddata->display);
+}
+
+void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
+{
+    SDL_WindowData *wind = window->driverdata;
+#ifdef HAVE_LIBDECOR_H
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
+        if (wind->shell_surface.libdecor.frame) {
+            libdecor_frame_show_window_menu(wind->shell_surface.libdecor.frame, wind->waylandData->input->seat, wind->waylandData->input->last_implicit_grab_serial, x, y);
+        }
+    } else
+#endif
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
+        if (wind->shell_surface.xdg.roleobj.toplevel) {
+            xdg_toplevel_show_window_menu(wind->shell_surface.xdg.roleobj.toplevel, wind->waylandData->input->seat, wind->waylandData->input->last_implicit_grab_serial, x, y);
+        }
+    }
 }
 
 int Wayland_SuspendScreenSaver(SDL_VideoDevice *_this)
