@@ -10,6 +10,9 @@ ifneq (,$(filter-out experimental UNRELEASED,$(DEB_DISTRIBUTION)))
 $(error This version of SDL is not yet suitable for testing/unstable)
 endif
 
+export SDL_AUDIO_DRIVER=dummy
+export SDL_VIDEO_DRIVER=dummy
+
 confflags = \
 	-DSDL_ALSA_SHARED=OFF \
 	-DSDL_JACK=OFF \
