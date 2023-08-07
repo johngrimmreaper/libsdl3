@@ -21,6 +21,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_AtomicUnlock@SDL3_0.0.0 3~
  SDL_AttachVirtualJoystick@SDL3_0.0.0 3~
  SDL_AttachVirtualJoystickEx@SDL3_0.0.0 3~
+ SDL_BindAudioStream@SDL3_0.0.0 3~
+ SDL_BindAudioStreams@SDL3_0.0.0 3~
  SDL_BlitSurface@SDL3_0.0.0 3~
  SDL_BlitSurfaceScaled@SDL3_0.0.0 3~
  SDL_BlitSurfaceUnchecked@SDL3_0.0.0 3~
@@ -33,7 +35,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ClearComposition@SDL3_0.0.0 3~
  SDL_ClearError@SDL3_0.0.0 3~
  SDL_ClearHints@SDL3_0.0.0 3~
- SDL_ClearQueuedAudio@SDL3_0.0.0 3~
  SDL_CloseAudioDevice@SDL3_0.0.0 3~
  SDL_CloseGamepad@SDL3_0.0.0 3~
  SDL_CloseJoystick@SDL3_0.0.0 3~
@@ -44,6 +45,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ConvertPixels@SDL3_0.0.0 3~
  SDL_ConvertSurface@SDL3_0.0.0 3~
  SDL_ConvertSurfaceFormat@SDL3_0.0.0 3~
+ SDL_CreateAndBindAudioStream@SDL3_0.0.0 3~
  SDL_CreateAudioStream@SDL3_0.0.0 3~
  SDL_CreateColorCursor@SDL3_0.0.0 3~
  SDL_CreateCondition@SDL3_0.0.0 3~
@@ -76,7 +78,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_DelHintCallback@SDL3_0.0.0 3~
  SDL_Delay@SDL3_0.0.0 3~
  SDL_DelayNS@SDL3_0.0.0 3~
- SDL_DequeueAudio@SDL3_0.0.0 3~
  SDL_DestroyAudioStream@SDL3_0.0.0 3~
  SDL_DestroyCondition@SDL3_0.0.0 3~
  SDL_DestroyCursor@SDL3_0.0.0 3~
@@ -140,11 +141,13 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GamepadSensorEnabled@SDL3_0.0.0 3~
  SDL_GetAssertionHandler@SDL3_0.0.0 3~
  SDL_GetAssertionReport@SDL3_0.0.0 3~
+ SDL_GetAudioCaptureDevices@SDL3_0.0.0 3~
+ SDL_GetAudioDeviceFormat@SDL3_0.0.0 3~
  SDL_GetAudioDeviceName@SDL3_0.0.0 3~
- SDL_GetAudioDeviceSpec@SDL3_0.0.0 3~
- SDL_GetAudioDeviceStatus@SDL3_0.0.0 3~
  SDL_GetAudioDriver@SDL3_0.0.0 3~
+ SDL_GetAudioOutputDevices@SDL3_0.0.0 3~
  SDL_GetAudioStreamAvailable@SDL3_0.0.0 3~
+ SDL_GetAudioStreamBinding@SDL3_0.0.0 3~
  SDL_GetAudioStreamData@SDL3_0.0.0 3~
  SDL_GetAudioStreamFormat@SDL3_0.0.0 3~
  SDL_GetBasePath@SDL3_0.0.0 3~
@@ -160,7 +163,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetCurrentVideoDriver@SDL3_0.0.0 3~
  SDL_GetCursor@SDL3_0.0.0 3~
  SDL_GetDefaultAssertionHandler@SDL3_0.0.0 3~
- SDL_GetDefaultAudioInfo@SDL3_0.0.0 3~
  SDL_GetDefaultCursor@SDL3_0.0.0 3~
  SDL_GetDesktopDisplayMode@SDL3_0.0.0 3~
  SDL_GetDisplayBounds@SDL3_0.0.0 3~
@@ -261,7 +263,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetMouseState@SDL3_0.0.0 3~
  SDL_GetNaturalDisplayOrientation@SDL3_0.0.0 3~
  SDL_GetNumAllocations@SDL3_0.0.0 3~
- SDL_GetNumAudioDevices@SDL3_0.0.0 3~
  SDL_GetNumAudioDrivers@SDL3_0.0.0 3~
  SDL_GetNumGamepadMappings@SDL3_0.0.0 3~
  SDL_GetNumGamepadTouchpadFingers@SDL3_0.0.0 3~
@@ -274,7 +275,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetNumTouchFingers@SDL3_0.0.0 3~
  SDL_GetNumVideoDrivers@SDL3_0.0.0 3~
  SDL_GetOriginalMemoryFunctions@SDL3_0.0.0 3~
- SDL_GetPath@SDL3_0.0.0 3~
  SDL_GetPerformanceCounter@SDL3_0.0.0 3~
  SDL_GetPerformanceFrequency@SDL3_0.0.0 3~
  SDL_GetPixelFormatEnumForMasks@SDL3_0.0.0 3~
@@ -285,7 +285,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetPreferredLocales@SDL3_0.0.0 3~
  SDL_GetPrimaryDisplay@SDL3_0.0.0 3~
  SDL_GetPrimarySelectionText@SDL3_0.0.0 3~
- SDL_GetQueuedAudioSize@SDL3_0.0.0 3~
  SDL_GetRGB@SDL3_0.0.0 3~
  SDL_GetRGBA@SDL3_0.0.0 3~
  SDL_GetRealGamepadInstanceType@SDL3_0.0.0 3~
@@ -331,6 +330,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetSensorType@SDL3_0.0.0 3~
  SDL_GetSensors@SDL3_0.0.0 3~
  SDL_GetShapedWindowMode@SDL3_0.0.0 3~
+ SDL_GetSilenceValueForFormat@SDL3_0.0.0 3~
  SDL_GetSurfaceAlphaMod@SDL3_0.0.0 3~
  SDL_GetSurfaceBlendMode@SDL3_0.0.0 3~
  SDL_GetSurfaceClipRect@SDL3_0.0.0 3~
@@ -352,6 +352,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetTouchDeviceType@SDL3_0.0.0 3~
  SDL_GetTouchFinger@SDL3_0.0.0 3~
  SDL_GetTouchName@SDL3_0.0.0 3~
+ SDL_GetUserFolder@SDL3_0.0.0 3~
  SDL_GetVersion@SDL3_0.0.0 3~
  SDL_GetVideoDriver@SDL3_0.0.0 3~
  SDL_GetWindowBordersSize@SDL3_0.0.0 3~
@@ -434,6 +435,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_HideWindow@SDL3_0.0.0 3~
  SDL_Init@SDL3_0.0.0 3~
  SDL_InitSubSystem@SDL3_0.0.0 3~
+ SDL_IsAudioDevicePaused@SDL3_0.0.0 3~
  SDL_IsGamepad@SDL3_0.0.0 3~
  SDL_IsJoystickVirtual@SDL3_0.0.0 3~
  SDL_IsShapedWindow@SDL3_0.0.0 3~
@@ -450,8 +452,9 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_LoadFile_RW@SDL3_0.0.0 3~
  SDL_LoadFunction@SDL3_0.0.0 3~
  SDL_LoadObject@SDL3_0.0.0 3~
+ SDL_LoadWAV@SDL3_0.0.0 3~
  SDL_LoadWAV_RW@SDL3_0.0.0 3~
- SDL_LockAudioDevice@SDL3_0.0.0 3~
+ SDL_LockAudioStream@SDL3_0.0.0 3~
  SDL_LockJoysticks@SDL3_0.0.0 3~
  SDL_LockMutex@SDL3_0.0.0 3~
  SDL_LockRWLockForReading@SDL3_0.0.0 3~
@@ -499,7 +502,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_OpenURL@SDL3_0.0.0 3~
  SDL_PauseAudioDevice@SDL3_0.0.0 3~
  SDL_PeepEvents@SDL3_0.0.0 3~
- SDL_PlayAudioDevice@SDL3_0.0.0 3~
  SDL_PollEvent@SDL3_0.0.0 3~
  SDL_PostSemaphore@SDL3_0.0.0 3~
  SDL_PremultiplyAlpha@SDL3_0.0.0 3~
@@ -507,7 +509,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_PushEvent@SDL3_0.0.0 3~
  SDL_PutAudioStreamData@SDL3_0.0.0 3~
  SDL_QueryTexture@SDL3_0.0.0 3~
- SDL_QueueAudio@SDL3_0.0.0 3~
  SDL_Quit@SDL3_0.0.0 3~
  SDL_QuitSubSystem@SDL3_0.0.0 3~
  SDL_RWFromConstMem@SDL3_0.0.0 3~
@@ -555,6 +556,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ResetHints@SDL3_0.0.0 3~
  SDL_ResetKeyboard@SDL3_0.0.0 3~
  SDL_RestoreWindow@SDL3_0.0.0 3~
+ SDL_ResumeAudioDevice@SDL3_0.0.0 3~
  SDL_RumbleGamepad@SDL3_0.0.0 3~
  SDL_RumbleGamepadTriggers@SDL3_0.0.0 3~
  SDL_RumbleJoystick@SDL3_0.0.0 3~
@@ -569,6 +571,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SendJoystickEffect@SDL3_0.0.0 3~
  SDL_SetAssertionHandler@SDL3_0.0.0 3~
  SDL_SetAudioStreamFormat@SDL3_0.0.0 3~
+ SDL_SetAudioStreamGetCallback@SDL3_0.0.0 3~
+ SDL_SetAudioStreamPutCallback@SDL3_0.0.0 3~
  SDL_SetClipboardData@SDL3_0.0.0 3~
  SDL_SetClipboardText@SDL3_0.0.0 3~
  SDL_SetCursor@SDL3_0.0.0 3~
@@ -644,6 +648,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ShowMessageBox@SDL3_0.0.0 3~
  SDL_ShowSimpleMessageBox@SDL3_0.0.0 3~
  SDL_ShowWindow@SDL3_0.0.0 3~
+ SDL_ShowWindowSystemMenu@SDL3_0.0.0 3~
  SDL_SignalCondition@SDL3_0.0.0 3~
  SDL_SoftStretch@SDL3_0.0.0 3~
  SDL_SoftStretchLinear@SDL3_0.0.0 3~
@@ -658,8 +663,10 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_TryLockRWLockForReading@SDL3_0.0.0 3~
  SDL_TryLockRWLockForWriting@SDL3_0.0.0 3~
  SDL_TryWaitSemaphore@SDL3_0.0.0 3~
+ SDL_UnbindAudioStream@SDL3_0.0.0 3~
+ SDL_UnbindAudioStreams@SDL3_0.0.0 3~
  SDL_UnloadObject@SDL3_0.0.0 3~
- SDL_UnlockAudioDevice@SDL3_0.0.0 3~
+ SDL_UnlockAudioStream@SDL3_0.0.0 3~
  SDL_UnlockJoysticks@SDL3_0.0.0 3~
  SDL_UnlockMutex@SDL3_0.0.0 3~
  SDL_UnlockRWLock@SDL3_0.0.0 3~

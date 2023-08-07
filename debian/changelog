@@ -1,3 +1,14 @@
+libsdl3 (3~git20230806~6af0448+dfsg-1) experimental; urgency=medium
+
+  * New upstream snapshot prerelease-3.0.0-2234-g6af0448af
+  * d/copyright: Update
+  * d/libsdl3-0.symbols: Update
+  * d/rules: Use dummy audio/video driver for build-time testing
+  * d/rules: Make the tests relatively brief during build-time testing
+  * d/tests: Use dummy audio and video driver
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 07 Aug 2023 20:24:11 +0100
+
 libsdl3 (3~git20230719~e413457+dfsg-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-2002-ge413457a7

@@ -25,7 +25,7 @@ Copyright:
  2018-2019 EXL
  2020-2023 Valve Corporation
  2019-2022 Collabora Ltd.
-License: zlib/libpng and zlib-libpng-like-permissive and Expat
+License: zlib/libpng and zlib-libpng-like-permissive and Expat and PublicDomain_AlDraw
 
 Files:
  cmake/GetGitRevisionDescription.cmake
@@ -100,12 +100,6 @@ Copyright:
  2015-2017 Valve Corporation
  2015-2017 LunarG, Inc.
 License: Apache-2.0
-
-Files:
- src/video/khronos/vulkan/*.hpp
-Copyright:
- 2015-2022 The Khronos Group Inc.
-License: Apache-2.0 or Expat
 
 Files: src/video/haiku/SDL_bkeyboard.cc
        src/video/haiku/SDL_bkeyboard.h
@@ -431,6 +425,13 @@ License: SunPro
   Permission to use, copy, modify, and distribute this
   software is freely granted, provided that this notice
   is preserved.
+
+License: PublicDomain_AlDraw
+ The .bmp files used by testaudio.c were made by AlDraw:
+ .
+ https://linktr.ee/AlexDraw
+ .
+ They may be distributed as public domain files!
 
 License: PublicDomain_Daniel_Gibson
  Placed in the public domain by Daniel Gibson

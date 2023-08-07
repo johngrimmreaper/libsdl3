@@ -59,8 +59,8 @@ mkdir "$WORKDIR/main"
 )
 make -C "$WORKDIR/main" VERBOSE=1
 (
-    export SDL_AUDIODRIVER=dummy
-    export SDL_VIDEODRIVER=dummy
+    export SDL_AUDIO_DRIVER=dummy
+    export SDL_VIDEO_DRIVER=dummy
     "$WORKDIR/main/program"
 )
 make -C "$WORKDIR/main" VERBOSE=1 clean
