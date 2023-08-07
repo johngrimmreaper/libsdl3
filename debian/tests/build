@@ -18,6 +18,9 @@ else
     CROSS_COMPILE=
 fi
 
+export SDL_AUDIO_DRIVER=dummy
+export SDL_VIDEO_DRIVER=dummy
+
 cd "$WORKDIR"
 cat <<EOF > use-sdl.c
 #undef NDEBUG

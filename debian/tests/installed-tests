@@ -8,8 +8,8 @@ if [ -z "${HOME-}" ] || ! [ -w "${HOME}" ]; then
     export HOME="${AUTOPKGTEST_TMP}"
 fi
 
-export SDL_AUDIODRIVER=dummy
-export SDL_VIDEODRIVER=dummy
+export SDL_AUDIO_DRIVER=dummy
+export SDL_VIDEO_DRIVER=dummy
 cd "$AUTOPKGTEST_TMP"
 
 if [ -z "$(ginsttest-runner -l "$namespace")" ]; then
