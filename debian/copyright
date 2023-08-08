@@ -8,7 +8,10 @@ Files-Excluded: Android.mk
                 src/hidapi/*/*.sln
                 src/hidapi/*/*.vcproj
                 src/render/metal/SDL_shaders_metal_*.h
+                test/android
+                test/emscripten
                 test/gamepad_*.h
+                test/n3ds
                 test/unifont-*
                 VisualC
                 VisualC-GDK
