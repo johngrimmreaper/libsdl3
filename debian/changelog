@@ -3,8 +3,10 @@ libsdl3 (3~git20230806~6af0448+dfsg-2) UNRELEASED; urgency=medium
   * d/gbp.conf: Stop filtering imported tarballs.
     Please use uscan instead, which will automatically produce a filtered
     +dfsg tarball based on debian/copyright.
+  * d/copyright: Exclude more files that we don't need
+  * d/gbp.conf: Stop signing upstream tags
 
- -- Simon McVittie <smcv@debian.org>  Tue, 08 Aug 2023 11:13:15 +0100
+ -- Simon McVittie <smcv@debian.org>  Tue, 08 Aug 2023 12:49:37 +0100
 
 libsdl3 (3~git20230806~6af0448+dfsg-1) experimental; urgency=medium
 
