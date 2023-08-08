@@ -1,4 +1,4 @@
-libsdl3 (3~git20230808~a2d5942+dfsg-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20230808~a2d5942+dfsg-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-2242-ga2d594269
   * d/gbp.conf: Stop filtering imported tarballs.
@@ -6,8 +6,10 @@ libsdl3 (3~git20230808~a2d5942+dfsg-1) UNRELEASED; urgency=medium
     +dfsg tarball based on debian/copyright.
   * d/copyright: Exclude more files that we don't need
   * d/gbp.conf: Stop signing upstream tags
+  * d/copyright: Use the SPDX name for the Zlib license
+  * d/libsdl3-0.symbols: Update
 
- -- Simon McVittie <smcv@debian.org>  Tue, 08 Aug 2023 12:49:37 +0100
+ -- Simon McVittie <smcv@debian.org>  Tue, 08 Aug 2023 13:04:26 +0100
 
 libsdl3 (3~git20230806~6af0448+dfsg-1) experimental; urgency=medium
 
