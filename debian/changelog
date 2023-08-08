@@ -1,5 +1,6 @@
-libsdl3 (3~git20230806~6af0448+dfsg-2) UNRELEASED; urgency=medium
+libsdl3 (3~git20230808~a2d5942+dfsg-1) UNRELEASED; urgency=medium
 
+  * New upstream snapshot prerelease-3.0.0-2242-ga2d594269
   * d/gbp.conf: Stop filtering imported tarballs.
     Please use uscan instead, which will automatically produce a filtered
     +dfsg tarball based on debian/copyright.
