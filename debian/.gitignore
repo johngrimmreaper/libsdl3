@@ -6,10 +6,9 @@
 /autoreconf.before
 /build-tests/
 /debhelper-build-stamp
-/examples.tar.gz
 /files
-/libsdl2-2.0-0/
-/libsdl2-dev/
-/libsdl2-doc/
-/libsdl2-tests/
+/libsdl3-0/
+/libsdl3-dev/
+/libsdl3-doc/
+/libsdl3-tests/
 /tmp/
