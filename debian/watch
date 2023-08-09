@@ -15,6 +15,6 @@ opts="\
     mode=git, \
     compression=gzip, \
     dversionmangle=s/\+(?:git)?[0-9]*(?:\+g[0-9a-f]*)(?:\+(?:dfsg|ds)[0-9]*)//, \
-    pretty=3~git%cd~%h+dfsg" \
+    pretty=3~git%cd~%h+ds" \
 https://github.com/libsdl-org/SDL \
 HEAD
