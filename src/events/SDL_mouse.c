@@ -213,7 +213,7 @@ void SDL_PostInitMouse(void)
     /* Create a dummy mouse cursor for video backends that don't support true cursors,
      * so that mouse grab and focus functionality will work.
      */
-    if (!mouse->CreateCursor) {
+    if (!mouse->def_cursor) {
         SDL_Surface *surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_ARGB8888);
         if (surface) {
             SDL_memset(surface->pixels, 0, (size_t)surface->h * surface->pitch);
@@ -227,7 +227,23 @@ void SDL_SetDefaultCursor(SDL_Cursor *cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
+    if (cursor == mouse->def_cursor) {
+        return;
+    }
+
+    if (mouse->def_cursor) {
+        SDL_Cursor *default_cursor = mouse->def_cursor;
+
+        if (mouse->cur_cursor == mouse->def_cursor) {
+            mouse->cur_cursor = NULL;
+        }
+        mouse->def_cursor = NULL;
+
+        SDL_DestroyCursor(default_cursor);
+    }
+
     mouse->def_cursor = cursor;
+
     if (!mouse->cur_cursor) {
         SDL_SetCursor(cursor);
     }
@@ -853,6 +869,10 @@ void SDL_QuitMouse(void)
     SDL_SetRelativeMouseMode(SDL_FALSE);
     SDL_ShowCursor();
 
+    if (mouse->def_cursor) {
+        SDL_SetDefaultCursor(NULL);
+    }
+
     cursor = mouse->cursors;
     while (cursor) {
         next = cursor->next;
@@ -861,15 +881,6 @@ void SDL_QuitMouse(void)
     }
     mouse->cursors = NULL;
     mouse->cur_cursor = NULL;
-
-    if (mouse->def_cursor) {
-        if (mouse->FreeCursor) {
-            mouse->FreeCursor(mouse->def_cursor);
-        } else {
-            SDL_free(mouse->def_cursor);
-        }
-        mouse->def_cursor = NULL;
-    }
 
     if (mouse->sources) {
         SDL_free(mouse->sources);
@@ -1385,7 +1396,7 @@ void SDL_DestroyCursor(SDL_Cursor *cursor)
                 mouse->cursors = curr->next;
             }
 
-            if (mouse->FreeCursor) {
+            if (mouse->FreeCursor && curr->driverdata) {
                 mouse->FreeCursor(curr);
             } else {
                 SDL_free(curr);
