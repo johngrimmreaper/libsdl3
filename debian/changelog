@@ -1,3 +1,13 @@
+libsdl3 (3~git20230808~a2d5942+dfsg-2) UNRELEASED; urgency=medium
+
+  * d/.gitignore: Update for SDL3 package names
+  * d/watch: Use a +ds suffix for the orig tarball.
+    To the best of my knowledge, everything we exclude is (meant to be)
+    Free Software, we just don't want to keep track of files that are
+    irrelevant to Debian.
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 15 Aug 2023 14:35:42 +0100
+
 libsdl3 (3~git20230808~a2d5942+dfsg-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-2242-ga2d594269
