@@ -9,8 +9,11 @@ libsdl3 (3~git20230814~cbab334+ds-1) UNRELEASED; urgency=medium
   * d/rules: Drop libsamplerate parameter.
     SDL3 no longer uses that library.
   * d/rules: Link libusb in the usual way instead of via dlopen
+  * d/rules: Go back to running more thorough build-time tests now that
+    the problematic testsurround has been removed from the non-interactive
+    test set
 
- -- Simon McVittie <smcv@debian.org>  Tue, 15 Aug 2023 14:35:42 +0100
+ -- Simon McVittie <smcv@debian.org>  Wed, 16 Aug 2023 09:26:13 +0100
 
 libsdl3 (3~git20230808~a2d5942+dfsg-1) experimental; urgency=medium
 
