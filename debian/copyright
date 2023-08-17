@@ -13,6 +13,7 @@ Files-Excluded: Android.mk
                 test/gamepad_*.h
                 test/n3ds
                 test/unifont-*
+                test/uwp
                 VisualC
                 VisualC-GDK
                 VisualC-WinRT

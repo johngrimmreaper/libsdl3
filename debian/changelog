@@ -1,3 +1,20 @@
+libsdl3 (3~git20230816~d60ebb0+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot prerelease-3.0.0-2305-gd60ebb06d
+  * d/.gitignore: Update for SDL3 package names
+  * d/watch: Use a +ds suffix for the orig tarball.
+    To the best of my knowledge, everything we exclude is (meant to be)
+    Free Software, we just don't want to keep track of files that are
+    irrelevant to Debian.
+  * d/rules: Drop libsamplerate parameter.
+    SDL3 no longer uses that library.
+  * d/rules: Link libusb in the usual way instead of via dlopen
+  * d/rules: Go back to running more thorough build-time tests now that
+    the problematic testsurround has been removed from the non-interactive
+    test set
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 17 Aug 2023 09:01:56 +0100
+
 libsdl3 (3~git20230808~a2d5942+dfsg-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-2242-ga2d594269

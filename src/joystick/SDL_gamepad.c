@@ -362,6 +362,8 @@ void SDL_PrivateGamepadRemoved(SDL_JoystickID instance_id)
     SDL_Event event;
     SDL_Gamepad *gamepad;
 
+    SDL_AssertJoysticksLocked();
+
     if (!SDL_gamepads_initialized) {
         return;
     }
@@ -466,6 +468,8 @@ static void AdjustSensorOrientation(SDL_Joystick *joystick, float *src, float *d
 {
     unsigned int i, j;
 
+    SDL_AssertJoysticksLocked();
+
     for (i = 0; i < 3; ++i) {
         dst[i] = 0.0f;
         for (j = 0; j < 3; ++j) {
@@ -558,6 +562,8 @@ static void AddMappingChangeTracking(GamepadMapping_t *mapping)
 static SDL_bool HasMappingChangeTracking(MappingChangeTracker *tracker, GamepadMapping_t *mapping)
 {
     int i;
+
+    SDL_AssertJoysticksLocked();
 
     for (i = 0; i < tracker->num_changed_mappings; ++i) {
         if (tracker->changed_mappings[i] == mapping) {
@@ -1654,10 +1660,12 @@ static GamepadMapping_t *SDL_PrivateGenerateAutomaticGamepadMapping(const char *
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpleft", &raw_map->dpleft);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpright", &raw_map->dpright);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "misc1", &raw_map->misc1);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle1", &raw_map->paddle1);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle2", &raw_map->paddle2);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle3", &raw_map->paddle3);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle4", &raw_map->paddle4);
+    /* Keep using paddle1-4 in the generated mapping so that it can be
+     * reused with SDL2 */
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle1", &raw_map->right_paddle1);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle2", &raw_map->left_paddle1);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle3", &raw_map->right_paddle2);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle4", &raw_map->left_paddle2);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "leftx", &raw_map->leftx);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "lefty", &raw_map->lefty);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "rightx", &raw_map->rightx);

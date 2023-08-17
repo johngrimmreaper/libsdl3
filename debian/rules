@@ -11,15 +11,14 @@ $(error This version of SDL is not yet suitable for testing/unstable)
 endif
 
 export SDL_AUDIO_DRIVER=dummy
-export SDL_TESTS_QUICK=1
 export SDL_VIDEO_DRIVER=dummy
 
 confflags = \
 	-DSDL_ALSA_SHARED=OFF \
+	-DSDL_HIDAPI_LIBUSB_SHARED=OFF \
 	-DSDL_JACK=OFF \
 	-DSDL_JACK_SHARED=OFF \
 	-DSDL_KMSDRM_SHARED=OFF \
-	-DSDL_LIBSAMPLERATE_SHARED=OFF \
 	-DSDL_OSS=OFF \
 	-DSDL_PIPEWIRE_SHARED=ON \
 	-DSDL_PULSEAUDIO_SHARED=OFF \
@@ -60,8 +59,8 @@ endif
 	dh $@ --buildsystem=cmake+ninja
 
 override_dh_auto_configure:
-	if [ $(DEB_VERSION_UPSTREAM) = 3~git20230808~a2d5942+dfsg ]; then \
-		echo prerelease-3.0.0-2242-ga2d594269 > VERSION.txt; \
+	if [ $(DEB_VERSION_UPSTREAM) = 3~git20230816~d60ebb0+ds ]; then \
+		echo prerelease-3.0.0-2305-gd60ebb06d > VERSION.txt; \
 	fi
 	set -e; for bmp in test/gamepad_*.bmp; do \
 		python3 cmake/xxd.py -i "$${bmp}" -o "$${bmp%.bmp}.h"; \
