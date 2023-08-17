@@ -1,6 +1,6 @@
-libsdl3 (3~git20230814~cbab334+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20230816~d60ebb0+ds-1) UNRELEASED; urgency=medium
 
-  * New upstream snapshot prerelease-3.0.0-2302-gcbab33482
+  * New upstream snapshot prerelease-3.0.0-2305-gd60ebb06d
   * d/.gitignore: Update for SDL3 package names
   * d/watch: Use a +ds suffix for the orig tarball.
     To the best of my knowledge, everything we exclude is (meant to be)
