@@ -1,4 +1,4 @@
-libsdl3 (3~git20230816~d60ebb0+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20230816~d60ebb0+ds-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-2305-gd60ebb06d
   * d/.gitignore: Update for SDL3 package names
@@ -13,7 +13,7 @@ libsdl3 (3~git20230816~d60ebb0+ds-1) UNRELEASED; urgency=medium
     the problematic testsurround has been removed from the non-interactive
     test set
 
- -- Simon McVittie <smcv@debian.org>  Wed, 16 Aug 2023 09:26:13 +0100
+ -- Simon McVittie <smcv@debian.org>  Thu, 17 Aug 2023 09:01:56 +0100
 
 libsdl3 (3~git20230808~a2d5942+dfsg-1) experimental; urgency=medium
 
