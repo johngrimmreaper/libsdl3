@@ -141,20 +141,18 @@ static void NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
     }
 }
 
-static void NETBSDAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static int NETBSDAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     const int written = write(h->audio_fd, buffer, buflen);
-    if (written == -1) {
-        // Non recoverable error has occurred. It should be reported!!!
-        SDL_AudioDeviceDisconnected(device);
-        perror("audio");
-        return;
+    if (written != buflen) {  // Treat even partial writes as fatal errors.
+        return -1;
     }
 
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", written);
 #endif
+    return 0;
 }
 
 static Uint8 *NETBSDAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
@@ -250,16 +248,16 @@ static int NETBSDAUDIO_OpenDevice(SDL_AudioDevice *device)
         case SDL_AUDIO_S8:
             encoding = AUDIO_ENCODING_SLINEAR;
             break;
-        case SDL_AUDIO_S16LSB:
+        case SDL_AUDIO_S16LE:
             encoding = AUDIO_ENCODING_SLINEAR_LE;
             break;
-        case SDL_AUDIO_S16MSB:
+        case SDL_AUDIO_S16BE:
             encoding = AUDIO_ENCODING_SLINEAR_BE;
             break;
-        case SDL_AUDIO_S32LSB:
+        case SDL_AUDIO_S32LE:
             encoding = AUDIO_ENCODING_SLINEAR_LE;
             break;
-        case SDL_AUDIO_S32MSB:
+        case SDL_AUDIO_S32BE:
             encoding = AUDIO_ENCODING_SLINEAR_BE;
             break;
         default:

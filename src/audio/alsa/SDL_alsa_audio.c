@@ -351,7 +351,7 @@ static void ALSA_WaitDevice(SDL_AudioDevice *device)
     }
 }
 
-static void ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static int ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     SDL_assert(buffer == device->hidden->mixbuf);
     Uint8 *sample_buf = device->hidden->mixbuf;
@@ -378,8 +378,7 @@ static void ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int bu
                 SDL_LogError(SDL_LOG_CATEGORY_AUDIO,
                              "ALSA write failed (unrecoverable): %s",
                              ALSA_snd_strerror(status));
-                SDL_AudioDeviceDisconnected(device);
-                return;
+                return -1;
             }
             continue;
         } else if (status == 0) {
@@ -391,6 +390,8 @@ static void ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int bu
         sample_buf += status * frame_size;
         frames_left -= status;
     }
+
+    return 0;
 }
 
 static Uint8 *ALSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
@@ -564,22 +565,22 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
         case SDL_AUDIO_S8:
             format = SND_PCM_FORMAT_S8;
             break;
-        case SDL_AUDIO_S16LSB:
+        case SDL_AUDIO_S16LE:
             format = SND_PCM_FORMAT_S16_LE;
             break;
-        case SDL_AUDIO_S16MSB:
+        case SDL_AUDIO_S16BE:
             format = SND_PCM_FORMAT_S16_BE;
             break;
-        case SDL_AUDIO_S32LSB:
+        case SDL_AUDIO_S32LE:
             format = SND_PCM_FORMAT_S32_LE;
             break;
-        case SDL_AUDIO_S32MSB:
+        case SDL_AUDIO_S32BE:
             format = SND_PCM_FORMAT_S32_BE;
             break;
-        case SDL_AUDIO_F32LSB:
+        case SDL_AUDIO_F32LE:
             format = SND_PCM_FORMAT_FLOAT_LE;
             break;
-        case SDL_AUDIO_F32MSB:
+        case SDL_AUDIO_F32BE:
             format = SND_PCM_FORMAT_FLOAT_BE;
             break;
         default:

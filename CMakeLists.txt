@@ -112,8 +112,8 @@ endif()
 #  for systems without support. It's not currently enough to not use
 #  pthread functions in a pthread-build; it won't start up on unsupported
 #  browsers. As such, you have to explicitly enable it on Emscripten builds
-#  for the time being. This default with change to ON once this becomes
-#  commonly supported in browsers or the Emscripten teams makes a single
+#  for the time being. This default will change to ON once this becomes
+#  commonly supported in browsers or the Emscripten team makes a single
 #  binary work everywhere.
 if (UNIX_OR_MAC_SYS AND NOT EMSCRIPTEN)
   set(SDL_PTHREADS_DEFAULT ON)
@@ -3360,6 +3360,7 @@ if(NOT SDL_DISABLE_INSTALL)
     SDL_generate_manpages(
       SYMBOL "SDL_Init"
       WIKIHEADERS_PL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build-scripts/wikiheaders.pl"
+      REVISION "${SDL_REVISION}"
     )
     if(TARGET SDL3-javadoc)
       set(SDL_INSTALL_JAVADOCDIR "${CMAKE_INSTALL_DATAROOTDIR}/javadoc" CACHE PATH "Path where to install SDL3 javadoc")

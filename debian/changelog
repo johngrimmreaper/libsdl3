@@ -1,3 +1,10 @@
+libsdl3 (3~git20230904~266b91d+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot prerelease-3.0.0-2416-g266b91d2f
+  * d/libsdl3-0.symbols: Update
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 04 Sep 2023 19:17:18 +0100
+
 libsdl3 (3~git20230816~d60ebb0+ds-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-2305-gd60ebb06d

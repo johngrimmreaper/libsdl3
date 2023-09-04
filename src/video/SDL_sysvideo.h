@@ -23,7 +23,7 @@
 #ifndef SDL_sysvideo_h_
 #define SDL_sysvideo_h_
 
-#include "SDL_vulkan_internal.h"
+#include <SDL3/SDL_vulkan.h>
 
 /* The SDL video driver */
 
@@ -264,6 +264,7 @@ struct SDL_VideoDevice
     void (*DestroyWindowFramebuffer)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*OnWindowEnter)(SDL_VideoDevice *_this, SDL_Window *window);
     int (*FlashWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
+    int (*SetWindowFocusable)(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable);
 
     /* * * */
     /*
@@ -442,8 +443,8 @@ struct SDL_VideoDevice
     /* Data used by the Vulkan drivers */
     struct
     {
-        PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
-        PFN_vkEnumerateInstanceExtensionProperties vkEnumerateInstanceExtensionProperties;
+        SDL_FunctionPointer vkGetInstanceProcAddr;
+        SDL_FunctionPointer vkEnumerateInstanceExtensionProperties;
         int loader_loaded;
         char loader_path[256];
         void *loader_handle;

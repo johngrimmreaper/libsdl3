@@ -24,8 +24,6 @@
 #ifndef SDL_sysaudio_h_
 #define SDL_sysaudio_h_
 
-#include "../SDL_dataqueue.h"
-
 #define DEBUG_AUDIOSTREAM 0
 #define DEBUG_AUDIO_CONVERT 0
 
@@ -72,6 +70,7 @@ const SDL_AudioFormat *SDL_ClosestAudioFormats(SDL_AudioFormat format);
 
 // Must be called at least once before using converters (SDL_CreateAudioStream will call it !!! FIXME but probably shouldn't).
 extern void SDL_ChooseAudioConverters(void);
+extern void SDL_SetupAudioResampler(void);
 
 /* Backends should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
@@ -113,6 +112,11 @@ extern SDL_bool SDL_CaptureAudioThreadIterate(SDL_AudioDevice *device);
 extern void SDL_CaptureAudioThreadShutdown(SDL_AudioDevice *device);
 extern void SDL_AudioThreadFinalize(SDL_AudioDevice *device);
 
+// this gets used from the audio device threads. It has rules, don't use this if you don't know how to use it!
+void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_format, int src_channels,
+                  void *dst, SDL_AudioFormat dst_format, int dst_channels, void* scratch);
+
+
 typedef struct SDL_AudioDriverImpl
 {
     void (*DetectDevices)(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture);
@@ -120,7 +124,7 @@ typedef struct SDL_AudioDriverImpl
     void (*ThreadInit)(SDL_AudioDevice *device);   // Called by audio thread at start
     void (*ThreadDeinit)(SDL_AudioDevice *device); // Called by audio thread at end
     void (*WaitDevice)(SDL_AudioDevice *device);
-    void (*PlayDevice)(SDL_AudioDevice *device, const Uint8 *buffer, int buflen);  // buffer and buflen are always from GetDeviceBuf, passed here for convenience.
+    int (*PlayDevice)(SDL_AudioDevice *device, const Uint8 *buffer, int buflen);  // buffer and buflen are always from GetDeviceBuf, passed here for convenience.
     Uint8 *(*GetDeviceBuf)(SDL_AudioDevice *device, int *buffer_size);
     void (*WaitCaptureDevice)(SDL_AudioDevice *device);
     int (*CaptureFromDevice)(SDL_AudioDevice *device, void *buffer, int buflen);
@@ -153,42 +157,33 @@ typedef struct SDL_AudioDriver
     SDL_AtomicInt shutting_down;  // non-zero during SDL_Quit, so we known not to accept any last-minute device hotplugs.
 } SDL_AudioDriver;
 
+typedef struct SDL_AudioQueue SDL_AudioQueue;
+
 struct SDL_AudioStream
 {
-    SDL_DataQueue *queue;
-    SDL_Mutex *lock;  // this is just a copy of `queue`'s mutex. We share a lock.
+    SDL_Mutex* lock;
 
-    SDL_AudioStreamRequestCallback get_callback;
+    SDL_AudioStreamCallback get_callback;
     void *get_callback_userdata;
-    SDL_AudioStreamRequestCallback put_callback;
+    SDL_AudioStreamCallback put_callback;
     void *put_callback_userdata;
-
-    Uint8 *work_buffer;    // used for scratch space during data conversion/resampling.
-    Uint8 *history_buffer;  // history for left padding and future sample rate changes.
-    Uint8 *future_buffer;  // stuff that left the queue for the right padding and will be next read's data.
-    float *left_padding;  // left padding for resampling.
-    float *right_padding;  // right padding for resampling.
-
-    SDL_bool flushed;
-
-    size_t work_buffer_allocation;
-    size_t history_buffer_allocation;
-    size_t future_buffer_allocation;
-    size_t resampler_padding_allocation;
-
-    int resampler_padding_frames;
-    int history_buffer_frames;
-    int future_buffer_filled_frames;
 
     SDL_AudioSpec src_spec;
     SDL_AudioSpec dst_spec;
+    float freq_ratio;
 
-    int src_sample_frame_size;
-    int dst_sample_frame_size;
-    int max_sample_frame_size;
+    SDL_AudioQueue* queue;
 
-    int pre_resample_channels;
-    int packetlen;
+    SDL_bool track_changed;
+    Sint64 resample_offset;
+
+    Uint8 *work_buffer;    // used for scratch space during data conversion/resampling.
+    size_t work_buffer_allocation;
+
+    Uint8 *history_buffer;  // history for left padding and future sample rate changes.
+    size_t history_buffer_allocation;
+
+    SDL_bool simplified;  // SDL_TRUE if created via SDL_OpenAudioDeviceStream
 
     SDL_LogicalAudioDevice *bound_device;
     SDL_AudioStream *next_binding;
@@ -214,7 +209,10 @@ struct SDL_LogicalAudioDevice
     SDL_AudioStream *bound_streams;
 
     // SDL_TRUE if this was opened as a default device.
-    SDL_bool is_default;
+    SDL_bool opened_as_default;
+
+    // SDL_TRUE if device was opened with SDL_OpenAudioDeviceStream (so it forbids binding changes, etc).
+    SDL_bool simplified;
 
     // double-linked list of opened devices on the same physical device.
     SDL_LogicalAudioDevice *next;
@@ -263,14 +261,18 @@ struct SDL_AudioDevice
     // SDL_TRUE if this is a capture device instead of an output device
     SDL_bool iscapture;
 
-    // Scratch buffer used for mixing.
+    // Scratch buffers used for mixing.
     Uint8 *work_buffer;
+    Uint8 *mix_buffer;
+
+    // Size of work_buffer (and mix_buffer) in bytes.
+    int work_buffer_size;
 
     // A thread to feed the audio device
     SDL_Thread *thread;
 
     // SDL_TRUE if this physical device is currently opened by the backend.
-    SDL_bool is_opened;
+    SDL_bool currently_opened;
 
     // Data private to this driver
     struct SDL_PrivateAudioData *hidden;
