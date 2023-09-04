@@ -149,7 +149,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetAudioStreamData@SDL3_0.0.0 3~
  SDL_GetAudioStreamDevice@SDL3_0.0.0 3~
  SDL_GetAudioStreamFormat@SDL3_0.0.0 3~
- SDL_GetAudioStreamSpeed@SDL3_0.0.0 3~
+ SDL_GetAudioStreamFrequencyRatio@SDL3_0.0.0 3~
  SDL_GetBasePath@SDL3_0.0.0 3~
  SDL_GetCPUCacheLineSize@SDL3_0.0.0 3~
  SDL_GetCPUCount@SDL3_0.0.0 3~
@@ -578,9 +578,9 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SendJoystickEffect@SDL3_0.0.0 3~
  SDL_SetAssertionHandler@SDL3_0.0.0 3~
  SDL_SetAudioStreamFormat@SDL3_0.0.0 3~
+ SDL_SetAudioStreamFrequencyRatio@SDL3_0.0.0 3~
  SDL_SetAudioStreamGetCallback@SDL3_0.0.0 3~
  SDL_SetAudioStreamPutCallback@SDL3_0.0.0 3~
- SDL_SetAudioStreamSpeed@SDL3_0.0.0 3~
  SDL_SetClipboardData@SDL3_0.0.0 3~
  SDL_SetClipboardText@SDL3_0.0.0 3~
  SDL_SetCursor@SDL3_0.0.0 3~
