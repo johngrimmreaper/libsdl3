@@ -45,7 +45,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ConvertPixels@SDL3_0.0.0 3~
  SDL_ConvertSurface@SDL3_0.0.0 3~
  SDL_ConvertSurfaceFormat@SDL3_0.0.0 3~
- SDL_CreateAndBindAudioStream@SDL3_0.0.0 3~
  SDL_CreateAudioStream@SDL3_0.0.0 3~
  SDL_CreateColorCursor@SDL3_0.0.0 3~
  SDL_CreateCondition@SDL3_0.0.0 3~
@@ -147,9 +146,10 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetAudioDriver@SDL3_0.0.0 3~
  SDL_GetAudioOutputDevices@SDL3_0.0.0 3~
  SDL_GetAudioStreamAvailable@SDL3_0.0.0 3~
- SDL_GetAudioStreamBinding@SDL3_0.0.0 3~
  SDL_GetAudioStreamData@SDL3_0.0.0 3~
+ SDL_GetAudioStreamDevice@SDL3_0.0.0 3~
  SDL_GetAudioStreamFormat@SDL3_0.0.0 3~
+ SDL_GetAudioStreamSpeed@SDL3_0.0.0 3~
  SDL_GetBasePath@SDL3_0.0.0 3~
  SDL_GetCPUCacheLineSize@SDL3_0.0.0 3~
  SDL_GetCPUCount@SDL3_0.0.0 3~
@@ -496,6 +496,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_OnApplicationWillResignActive@SDL3_0.0.0 3~
  SDL_OnApplicationWillTerminate@SDL3_0.0.0 3~
  SDL_OpenAudioDevice@SDL3_0.0.0 3~
+ SDL_OpenAudioDeviceStream@SDL3_0.0.0 3~
  SDL_OpenGamepad@SDL3_0.0.0 3~
  SDL_OpenJoystick@SDL3_0.0.0 3~
  SDL_OpenSensor@SDL3_0.0.0 3~
@@ -579,6 +580,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetAudioStreamFormat@SDL3_0.0.0 3~
  SDL_SetAudioStreamGetCallback@SDL3_0.0.0 3~
  SDL_SetAudioStreamPutCallback@SDL3_0.0.0 3~
+ SDL_SetAudioStreamSpeed@SDL3_0.0.0 3~
  SDL_SetClipboardData@SDL3_0.0.0 3~
  SDL_SetClipboardText@SDL3_0.0.0 3~
  SDL_SetCursor@SDL3_0.0.0 3~
@@ -631,6 +633,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetWindowAlwaysOnTop@SDL3_0.0.0 3~
  SDL_SetWindowBordered@SDL3_0.0.0 3~
  SDL_SetWindowData@SDL3_0.0.0 3~
+ SDL_SetWindowFocusable@SDL3_0.0.0 3~
  SDL_SetWindowFullscreen@SDL3_0.0.0 3~
  SDL_SetWindowFullscreenMode@SDL3_0.0.0 3~
  SDL_SetWindowGrab@SDL3_0.0.0 3~
@@ -705,6 +708,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_WriteS16LE@SDL3_0.0.0 3~
  SDL_WriteS32BE@SDL3_0.0.0 3~
  SDL_WriteS32LE@SDL3_0.0.0 3~
+ SDL_WriteS64BE@SDL3_0.0.0 3~
  SDL_WriteS64LE@SDL3_0.0.0 3~
  SDL_WriteU16BE@SDL3_0.0.0 3~
  SDL_WriteU16LE@SDL3_0.0.0 3~
