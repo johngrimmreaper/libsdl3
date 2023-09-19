@@ -443,15 +443,15 @@ static int audio_printCurrentAudioDriver(void *arg)
 /* Definition of all formats, channels, and frequencies used to test audio conversions */
 static SDL_AudioFormat g_audioFormats[] = {
     SDL_AUDIO_S8, SDL_AUDIO_U8,
-    SDL_AUDIO_S16LE, SDL_AUDIO_S16BE, SDL_AUDIO_S16,
-    SDL_AUDIO_S32LE, SDL_AUDIO_S32BE, SDL_AUDIO_S32,
-    SDL_AUDIO_F32LE, SDL_AUDIO_F32BE, SDL_AUDIO_F32
+    SDL_AUDIO_S16LE, SDL_AUDIO_S16BE,
+    SDL_AUDIO_S32LE, SDL_AUDIO_S32BE,
+    SDL_AUDIO_F32LE, SDL_AUDIO_F32BE
 };
 static const char *g_audioFormatsVerbose[] = {
     "SDL_AUDIO_S8", "SDL_AUDIO_U8",
-    "SDL_AUDIO_S16LE", "SDL_AUDIO_S16BE", "SDL_AUDIO_S16",
-    "SDL_AUDIO_S32LE", "SDL_AUDIO_S32BE", "SDL_AUDIO_S32",
-    "SDL_AUDIO_F32LE", "SDL_AUDIO_F32BE", "SDL_AUDIO_F32"
+    "SDL_AUDIO_S16LE", "SDL_AUDIO_S16BE",
+    "SDL_AUDIO_S32LE", "SDL_AUDIO_S32BE",
+    "SDL_AUDIO_F32LE", "SDL_AUDIO_F32BE"
 };
 static const int g_numAudioFormats = SDL_arraysize(g_audioFormats);
 static Uint8 g_audioChannels[] = { 1, 2, 4, 6 };
@@ -709,13 +709,13 @@ static int audio_convertAudio(void *arg)
                         Uint8 *dst_buf = NULL, *src_buf = NULL;
                         int dst_len = 0, src_len = 0, real_dst_len = 0;
                         int l = 64, m;
-                        int src_samplesize, dst_samplesize;
+                        int src_framesize, dst_framesize;
                         int src_silence, dst_silence;
 
-                        src_samplesize = (SDL_AUDIO_BITSIZE(spec1.format) / 8) * spec1.channels;
-                        dst_samplesize = (SDL_AUDIO_BITSIZE(spec2.format) / 8) * spec2.channels;
+                        src_framesize = SDL_AUDIO_FRAMESIZE(spec1);
+                        dst_framesize = SDL_AUDIO_FRAMESIZE(spec2);
 
-                        src_len = l * src_samplesize;
+                        src_len = l * src_framesize;
                         SDLTest_Log("Creating dummy sample buffer of %i length (%i bytes)", l, src_len);
                         src_buf = (Uint8 *)SDL_malloc(src_len);
                         SDLTest_AssertCheck(src_buf != NULL, "Check src data buffer to convert is not NULL");
@@ -726,7 +726,7 @@ static int audio_convertAudio(void *arg)
                         src_silence = SDL_GetSilenceValueForFormat(spec1.format);
                         SDL_memset(src_buf, src_silence, src_len);
 
-                        dst_len = ((int)((((Sint64)l * spec2.freq) - 1) / spec1.freq) + 1) * dst_samplesize;
+                        dst_len = ((int)((((Sint64)l * spec2.freq) - 1) / spec1.freq) + 1) * dst_framesize;
                         dst_buf = (Uint8 *)SDL_malloc(dst_len);
                         SDLTest_AssertCheck(dst_buf != NULL, "Check dst data buffer to convert is not NULL");
                         if (dst_buf == NULL) {

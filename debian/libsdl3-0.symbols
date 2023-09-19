@@ -21,6 +21,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_AtomicUnlock@SDL3_0.0.0 3~
  SDL_AttachVirtualJoystick@SDL3_0.0.0 3~
  SDL_AttachVirtualJoystickEx@SDL3_0.0.0 3~
+ SDL_AudioDevicePaused@SDL3_0.0.0 3~
  SDL_BindAudioStream@SDL3_0.0.0 3~
  SDL_BindAudioStreams@SDL3_0.0.0 3~
  SDL_BlitSurface@SDL3_0.0.0 3~
@@ -181,6 +182,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetGamepadAppleSFSymbolsNameForButton@SDL3_0.0.0 3~
  SDL_GetGamepadAxis@SDL3_0.0.0 3~
  SDL_GetGamepadAxisFromString@SDL3_0.0.0 3~
+ SDL_GetGamepadBindings@SDL3_0.0.0 3~
  SDL_GetGamepadButton@SDL3_0.0.0 3~
  SDL_GetGamepadButtonFromString@SDL3_0.0.0 3~
  SDL_GetGamepadFirmwareVersion@SDL3_0.0.0 3~
@@ -435,7 +437,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_HideWindow@SDL3_0.0.0 3~
  SDL_Init@SDL3_0.0.0 3~
  SDL_InitSubSystem@SDL3_0.0.0 3~
- SDL_IsAudioDevicePaused@SDL3_0.0.0 3~
  SDL_IsGamepad@SDL3_0.0.0 3~
  SDL_IsJoystickVirtual@SDL3_0.0.0 3~
  SDL_IsShapedWindow@SDL3_0.0.0 3~
@@ -577,6 +578,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SendGamepadEffect@SDL3_0.0.0 3~
  SDL_SendJoystickEffect@SDL3_0.0.0 3~
  SDL_SetAssertionHandler@SDL3_0.0.0 3~
+ SDL_SetAudioPostmixCallback@SDL3_0.0.0 3~
  SDL_SetAudioStreamFormat@SDL3_0.0.0 3~
  SDL_SetAudioStreamFrequencyRatio@SDL3_0.0.0 3~
  SDL_SetAudioStreamGetCallback@SDL3_0.0.0 3~
