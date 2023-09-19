@@ -1,6 +1,6 @@
-libsdl3 (3~git20230917~9a23d0e+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20230919~6a38156+ds-1) UNRELEASED; urgency=medium
 
-  * New upstream snapshot prerelease-3.0.0-2463-g9a23d0e3f
+  * New upstream snapshot prerelease-3.0.0-2475-g6a381567b
   * d/libsdl3-0.symbols: Update
 
  -- Simon McVittie <smcv@debian.org>  Tue, 19 Sep 2023 12:00:31 +0100
