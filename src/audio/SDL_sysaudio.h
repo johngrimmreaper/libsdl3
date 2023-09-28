@@ -56,6 +56,8 @@ extern void (*SDL_Convert_F32_to_S32)(Sint32 *dst, const float *src, int num_sam
 #define DEFAULT_AUDIO_CAPTURE_CHANNELS 1
 #define DEFAULT_AUDIO_CAPTURE_FREQUENCY 44100
 
+#define AUDIO_SPECS_EQUAL(x, y) (((x).format == (y).format) && ((x).channels == (y).channels) && ((x).freq == (y).freq))
+
 typedef struct SDL_AudioDevice SDL_AudioDevice;
 typedef struct SDL_LogicalAudioDevice SDL_LogicalAudioDevice;
 
@@ -100,7 +102,7 @@ extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(SDL_bool (*callbac
 extern void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device);
 
 // Backends can call this to get a standardized name for a thread to power a specific audio device.
-char *SDL_GetAudioThreadName(SDL_AudioDevice *device, char *buf, size_t buflen);
+extern char *SDL_GetAudioThreadName(SDL_AudioDevice *device, char *buf, size_t buflen);
 
 
 // These functions are the heart of the audio threads. Backends can call them directly if they aren't using the SDL-provided thread.
@@ -113,9 +115,12 @@ extern void SDL_CaptureAudioThreadShutdown(SDL_AudioDevice *device);
 extern void SDL_AudioThreadFinalize(SDL_AudioDevice *device);
 
 // this gets used from the audio device threads. It has rules, don't use this if you don't know how to use it!
-void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_format, int src_channels,
-                  void *dst, SDL_AudioFormat dst_format, int dst_channels, void* scratch);
+extern void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_format, int src_channels,
+                         void *dst, SDL_AudioFormat dst_format, int dst_channels, void* scratch);
 
+// Special case to let something in SDL_audiocvt.c access something in SDL_audio.c. Don't use this.
+extern void OnAudioStreamCreated(SDL_AudioStream *stream);
+extern void OnAudioStreamDestroy(SDL_AudioStream *stream);
 
 typedef struct SDL_AudioDriverImpl
 {
@@ -149,6 +154,7 @@ typedef struct SDL_AudioDriver
     SDL_RWLock *device_list_lock;  // A mutex for device detection
     SDL_AudioDevice *output_devices;  // the list of currently-available audio output devices.
     SDL_AudioDevice *capture_devices;  // the list of currently-available audio capture devices.
+    SDL_AudioStream *existing_streams;  // a list of all existing SDL_AudioStreams.
     SDL_AudioDeviceID default_output_device_id;
     SDL_AudioDeviceID default_capture_device_id;
     SDL_AtomicInt output_device_count;
@@ -173,6 +179,7 @@ struct SDL_AudioStream
     float freq_ratio;
 
     struct SDL_AudioQueue* queue;
+    Uint64 total_bytes_queued;
 
     SDL_AudioSpec input_spec; // The spec of input data currently being processed
     Sint64 resample_offset;
@@ -188,6 +195,9 @@ struct SDL_AudioStream
     SDL_LogicalAudioDevice *bound_device;
     SDL_AudioStream *next_binding;
     SDL_AudioStream *prev_binding;
+
+    SDL_AudioStream *prev;  // linked list of all existing streams (so we can free them on shutdown).
+    SDL_AudioStream *next;  // linked list of all existing streams (so we can free them on shutdown).
 };
 
 /* Logical devices are an abstraction in SDL3; you can open the same physical
@@ -267,6 +277,9 @@ struct SDL_AudioDevice
     // SDL_TRUE if this is a capture device instead of an output device
     SDL_bool iscapture;
 
+    // SDL_TRUE if audio thread can skip silence/mix/convert stages and just do a basic memcpy.
+    SDL_bool simple_copy;
+
     // Scratch buffers used for mixing.
     Uint8 *work_buffer;
     Uint8 *mix_buffer;
@@ -324,8 +337,5 @@ extern AudioBootStrap VITAAUD_bootstrap;
 extern AudioBootStrap N3DSAUDIO_bootstrap;
 extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
 extern AudioBootStrap QSAAUDIO_bootstrap;
-
-extern SDL_AudioDevice *get_audio_dev(SDL_AudioDeviceID id);
-extern int get_max_num_audio_dev(void);
 
 #endif // SDL_sysaudio_h_

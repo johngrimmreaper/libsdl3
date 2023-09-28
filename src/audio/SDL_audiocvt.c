@@ -29,8 +29,6 @@
 #define SDL_INT_MAX ((int)(~0u>>1))
 #endif
 
-#define AUDIO_SPECS_EQUAL(x, y) (((x).format == (y).format) && ((x).channels == (y).channels) && ((x).freq == (y).freq))
-
 /*
  * CHANNEL LAYOUTS AS SDL EXPECTS THEM:
  *
@@ -432,6 +430,8 @@ SDL_AudioStream *SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_
         return NULL;
     }
 
+    OnAudioStreamCreated(retval);
+
     if (SDL_SetAudioStreamFormat(retval, src_spec, dst_spec) == -1) {
         SDL_DestroyAudioStream(retval);
         return NULL;
@@ -538,6 +538,15 @@ int SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_s
 
     SDL_LockMutex(stream->lock);
 
+    // quietly refuse to change the format of the end currently bound to a device.
+    if (stream->bound_device) {
+        if (stream->bound_device->physical_device->iscapture) {
+            dst_spec = NULL;
+        } else {
+            src_spec = NULL;
+        }
+    }
+
     if (src_spec) {
         SDL_copyp(&stream->src_spec, src_spec);
     }
@@ -602,7 +611,7 @@ static int CheckAudioStreamIsFullySetup(SDL_AudioStream *stream)
 int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
 {
 #if DEBUG_AUDIOSTREAM
-    SDL_Log("AUDIOSTREAM: wants to put %d preconverted bytes", len);
+    SDL_Log("AUDIOSTREAM: wants to put %d bytes", len);
 #endif
 
     if (stream == NULL) {
@@ -659,9 +668,12 @@ int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
         retval = SDL_WriteToAudioQueue(stream->queue, &stream->src_spec, buf, len);
     }
 
-    if ((retval == 0) && stream->put_callback) {
-        const int newavail = SDL_GetAudioStreamAvailable(stream) - prev_available;
-        stream->put_callback(stream->put_callback_userdata, stream, newavail, newavail);
+    if (retval == 0) {
+        stream->total_bytes_queued += len;
+        if (stream->put_callback) {
+            const int newavail = SDL_GetAudioStreamAvailable(stream) - prev_available;
+            stream->put_callback(stream->put_callback_userdata, stream, newavail, newavail);
+        }
     }
 
     SDL_UnlockMutex(stream->lock);
@@ -860,6 +872,8 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
             SDL_assert(!"Not enough data in queue (read)");
         }
 
+        stream->total_bytes_queued -= input_bytes;
+
         // Even if we aren't currently resampling, we always need to update the history buffer
         UpdateAudioStreamHistoryBuffer(stream, input_buffer, input_bytes, NULL, 0);
 
@@ -948,6 +962,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
     if (SDL_ReadFromAudioQueue(stream->queue, input_buffer, input_bytes) != 0) {
         SDL_assert(!"Not enough data in queue (resample read)");
     }
+    stream->total_bytes_queued -= input_bytes;
 
     // Update the history buffer and fill in the left padding
     UpdateAudioStreamHistoryBuffer(stream, input_buffer, input_bytes, left_padding, padding_bytes);
@@ -1085,7 +1100,7 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
     return total;
 }
 
-// number of converted/resampled bytes available
+// number of converted/resampled bytes available for output
 int SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
 {
     if (!stream) {
@@ -1110,6 +1125,21 @@ int SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
     return (int) SDL_min(count, SDL_INT_MAX);
 }
 
+// number of sample frames that are currently queued as input.
+int SDL_GetAudioStreamQueued(SDL_AudioStream *stream)
+{
+    if (!stream) {
+        return SDL_InvalidParamError("stream");
+    }
+
+    SDL_LockMutex(stream->lock);
+    const Uint64 total = stream->total_bytes_queued;
+    SDL_UnlockMutex(stream->lock);
+
+    // if this overflows an int, just clamp it to a maximum.
+    return (int) SDL_min(total, SDL_INT_MAX);
+}
+
 int SDL_ClearAudioStream(SDL_AudioStream *stream)
 {
     if (stream == NULL) {
@@ -1121,6 +1151,7 @@ int SDL_ClearAudioStream(SDL_AudioStream *stream)
     SDL_ClearAudioQueue(stream->queue);
     SDL_zero(stream->input_spec);
     stream->resample_offset = 0;
+    stream->total_bytes_queued = 0;
 
     SDL_UnlockMutex(stream->lock);
     return 0;
@@ -1131,6 +1162,8 @@ void SDL_DestroyAudioStream(SDL_AudioStream *stream)
     if (stream == NULL) {
         return;
     }
+
+    OnAudioStreamDestroy(stream);
 
     const SDL_bool simplified = stream->simplified;
     if (simplified) {
