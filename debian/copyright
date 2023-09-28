@@ -11,6 +11,7 @@ Files-Excluded: Android.mk
                 test/android
                 test/emscripten
                 test/gamepad_*.h
+                test/icon.h
                 test/n3ds
                 test/unifont-*
                 test/uwp

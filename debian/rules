@@ -62,7 +62,7 @@ override_dh_auto_configure:
 	if [ $(DEB_VERSION_UPSTREAM) = 3~git20230928~441a5b7+ds ]; then \
 		echo prerelease-3.0.0-2536-g441a5b707 > VERSION.txt; \
 	fi
-	set -e; for bmp in test/gamepad_*.bmp; do \
+	set -e; for bmp in test/icon.bmp test/gamepad_*.bmp; do \
 		python3 cmake/xxd.py -i "$${bmp}" -o "$${bmp%.bmp}.h"; \
 	done
 	dh_auto_configure -- $(confflags)
