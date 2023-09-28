@@ -8,6 +8,7 @@ interface carries out calculations in registers that have higher
 precision than the actual double-precision variable. The 1980s were a
 strange time.
 
+Bug: https://github.com/libsdl-org/SDL/issues/8311
 Signed-off-by: Simon McVittie <smcv@collabora.com>
 Forwarded: https://github.com/libsdl-org/SDL/pull/8312
 ---
