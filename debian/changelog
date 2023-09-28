@@ -1,8 +1,12 @@
 libsdl3 (3~git20230928~441a5b7+ds-1) UNRELEASED; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-2536-g441a5b707
+  * Exclude test/icon.h from orig.tar and regenerate it from
+    test/icon.bmp at build-time, as was already done for
+    testcontroller-related assets
+  * d/libsdl3-0.symbols: Update
 
- -- Simon McVittie <smcv@debian.org>  Thu, 28 Sep 2023 15:15:47 +0100
+ -- Simon McVittie <smcv@debian.org>  Thu, 28 Sep 2023 15:51:09 +0100
 
 libsdl3 (3~git20230919~6a38156+ds-1) experimental; urgency=medium
 
