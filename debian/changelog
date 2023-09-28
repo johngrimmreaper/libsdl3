@@ -1,3 +1,9 @@
+libsdl3 (3~git20230928~441a5b7+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream snapshot prerelease-3.0.0-2536-g441a5b707
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 28 Sep 2023 15:15:47 +0100
+
 libsdl3 (3~git20230919~6a38156+ds-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-2475-g6a381567b
