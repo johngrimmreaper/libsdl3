@@ -151,6 +151,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetAudioStreamDevice@SDL3_0.0.0 3~
  SDL_GetAudioStreamFormat@SDL3_0.0.0 3~
  SDL_GetAudioStreamFrequencyRatio@SDL3_0.0.0 3~
+ SDL_GetAudioStreamQueued@SDL3_0.0.0 3~
  SDL_GetBasePath@SDL3_0.0.0 3~
  SDL_GetCPUCacheLineSize@SDL3_0.0.0 3~
  SDL_GetCPUCount@SDL3_0.0.0 3~

@@ -1,0 +1,141 @@
+From: Simon McVittie <smcv@collabora.com>
+Date: Thu, 28 Sep 2023 16:29:15 +0100
+Subject: test: Accept small numerical differences in more mathematical tests
+
+We can't rely on irrational numbers like pi being represented exactly,
+particularly when compiling for i386, where the i387 floating-point
+interface carries out calculations in registers that have higher
+precision than the actual double-precision variable. The 1980s were a
+strange time.
+
+Bug: https://github.com/libsdl-org/SDL/issues/8311
+Signed-off-by: Simon McVittie <smcv@collabora.com>
+Forwarded: https://github.com/libsdl-org/SDL/pull/8312
+---
+ test/testautomation_math.c | 32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/test/testautomation_math.c b/test/testautomation_math.c
+index 07a5c5a..1e92226 100644
+--- a/test/testautomation_math.c
++++ b/test/testautomation_math.c
+@@ -2275,7 +2275,7 @@ acos_limitCases(void *args)
+                         1.0, 0.0, result);
+ 
+     result = SDL_acos(-1.0);
+-    SDLTest_AssertCheck(SDL_PI_D == result,
++    SDLTest_AssertCheck(SDL_fabs(SDL_PI_D - result) <= EPSILON,
+                         "Acos(%f), expected %f, got %f",
+                         -1.0, SDL_PI_D, result);
+ 
+@@ -2362,12 +2362,12 @@ asin_limitCases(void *args)
+     double result;
+ 
+     result = SDL_asin(1.0);
+-    SDLTest_AssertCheck(SDL_PI_D / 2.0 == result,
++    SDLTest_AssertCheck(SDL_fabs(SDL_PI_D / 2.0 - result) <= EPSILON,
+                         "Asin(%f), expected %f, got %f",
+                         1.0, SDL_PI_D / 2.0, result);
+ 
+     result = SDL_asin(-1.0);
+-    SDLTest_AssertCheck(-SDL_PI_D / 2.0 == result,
++    SDLTest_AssertCheck(SDL_fabs(-SDL_PI_D / 2.0 - result) <= EPSILON,
+                         "Asin(%f), expected %f, got %f",
+                         -1.0, -SDL_PI_D / 2.0, result);
+ 
+@@ -2554,7 +2554,7 @@ atan2_bothZeroCases(void *args)
+         { 0.0, -0.0, SDL_PI_D },
+         { -0.0, -0.0, -SDL_PI_D },
+     };
+-    return helper_ddtod("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
++    return helper_ddtod_inexact("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
+ }
+ 
+ /**
+@@ -2573,7 +2573,7 @@ atan2_yZeroCases(void *args)
+         { -0.0, 1.0, -0.0 },
+         { -0.0, -1.0, -SDL_PI_D }
+     };
+-    return helper_ddtod("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
++    return helper_ddtod_inexact("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
+ }
+ 
+ /**
+@@ -2589,7 +2589,7 @@ atan2_xZeroCases(void *args)
+         { 1.0, -0.0, SDL_PI_D / 2.0 },
+         { -1.0, -0.0, -SDL_PI_D / 2.0 }
+     };
+-    return helper_ddtod("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
++    return helper_ddtod_inexact("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
+ }
+ 
+ /* Infinity cases */
+@@ -2608,22 +2608,22 @@ atan2_bothInfCases(void *args)
+     double result;
+ 
+     result = SDL_atan2(INFINITY, INFINITY);
+-    SDLTest_AssertCheck(SDL_PI_D / 4.0 == result,
++    SDLTest_AssertCheck(SDL_fabs(SDL_PI_D / 4.0 - result) <= EPSILON,
+                         "Atan2(%f,%f), expected %f, got %f",
+                         INFINITY, INFINITY, SDL_PI_D / 4.0, result);
+ 
+     result = SDL_atan2(INFINITY, -INFINITY);
+-    SDLTest_AssertCheck(3.0 * SDL_PI_D / 4.0 == result,
++    SDLTest_AssertCheck(SDL_fabs(3.0 * SDL_PI_D / 4.0 - result) <= EPSILON,
+                         "Atan2(%f,%f), expected %f, got %f",
+                         INFINITY, -INFINITY, 3.0 * SDL_PI_D / 4.0, result);
+ 
+     result = SDL_atan2(-INFINITY, INFINITY);
+-    SDLTest_AssertCheck(-SDL_PI_D / 4.0 == result,
++    SDLTest_AssertCheck(SDL_fabs(-SDL_PI_D / 4.0 - result) <= EPSILON,
+                         "Atan2(%f,%f), expected %f, got %f",
+                         -INFINITY, INFINITY, -SDL_PI_D / 4.0, result);
+ 
+     result = SDL_atan2(-INFINITY, -INFINITY);
+-    SDLTest_AssertCheck(-3.0 * SDL_PI_D / 4.0 == result,
++    SDLTest_AssertCheck(SDL_fabs(-3.0 * SDL_PI_D / 4.0 - result) <= EPSILON,
+                         "Atan2(%f,%f), expected %f, got %f",
+                         -INFINITY, -INFINITY, -3.0 * SDL_PI_D / 4.0, result);
+ 
+@@ -2640,22 +2640,22 @@ atan2_yInfCases(void *args)
+     double result;
+ 
+     result = SDL_atan2(INFINITY, 1.0);
+-    SDLTest_AssertCheck(SDL_PI_D / 2.0 == result,
++    SDLTest_AssertCheck(SDL_fabs(SDL_PI_D / 2.0 - result) <= EPSILON,
+                         "Atan2(%f,%f), expected %f, got %f",
+                         INFINITY, 1.0, SDL_PI_D / 2.0, result);
+ 
+     result = SDL_atan2(INFINITY, -1.0);
+-    SDLTest_AssertCheck(SDL_PI_D / 2.0 == result,
++    SDLTest_AssertCheck(SDL_fabs(SDL_PI_D / 2.0 - result) <= EPSILON,
+                         "Atan2(%f,%f), expected %f, got %f",
+                         INFINITY, -1.0, SDL_PI_D / 2.0, result);
+ 
+     result = SDL_atan2(-INFINITY, 1.0);
+-    SDLTest_AssertCheck(-SDL_PI_D / 2.0 == result,
++    SDLTest_AssertCheck(SDL_fabs(-SDL_PI_D / 2.0 - result) <= EPSILON,
+                         "Atan2(%f,%f), expected %f, got %f",
+                         -INFINITY, 1.0, -SDL_PI_D / 2.0, result);
+ 
+     result = SDL_atan2(-INFINITY, -1.0);
+-    SDLTest_AssertCheck(-SDL_PI_D / 2.0 == result,
++    SDLTest_AssertCheck(SDL_fabs(-SDL_PI_D / 2.0 - result) <= EPSILON,
+                         "Atan2(%f,%f), expected %f, got %f",
+                         -INFINITY, -1.0, -SDL_PI_D / 2.0, result);
+ 
+@@ -2684,12 +2684,12 @@ atan2_xInfCases(void *args)
+                         -1.0, INFINITY, -0.0, result);
+ 
+     result = SDL_atan2(1.0, -INFINITY);
+-    SDLTest_AssertCheck(SDL_PI_D == result,
++    SDLTest_AssertCheck(SDL_fabs(SDL_PI_D - result) <= EPSILON,
+                         "Atan2(%f,%f), expected %f, got %f",
+                         1.0, -INFINITY, SDL_PI_D, result);
+ 
+     result = SDL_atan2(-1.0, -INFINITY);
+-    SDLTest_AssertCheck(-SDL_PI_D == result,
++    SDLTest_AssertCheck(SDL_fabs(-SDL_PI_D - result) <= EPSILON,
+                         "Atan2(%f,%f), expected %f, got %f",
+                         -1.0, -INFINITY, -SDL_PI_D, result);
+ 
