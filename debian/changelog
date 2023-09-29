@@ -1,8 +1,11 @@
-libsdl3 (3~git20230929~d95d2d7+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20230929~d95d2d7+ds-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-2544-gd95d2d705
+    - Fixes test failure on s390x and other big-endian architectures
+  * d/p/test-Accept-small-numerical-differences-in-more-mathemati.patch:
+    Drop patch, applied upstream
 
- -- Simon McVittie <smcv@debian.org>  Fri, 29 Sep 2023 17:33:25 +0100
+ -- Simon McVittie <smcv@debian.org>  Fri, 29 Sep 2023 17:35:48 +0100
 
 libsdl3 (3~git20230928~441a5b7+ds-1) experimental; urgency=medium
 
