@@ -98,11 +98,13 @@ static int (*PULSEAUDIO_pa_stream_connect_playback)(pa_stream *, const char *,
                                                     const pa_buffer_attr *, pa_stream_flags_t, const pa_cvolume *, pa_stream *);
 static int (*PULSEAUDIO_pa_stream_connect_record)(pa_stream *, const char *,
                                                   const pa_buffer_attr *, pa_stream_flags_t);
+static const pa_buffer_attr *(*PULSEAUDIO_pa_stream_get_buffer_attr)(pa_stream *);
 static pa_stream_state_t (*PULSEAUDIO_pa_stream_get_state)(const pa_stream *);
 static size_t (*PULSEAUDIO_pa_stream_writable_size)(const pa_stream *);
 static size_t (*PULSEAUDIO_pa_stream_readable_size)(const pa_stream *);
 static int (*PULSEAUDIO_pa_stream_write)(pa_stream *, const void *, size_t,
                                          pa_free_cb_t, int64_t, pa_seek_mode_t);
+static int (*PULSEAUDIO_pa_stream_begin_write)(pa_stream *, void **, size_t *);
 static pa_operation *(*PULSEAUDIO_pa_stream_drain)(pa_stream *,
                                                    pa_stream_success_cb_t, void *);
 static int (*PULSEAUDIO_pa_stream_peek)(pa_stream *, const void **, size_t *);
@@ -211,9 +213,11 @@ static int load_pulseaudio_syms(void)
     SDL_PULSEAUDIO_SYM(pa_stream_set_state_callback);
     SDL_PULSEAUDIO_SYM(pa_stream_connect_playback);
     SDL_PULSEAUDIO_SYM(pa_stream_connect_record);
+    SDL_PULSEAUDIO_SYM(pa_stream_get_buffer_attr);
     SDL_PULSEAUDIO_SYM(pa_stream_get_state);
     SDL_PULSEAUDIO_SYM(pa_stream_writable_size);
     SDL_PULSEAUDIO_SYM(pa_stream_readable_size);
+    SDL_PULSEAUDIO_SYM(pa_stream_begin_write);
     SDL_PULSEAUDIO_SYM(pa_stream_write);
     SDL_PULSEAUDIO_SYM(pa_stream_drain);
     SDL_PULSEAUDIO_SYM(pa_stream_disconnect);
@@ -400,7 +404,7 @@ static void PULSEAUDIO_WaitDevice(SDL_AudioDevice *device)
 
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
-    while (!SDL_AtomicGet(&device->shutdown) && (h->bytes_requested < (device->buffer_size / 2))) {
+    while (!SDL_AtomicGet(&device->shutdown) && (h->bytes_requested == 0)) {
         /*printf("PULSEAUDIO WAIT IN WAITDEVICE!\n");*/
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
 
@@ -439,7 +443,16 @@ static int PULSEAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, i
 static Uint8 *PULSEAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
-    *buffer_size = SDL_min(*buffer_size, h->bytes_requested);
+    const size_t reqsize = (size_t) SDL_min(*buffer_size, h->bytes_requested);
+    size_t nbytes = reqsize;
+    void *data = NULL;
+    if (PULSEAUDIO_pa_stream_begin_write(h->stream, &data, &nbytes) == 0) {
+        *buffer_size = (int) nbytes;
+        return (Uint8 *) data;
+    }
+
+    // don't know why this would fail, but we'll fall back just in case.
+    *buffer_size = (int) reqsize;
     return device->hidden->mixbuf;
 }
 
@@ -676,7 +689,7 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
     paspec.rate = device->spec.freq;
 
     /* Reduced prebuffering compared to the defaults. */
-    paattr.fragsize = device->buffer_size;
+    paattr.fragsize = device->buffer_size;   // despite the name, this is only used for capture devices, according to PulseAudio docs!
     paattr.tlength = device->buffer_size;
     paattr.prebuf = -1;
     paattr.maxlength = -1;
@@ -729,6 +742,14 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
 
                 if (!PA_STREAM_IS_GOOD(state)) {
                     retval = SDL_SetError("Could not connect PulseAudio stream");
+                } else {
+                    const pa_buffer_attr *actual_bufattr = PULSEAUDIO_pa_stream_get_buffer_attr(h->stream);
+                    if (!actual_bufattr) {
+                        retval = SDL_SetError("Could not determine connected PulseAudio stream's buffer attributes");
+                    } else {
+                        device->buffer_size = (int) iscapture ? actual_bufattr->tlength : actual_bufattr->fragsize;
+                        device->sample_frames = device->buffer_size / SDL_AUDIO_FRAMESIZE(device->spec);
+                    }
                 }
             }
         }
