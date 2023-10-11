@@ -24,12 +24,13 @@ confflags = \
 	-DSDL_PULSEAUDIO_SHARED=OFF \
 	-DSDL_RPATH=OFF \
 	-DSDL_RPI=OFF \
-	-DSDL_STATIC_PIC=ON \
 	-DSDL_SHARED=ON \
 	-DSDL_SNDIO_SHARED=ON \
 	-DSDL_STATIC=ON \
-	-DSDL_TEST=ON \
+	-DSDL_STATIC_PIC=ON \
 	-DSDL_TESTS=ON \
+	-DSDL_TESTS_TIMEOUT_MULTIPLIER=5 \
+	-DSDL_TEST_LIBRARY=ON \
 	-DSDL_VENDOR_INFO="${DEB_VENDOR} ${DEB_VERSION}" \
 	-DSDL_VIVANTE=OFF \
 	-DSDL_X11=ON \
@@ -59,8 +60,8 @@ endif
 	dh $@ --buildsystem=cmake+ninja
 
 override_dh_auto_configure:
-	if [ $(DEB_VERSION_UPSTREAM) = 3~git20231002~3abb464+ds ]; then \
-		echo prerelease-3.0.0-2560-g3abb464f1 > VERSION.txt; \
+	if [ $(DEB_VERSION_UPSTREAM) = 3~git20231011~321fc18+ds ]; then \
+		echo prerelease-3.0.0-2612-g321fc1841 > VERSION.txt; \
 	fi
 	set -e; for bmp in test/icon.bmp test/gamepad_*.bmp; do \
 		python3 cmake/xxd.py -i "$${bmp}" -o "$${bmp%.bmp}.h"; \

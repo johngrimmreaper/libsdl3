@@ -345,6 +345,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetTextureAlphaMod@SDL3_0.0.0 3~
  SDL_GetTextureBlendMode@SDL3_0.0.0 3~
  SDL_GetTextureColorMod@SDL3_0.0.0 3~
+ SDL_GetTextureDXGIResource@SDL3_0.0.0 3~
  SDL_GetTextureScaleMode@SDL3_0.0.0 3~
  SDL_GetTextureUserData@SDL3_0.0.0 3~
  SDL_GetThreadID@SDL3_0.0.0 3~

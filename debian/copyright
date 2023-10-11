@@ -29,8 +29,17 @@ Copyright:
  2017 BlackBerry Limited
  2018-2019 EXL
  2020-2023 Valve Corporation
- 2019-2022 Collabora Ltd.
+ 2019-2023 Collabora Ltd.
 License: Zlib and Zlib-like-permissive and Expat and PublicDomain_AlDraw
+
+Files:
+ cmake/FindFFmpeg.cmake
+Copyright:
+ 2006 Matthias Kretz
+ 2008 Alexander Neundorf
+ 2011 Michael Jansen
+ 2023 Sam Lantinga
+License: BSD-3-clause
 
 Files:
  cmake/GetGitRevisionDescription.cmake
@@ -301,7 +310,7 @@ License: BSD-3-clause
      * Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
        documentation and/or other materials provided with the distribution.
-     * Neither the name of the LibQxt project nor the
+     * Neither the name of <PROJECT> nor the
        names of its contributors may be used to endorse or promote products
        derived from this software without specific prior written permission.
  .
