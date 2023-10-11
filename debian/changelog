@@ -1,8 +1,17 @@
-libsdl3 (3~git20231011~321fc18+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20231011~321fc18+ds-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-2612-g321fc1841
+    - This should resolve the FTBFS on arm64, by disabling NEON audio
+      resamplers until they can be fixed to pass their tests.
+  * d/copyright: Update
+  * d/libsdl3-0.symbols: Update
+  * d/rules: Sort configure flags
+  * d/rules: SDL_TEST was renamed to SDL_TEST_LIBRARY
+  * d/rules: Allow more time for build-time tests, for slow architectures.
+    Hopefully a 5x timeout is enough for armel, and maybe the ports
+    architectures with very slow atomics too.
 
- -- Simon McVittie <smcv@debian.org>  Wed, 11 Oct 2023 14:59:21 +0100
+ -- Simon McVittie <smcv@debian.org>  Wed, 11 Oct 2023 16:14:14 +0100
 
 libsdl3 (3~git20231002~3abb464+ds-1) experimental; urgency=medium
 
