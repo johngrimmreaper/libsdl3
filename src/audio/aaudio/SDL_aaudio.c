@@ -83,7 +83,7 @@ static void AAUDIO_errorCallback(AAudioStream *stream, void *userData, aaudio_re
     LOGI("SDL AAUDIO_errorCallback: %d - %s", error, ctx.AAudio_convertResultToText(error));
 
     // You MUST NOT close the audio stream from this callback, so we cannot call SDL_AudioDeviceDisconnected here.
-    // Just flag the device so we can kill it in WaitDevice/PlayDevice instead.
+    // Just flag the device so we can kill it in PlayDevice instead.
     SDL_AudioDevice *device = (SDL_AudioDevice *) userData;
     SDL_AtomicSet(&device->hidden->error_callback_triggered, (int) error);  // AAUDIO_OK is zero, so !triggered means no error.
     SDL_PostSemaphore(device->hidden->semaphore);  // in case we're blocking in WaitDevice.
@@ -164,9 +164,10 @@ static Uint8 *AAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
     return &hidden->mixbuf[offset];
 }
 
-static void AAUDIO_WaitDevice(SDL_AudioDevice *device)
+static int AAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     SDL_WaitSemaphore(device->hidden->semaphore);
+    return 0;
 }
 
 static int BuildAAudioStream(SDL_AudioDevice *device);
@@ -311,7 +312,9 @@ static int BuildAAudioStream(SDL_AudioDevice *device)
     ctx.AAudioStreamBuilder_setDirection(builder, direction);
     ctx.AAudioStreamBuilder_setErrorCallback(builder, AAUDIO_errorCallback, device);
     ctx.AAudioStreamBuilder_setDataCallback(builder, AAUDIO_dataCallback, device);
+#if 0 // Some devices have flat sounding audio when low latency mode is enabled
     ctx.AAudioStreamBuilder_setPerformanceMode(builder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
+#endif
 
     LOGI("AAudio Try to open %u hz %u bit chan %u %s samples %u",
          device->spec.freq, SDL_AUDIO_BITSIZE(device->spec.format),
