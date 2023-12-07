@@ -22,16 +22,17 @@
 /**
  *  \file SDL_surface.h
  *
- *  \brief Header file for ::SDL_Surface definition and management functions.
+ *  Header file for ::SDL_Surface definition and management functions.
  */
 
 #ifndef SDL_surface_h_
 #define SDL_surface_h_
 
 #include <SDL3/SDL_stdinc.h>
-#include <SDL3/SDL_pixels.h>
-#include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_blendmode.h>
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_properties.h>
+#include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_rwops.h>
 
 #include <SDL3/SDL_begin_code.h>
@@ -64,7 +65,7 @@ extern "C" {
 typedef struct SDL_BlitMap SDL_BlitMap;  /* this is an opaque type. */
 
 /**
- * \brief A collection of pixels used in software blitting.
+ * A collection of pixels used in software blitting.
  *
  * Pixels are arranged in memory in rows, with the top row first.
  * Each row occupies an amount of memory given by the pitch (sometimes
@@ -92,7 +93,7 @@ typedef struct SDL_Surface
     void *pixels;               /**< Read-write */
 
     /** Application data associated with the surface */
-    void *userdata;             /**< Read-write */
+    SDL_PropertiesID props;     /**< Read-write */
 
     /** information needed for surfaces requiring locks */
     int locked;                 /**< Read-only */
@@ -111,13 +112,13 @@ typedef struct SDL_Surface
 } SDL_Surface;
 
 /**
- * \brief The type of function used for surface blitting functions.
+ * The type of function used for surface blitting functions.
  */
 typedef int (SDLCALL *SDL_blit) (struct SDL_Surface *src, const SDL_Rect *srcrect,
                                  struct SDL_Surface *dst, const SDL_Rect *dstrect);
 
 /**
- * \brief The formula used for converting between YUV and RGB
+ * The formula used for converting between YUV and RGB
  */
 typedef enum
 {
@@ -188,6 +189,20 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurfaceFrom
  * \sa SDL_LoadBMP_RW
  */
 extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
+
+/**
+ * Get the properties associated with a surface.
+ *
+ * \param surface the SDL_Surface structure to query
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetProperty
+ * \sa SDL_SetProperty
+ */
+extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surface *surface);
 
 /**
  * Set the palette used by a surface.
