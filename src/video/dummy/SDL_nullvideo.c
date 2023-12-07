@@ -83,8 +83,7 @@ static SDL_VideoDevice *DUMMY_InternalCreateDevice(const char *enable_hint)
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
-        SDL_OutOfMemory();
+    if (!device) {
         return 0;
     }
     device->is_dummy = SDL_TRUE;

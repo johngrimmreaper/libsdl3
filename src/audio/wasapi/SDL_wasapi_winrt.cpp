@@ -36,7 +36,6 @@
 
 extern "C" {
 #include "../../core/windows/SDL_windows.h"
-#include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
 }
 
@@ -56,7 +55,7 @@ static Platform::String ^ SDL_PKEY_AudioEngine_DeviceFormat = L"{f19f064d-082c-4
 
 static SDL_bool FindWinRTAudioDeviceCallback(SDL_AudioDevice *device, void *userdata)
 {
-    return (SDL_wcscmp((LPCWSTR) device->handle, (LPCWSTR) userdata) == 0) ? SDL_TRUE : SDL_FALSE;
+    return (SDL_wcscmp((LPCWSTR) device->handle, (LPCWSTR) userdata) == 0);
 }
 
 static SDL_AudioDevice *FindWinRTAudioDevice(LPCWSTR devid)
@@ -220,13 +219,24 @@ int WASAPI_PlatformInit(void)
     return 0;
 }
 
-void WASAPI_PlatformDeinit(void)
+static void StopWasapiHotplug(void)
 {
     delete playback_device_event_handler;
     playback_device_event_handler = nullptr;
     delete capture_device_event_handler;
     capture_device_event_handler = nullptr;
 }
+
+void WASAPI_PlatformDeinit(void)
+{
+    StopWasapiHotplug();
+}
+
+void WASAPI_PlatformDeinitializeStart(void)
+{
+    StopWasapiHotplug();
+}
+
 
 void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
 {
