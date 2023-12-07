@@ -1,10 +1,11 @@
-libsdl3 (3~git20231206~ace385a+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20231206~ace385a+ds-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-3091-gace385a13
   * d/docs: Update
   * d/libsdl3-0.symbols: Update
+  * d/copyright: Remove stanza for deleted directory test/shapes/
 
- -- Simon McVittie <smcv@debian.org>  Thu, 07 Dec 2023 18:35:55 +0000
+ -- Simon McVittie <smcv@debian.org>  Thu, 07 Dec 2023 19:41:11 +0000
 
 libsdl3 (3~git20231011~321fc18+ds-1) experimental; urgency=medium
 
