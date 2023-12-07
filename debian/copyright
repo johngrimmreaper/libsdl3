@@ -144,11 +144,6 @@ Copyright: 1997-2011 Sam Lantinga <slouken@libsdl.org>
            2011 Edgar Simo Serra
 License: BSD-3-clause
 
-Files: test/shapes/*
-Copyright: none
-License: Zlib
-Comment: No specific information about the images
-
 Files: wayland-protocols/*.xml
 Copyright:
  2008-2011 Kristian Høgsberg
