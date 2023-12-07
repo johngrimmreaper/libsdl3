@@ -34,7 +34,6 @@
 #include <sys/audioio.h>
 
 #include "../../core/unix/SDL_poll.h"
-#include "../SDL_audio_c.h"
 #include "../SDL_audiodev_c.h"
 #include "SDL_netbsdaudio.h"
 
@@ -135,7 +134,7 @@ static int NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
         } else if (iscapture && (remain < device->buffer_size)) {
             SDL_Delay(10);
         } else {
-            break; /* ready to go! */
+            break; // ready to go!
         }
     }
 
@@ -216,8 +215,8 @@ static int NETBSDAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
-    if (device->hidden == NULL) {
-        return SDL_OutOfMemory();
+    if (!device->hidden) {
+        return -1;
     }
 
     // Open the audio device; we hardcode the device path in `device->name` for lack of better info, so use that.
@@ -294,8 +293,8 @@ static int NETBSDAUDIO_OpenDevice(SDL_AudioDevice *device)
         // Allocate mixing buffer
         device->hidden->mixlen = device->buffer_size;
         device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->hidden->mixlen);
-        if (device->hidden->mixbuf == NULL) {
-            return SDL_OutOfMemory();
+        if (!device->hidden->mixbuf) {
+            return -1;
         }
         SDL_memset(device->hidden->mixbuf, device->silence_value, device->buffer_size);
     }
