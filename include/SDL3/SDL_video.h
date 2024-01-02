@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -125,33 +125,29 @@ typedef struct SDL_Window SDL_Window;
  *
  *  \sa SDL_GetWindowFlags
  */
-typedef enum
-{
-    SDL_WINDOW_FULLSCREEN           = 0x00000001,   /**< window is in fullscreen mode */
-    SDL_WINDOW_OPENGL               = 0x00000002,   /**< window usable with OpenGL context */
-    SDL_WINDOW_OCCLUDED             = 0x00000004,   /**< window is occluded */
-    SDL_WINDOW_HIDDEN               = 0x00000008,   /**< window is neither mapped onto the desktop nor shown in the taskbar/dock/window list; SDL_ShowWindow() is required for it to become visible */
-    SDL_WINDOW_BORDERLESS           = 0x00000010,   /**< no window decoration */
-    SDL_WINDOW_RESIZABLE            = 0x00000020,   /**< window can be resized */
-    SDL_WINDOW_MINIMIZED            = 0x00000040,   /**< window is minimized */
-    SDL_WINDOW_MAXIMIZED            = 0x00000080,   /**< window is maximized */
-    SDL_WINDOW_MOUSE_GRABBED        = 0x00000100,   /**< window has grabbed mouse input */
-    SDL_WINDOW_INPUT_FOCUS          = 0x00000200,   /**< window has input focus */
-    SDL_WINDOW_MOUSE_FOCUS          = 0x00000400,   /**< window has mouse focus */
-    SDL_WINDOW_EXTERNAL             = 0x00000800,   /**< window not created by SDL */
-    SDL_WINDOW_HIGH_PIXEL_DENSITY   = 0x00002000,   /**< window uses high pixel density back buffer if possible */
-    SDL_WINDOW_MOUSE_CAPTURE        = 0x00004000,   /**< window has mouse captured (unrelated to MOUSE_GRABBED) */
-    SDL_WINDOW_ALWAYS_ON_TOP        = 0x00008000,   /**< window should always be above others */
-    SDL_WINDOW_UTILITY              = 0x00020000,   /**< window should be treated as a utility window, not showing in the task bar and window list */
-    SDL_WINDOW_TOOLTIP              = 0x00040000,   /**< window should be treated as a tooltip */
-    SDL_WINDOW_POPUP_MENU           = 0x00080000,   /**< window should be treated as a popup menu */
-    SDL_WINDOW_KEYBOARD_GRABBED     = 0x00100000,   /**< window has grabbed keyboard input */
-    SDL_WINDOW_VULKAN               = 0x10000000,   /**< window usable for Vulkan surface */
-    SDL_WINDOW_METAL                = 0x20000000,   /**< window usable for Metal view */
-    SDL_WINDOW_TRANSPARENT          = 0x40000000,   /**< window with transparent buffer */
-    SDL_WINDOW_NOT_FOCUSABLE        = 0x80000000,   /**< window should not be focusable */
-
-} SDL_WindowFlags;
+#define SDL_WINDOW_FULLSCREEN           0x00000001U /**< window is in fullscreen mode */
+#define SDL_WINDOW_OPENGL               0x00000002U /**< window usable with OpenGL context */
+#define SDL_WINDOW_OCCLUDED             0x00000004U /**< window is occluded */
+#define SDL_WINDOW_HIDDEN               0x00000008U /**< window is neither mapped onto the desktop nor shown in the taskbar/dock/window list; SDL_ShowWindow() is required for it to become visible */
+#define SDL_WINDOW_BORDERLESS           0x00000010U /**< no window decoration */
+#define SDL_WINDOW_RESIZABLE            0x00000020U /**< window can be resized */
+#define SDL_WINDOW_MINIMIZED            0x00000040U /**< window is minimized */
+#define SDL_WINDOW_MAXIMIZED            0x00000080U /**< window is maximized */
+#define SDL_WINDOW_MOUSE_GRABBED        0x00000100U /**< window has grabbed mouse input */
+#define SDL_WINDOW_INPUT_FOCUS          0x00000200U /**< window has input focus */
+#define SDL_WINDOW_MOUSE_FOCUS          0x00000400U /**< window has mouse focus */
+#define SDL_WINDOW_EXTERNAL             0x00000800U /**< window not created by SDL */
+#define SDL_WINDOW_HIGH_PIXEL_DENSITY   0x00002000U /**< window uses high pixel density back buffer if possible */
+#define SDL_WINDOW_MOUSE_CAPTURE        0x00004000U /**< window has mouse captured (unrelated to MOUSE_GRABBED) */
+#define SDL_WINDOW_ALWAYS_ON_TOP        0x00008000U /**< window should always be above others */
+#define SDL_WINDOW_UTILITY              0x00020000U /**< window should be treated as a utility window, not showing in the task bar and window list */
+#define SDL_WINDOW_TOOLTIP              0x00040000U /**< window should be treated as a tooltip */
+#define SDL_WINDOW_POPUP_MENU           0x00080000U /**< window should be treated as a popup menu */
+#define SDL_WINDOW_KEYBOARD_GRABBED     0x00100000U /**< window has grabbed keyboard input */
+#define SDL_WINDOW_VULKAN               0x10000000U /**< window usable for Vulkan surface */
+#define SDL_WINDOW_METAL                0x20000000U /**< window usable for Metal view */
+#define SDL_WINDOW_TRANSPARENT          0x40000000U /**< window with transparent buffer */
+#define SDL_WINDOW_NOT_FOCUSABLE        0x80000000U /**< window should not be focusable */
 
 /**
  *  Used to indicate that you don't care what the window position is.
@@ -630,6 +626,16 @@ extern DECLSPEC float SDLCALL SDL_GetWindowDisplayScale(SDL_Window *window);
  * change the window size when the window is not fullscreen, use
  * SDL_SetWindowSize().
  *
+ * If the window is currently in the fullscreen state, this request is
+ * asynchronous on some windowing systems and the new mode dimensions may not
+ * be applied immediately upon the return of this function. If an immediate
+ * change is required, call SDL_SyncWindow() to block until the changes have
+ * taken effect.
+ *
+ * When the new mode takes effect, an SDL_EVENT_WINDOW_RESIZED and/or an
+ * SDL_EVENT_WINDOOW_PIXEL_SIZE_CHANGED event will be emitted with the new
+ * mode dimensions.
+ *
  * \param window the window to affect
  * \param mode a pointer to the display mode to use, which can be NULL for
  *             desktop mode, or one of the fullscreen modes returned by
@@ -641,6 +647,7 @@ extern DECLSPEC float SDLCALL SDL_GetWindowDisplayScale(SDL_Window *window);
  *
  * \sa SDL_GetWindowFullscreenMode
  * \sa SDL_SetWindowFullscreen
+ * \sa SDL_SyncWindow
  */
 extern DECLSPEC int SDLCALL SDL_SetWindowFullscreenMode(SDL_Window *window, const SDL_DisplayMode *mode);
 
@@ -1070,7 +1077,29 @@ extern DECLSPEC const char *SDLCALL SDL_GetWindowTitle(SDL_Window *window);
 extern DECLSPEC int SDLCALL SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon);
 
 /**
- * Set the position of a window.
+ * Request that the window's position be set.
+ *
+ * If, at the time of this request, the window is in a fixed-size state such
+ * as maximized, this request may be deferred until the window returns to a
+ * resizable state.
+ *
+ * This can be used to reposition fullscreen-desktop windows onto a different
+ * display, however, exclusive fullscreen windows are locked to a specific
+ * display and can only be repositioned programmatically via
+ * SDL_SetWindowFullscreenMode().
+ *
+ * On some windowing systems this request is asynchronous and the new
+ * coordinates may not have have been applied immediately upon the return of
+ * this function. If an immediate change is required, call SDL_SyncWindow() to
+ * block until the changes have taken effect.
+ *
+ * When the window position changes, an SDL_EVENT_WINDOW_MOVED event will be
+ * emitted with the window's new coordinates. Note that the new coordinates
+ * may not match the exact coordinates requested, as some windowing systems
+ * can restrict the position of the window in certain scenarios (e.g.
+ * constraining the position so the window is always within desktop bounds).
+ * Additionally, as this is just a request, it can be denied by the windowing
+ * system.
  *
  * \param window the window to reposition
  * \param x the x coordinate of the window, or `SDL_WINDOWPOS_CENTERED` or
@@ -1083,11 +1112,15 @@ extern DECLSPEC int SDLCALL SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *i
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetWindowPosition
+ * \sa SDL_SyncWindow
  */
 extern DECLSPEC int SDLCALL SDL_SetWindowPosition(SDL_Window *window, int x, int y);
 
 /**
  * Get the position of a window.
+ *
+ * This is the current position of the window as last reported by the
+ * windowing system.
  *
  * If you do not need the value for one of the positions a NULL may be passed
  * in the `x` or `y` parameter.
@@ -1105,10 +1138,29 @@ extern DECLSPEC int SDLCALL SDL_SetWindowPosition(SDL_Window *window, int x, int
 extern DECLSPEC int SDLCALL SDL_GetWindowPosition(SDL_Window *window, int *x, int *y);
 
 /**
- * Set the size of a window's client area.
+ * Request that the size of a window's client area be set.
  *
- * This only affects the size of the window when not in fullscreen mode. To
- * change the fullscreen mode of a window, use SDL_SetWindowFullscreenMode()
+ * NULL can safely be passed as the `w` or `h` parameter if the width or
+ * height value is not desired.
+ *
+ * If, at the time of this request, the window in a fixed-size state, such as
+ * maximized or fullscreen, the request will be deferred until the window
+ * exits this state and becomes resizable again.
+ *
+ * To change the fullscreen mode of a window, use
+ * SDL_SetWindowFullscreenMode()
+ *
+ * On some windowing systems, this request is asynchronous and the new window
+ * size may not have have been applied immediately upon the return of this
+ * function. If an immediate change is required, call SDL_SyncWindow() to
+ * block until the changes have taken effect.
+ *
+ * When the window size changes, an SDL_EVENT_WINDOW_RESIZED event will be
+ * emitted with the new window dimensions. Note that the new dimensions may
+ * not match the exact size requested, as some windowing systems can restrict
+ * the window size in certain scenarios (e.g. constraining the size of the
+ * content area to remain within the usable desktop bounds). Additionally, as
+ * this is just a request, it can be denied by the windowing system.
  *
  * \param window the window to change
  * \param w the width of the window, must be > 0
@@ -1120,6 +1172,7 @@ extern DECLSPEC int SDLCALL SDL_GetWindowPosition(SDL_Window *window, int *x, in
  *
  * \sa SDL_GetWindowSize
  * \sa SDL_SetWindowFullscreenMode
+ * \sa SDL_SyncWindow
  */
 extern DECLSPEC int SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int h);
 
@@ -1363,7 +1416,24 @@ extern DECLSPEC int SDLCALL SDL_HideWindow(SDL_Window *window);
 extern DECLSPEC int SDLCALL SDL_RaiseWindow(SDL_Window *window);
 
 /**
- * Make a window as large as possible.
+ * Request that the window be made as large as possible.
+ *
+ * Non-resizable windows can't be maximized. The window must have the
+ * SDL_WINDOW_RESIZABLE flag set, or this will have no effect.
+ *
+ * On some windowing systems this request is asynchronous and the new window
+ * state may not have have been applied immediately upon the return of this
+ * function. If an immediate change is required, call SDL_SyncWindow() to
+ * block until the changes have taken effect.
+ *
+ * When the window state changes, an SDL_EVENT_WINDOW_MAXIMIZED event will be
+ * emitted. Note that, as this is just a request, the windowing system can
+ * deny the state change.
+ *
+ * When maximizing a window, whether the constraints set via
+ * SDL_SetWindowMaximumSize() are honored depends on the policy of the window
+ * manager. Win32 and macOS enforce the constraints when maximizing, while X11
+ * and Wayland window managers may vary.
  *
  * \param window the window to maximize
  * \returns 0 on success or a negative error code on failure; call
@@ -1373,11 +1443,21 @@ extern DECLSPEC int SDLCALL SDL_RaiseWindow(SDL_Window *window);
  *
  * \sa SDL_MinimizeWindow
  * \sa SDL_RestoreWindow
+ * \sa SDL_SyncWindow
  */
 extern DECLSPEC int SDLCALL SDL_MaximizeWindow(SDL_Window *window);
 
 /**
- * Minimize a window to an iconic representation.
+ * Request that the window be minimized to an iconic representation.
+ *
+ * On some windowing systems this request is asynchronous and the new window
+ * state may not have have been applied immediately upon the return of this
+ * function. If an immediate change is required, call SDL_SyncWindow() to
+ * block until the changes have taken effect.
+ *
+ * When the window state changes, an SDL_EVENT_WINDOW_MINIMIZED event will be
+ * emitted. Note that, as this is just a request, the windowing system can
+ * deny the state change.
  *
  * \param window the window to minimize
  * \returns 0 on success or a negative error code on failure; call
@@ -1387,11 +1467,22 @@ extern DECLSPEC int SDLCALL SDL_MaximizeWindow(SDL_Window *window);
  *
  * \sa SDL_MaximizeWindow
  * \sa SDL_RestoreWindow
+ * \sa SDL_SyncWindow
  */
 extern DECLSPEC int SDLCALL SDL_MinimizeWindow(SDL_Window *window);
 
 /**
- * Restore the size and position of a minimized or maximized window.
+ * Request that the size and position of a minimized or maximized window be
+ * restored.
+ *
+ * On some windowing systems this request is asynchronous and the new window
+ * state may not have have been applied immediately upon the return of this
+ * function. If an immediate change is required, call SDL_SyncWindow() to
+ * block until the changes have taken effect.
+ *
+ * When the window state changes, an SDL_EVENT_WINDOW_RESTORED event will be
+ * emitted. Note that, as this is just a request, the windowing system can
+ * deny the state change.
  *
  * \param window the window to restore
  * \returns 0 on success or a negative error code on failure; call
@@ -1401,14 +1492,24 @@ extern DECLSPEC int SDLCALL SDL_MinimizeWindow(SDL_Window *window);
  *
  * \sa SDL_MaximizeWindow
  * \sa SDL_MinimizeWindow
+ * \sa SDL_SyncWindow
  */
 extern DECLSPEC int SDLCALL SDL_RestoreWindow(SDL_Window *window);
 
 /**
- * Set a window's fullscreen state.
+ * Request that the window's fullscreen state be changed.
  *
  * By default a window in fullscreen state uses fullscreen desktop mode, but a
  * specific display mode can be set using SDL_SetWindowFullscreenMode().
+ *
+ * On some windowing systems this request is asynchronous and the new
+ * fullscreen state may not have have been applied immediately upon the return
+ * of this function. If an immediate change is required, call SDL_SyncWindow()
+ * to block until the changes have taken effect.
+ *
+ * When the window state changes, an SDL_EVENT_WINDOW_ENTER_FULLSCREEN or
+ * SDL_EVENT_WINDOW_LEAVE_FULLSCREEN event will be emitted. Note that, as this
+ * is just a request, it can be denied by the windowing system.
  *
  * \param window the window to change
  * \param fullscreen SDL_TRUE for fullscreen mode, SDL_FALSE for windowed mode
@@ -1419,8 +1520,38 @@ extern DECLSPEC int SDLCALL SDL_RestoreWindow(SDL_Window *window);
  *
  * \sa SDL_GetWindowFullscreenMode
  * \sa SDL_SetWindowFullscreenMode
+ * \sa SDL_SyncWindow
  */
 extern DECLSPEC int SDLCALL SDL_SetWindowFullscreen(SDL_Window *window, SDL_bool fullscreen);
+
+/**
+ * Block until any pending window state is finalized.
+ *
+ * On asynchronous windowing systems, this acts as a synchronization barrier
+ * for pending window state. It will attempt to wait until any pending window
+ * state has been applied and is guaranteed to return within finite time. Note
+ * that for how long it can potentially block depends on the underlying window
+ * system, as window state changes may involve somewhat lengthy animations
+ * that must complete before the window is in its final requested state.
+ *
+ * On windowing systems where changes are immediate, this does nothing.
+ *
+ * \param window the window for which to wait for the pending state to be
+ *               applied
+ * \returns 0 on success, a positive value if the operation timed out before
+ *          the window was in the requested state, or a negative error code on
+ *          failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetWindowSize
+ * \sa SDL_SetWindowPosition
+ * \sa SDL_SetWindowFullscreen
+ * \sa SDL_MinimizeWindow
+ * \sa SDL_MaximizeWindow
+ * \sa SDL_RestoreWindow
+ */
+extern DECLSPEC int SDLCALL SDL_SyncWindow(SDL_Window *window);
 
 /**
  * Return whether the window has a surface associated with it.

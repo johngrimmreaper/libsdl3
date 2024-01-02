@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -54,6 +54,7 @@
 #define SDL_SendPenWindowEvent       SDL_SUT_SendPenWindowEvent
 #define SDL_PenPerformHitTest        SDL_SUT_PenPerformHitTest
 #define SDL_PenInit                  SDL_SUT_PenInit
+#define SDL_PenQuit                  SDL_SUT_PenQuit
 
 /* ================= Mock API ================== */
 
