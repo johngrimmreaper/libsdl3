@@ -227,6 +227,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetGamepadSensorData@SDL3_0.0.0 3~
  SDL_GetGamepadSensorDataRate@SDL3_0.0.0 3~
  SDL_GetGamepadSerial@SDL3_0.0.0 3~
+ SDL_GetGamepadSteamHandle@SDL3_0.0.0 3~
  SDL_GetGamepadStringForAxis@SDL3_0.0.0 3~
  SDL_GetGamepadStringForButton@SDL3_0.0.0 3~
  SDL_GetGamepadStringForType@SDL3_0.0.0 3~
@@ -709,13 +710,13 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ShowWindowSystemMenu@SDL3_0.0.0 3~
  SDL_SignalCondition@SDL3_0.0.0 3~
  SDL_SoftStretch@SDL3_0.0.0 3~
- SDL_SoftStretchLinear@SDL3_0.0.0 3~
  SDL_StartTextInput@SDL3_0.0.0 3~
  SDL_StartVideoCapture@SDL3_0.0.0 3~
  SDL_StopTextInput@SDL3_0.0.0 3~
  SDL_StopVideoCapture@SDL3_0.0.0 3~
  SDL_SurfaceHasColorKey@SDL3_0.0.0 3~
  SDL_SurfaceHasRLE@SDL3_0.0.0 3~
+ SDL_SyncWindow@SDL3_0.0.0 3~
  SDL_TextInputActive@SDL3_0.0.0 3~
  SDL_TextInputShown@SDL3_0.0.0 3~
  SDL_ThreadID@SDL3_0.0.0 3~
