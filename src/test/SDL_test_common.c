@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1743,6 +1743,15 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
         break;
     case SDL_EVENT_WINDOW_OCCLUDED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " occluded", event->window.windowID);
+        break;
+    case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " entered fullscreen", event->window.windowID);
+        break;
+    case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " left fullscreen", event->window.windowID);
+        break;
+    case SDL_EVENT_WINDOW_DESTROYED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " destroyed", event->window.windowID);
         break;
     case SDL_EVENT_KEY_DOWN:
     case SDL_EVENT_KEY_UP: {

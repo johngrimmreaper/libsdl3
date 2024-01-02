@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -511,6 +511,12 @@ void X11_QuitMouse(SDL_VideoDevice *_this)
     SDL_VideoData *data = _this->driverdata;
     SDL_XInput2DeviceInfo *i;
     SDL_XInput2DeviceInfo *next;
+    int j;
+
+    for (j = 0; j < SDL_arraysize(sys_cursors); j++) {
+        X11_FreeCursor(sys_cursors[j]);
+        sys_cursors[j] = NULL;
+    }
 
     for (i = data->mouse_device_info; i; i = next) {
         next = i->next;
