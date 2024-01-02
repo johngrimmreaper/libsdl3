@@ -1,3 +1,11 @@
+libsdl3 (3~git20240102~bec1b8f+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream snapshot prerelease-3.0.0-3224-gbec1b8f84
+  * d/copyright: Update
+  * d/libsdl3-0.symbols: Update
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 02 Jan 2024 17:17:12 +0000
+
 libsdl3 (3~git20231206~ace385a+ds-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-3091-gace385a13
