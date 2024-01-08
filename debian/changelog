@@ -1,10 +1,10 @@
-libsdl3 (3~git20240108~82f2c4d+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20240108~82f2c4d+ds-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-3259-g82f2c4d58
   * d/libsdl3-0.symbols: Update for ABI breaks in upstream snapshot
   * d/copyright: Update
 
- -- Simon McVittie <smcv@debian.org>  Mon, 08 Jan 2024 15:16:12 +0000
+ -- Simon McVittie <smcv@debian.org>  Mon, 08 Jan 2024 19:43:59 +0000
 
 libsdl3 (3~git20240102~bec1b8f+ds-1) experimental; urgency=medium
 
