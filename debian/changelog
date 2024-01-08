@@ -1,6 +1,6 @@
-libsdl3 (3~git20240108~7eae08c+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20240108~82f2c4d+ds-1) UNRELEASED; urgency=medium
 
-  * New upstream snapshot prerelease-3.0.0-3246-g7eae08cfc
+  * New upstream snapshot prerelease-3.0.0-3259-g82f2c4d58
   * d/libsdl3-0.symbols: Update for ABI breaks in upstream snapshot
   * d/copyright: Update
 
