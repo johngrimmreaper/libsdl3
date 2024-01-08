@@ -120,7 +120,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_FlushEvent@SDL3_0.0.0 3~
  SDL_FlushEvents@SDL3_0.0.0 3~
  SDL_FlushRenderer@SDL3_0.0.0 3~
- SDL_GL_BindTexture@SDL3_0.0.0 3~
  SDL_GL_CreateContext@SDL3_0.0.0 3~
  SDL_GL_DeleteContext@SDL3_0.0.0 3~
  SDL_GL_ExtensionSupported@SDL3_0.0.0 3~
@@ -135,7 +134,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GL_SetAttribute@SDL3_0.0.0 3~
  SDL_GL_SetSwapInterval@SDL3_0.0.0 3~
  SDL_GL_SwapWindow@SDL3_0.0.0 3~
- SDL_GL_UnbindTexture@SDL3_0.0.0 3~
  SDL_GL_UnloadLibrary@SDL3_0.0.0 3~
  SDL_GUIDFromString@SDL3_0.0.0 3~
  SDL_GUIDToString@SDL3_0.0.0 3~
@@ -345,6 +343,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetRenderViewport@SDL3_0.0.0 3~
  SDL_GetRenderWindow@SDL3_0.0.0 3~
  SDL_GetRenderer@SDL3_0.0.0 3~
+ SDL_GetRendererFromTexture@SDL3_0.0.0 3~
  SDL_GetRendererInfo@SDL3_0.0.0 3~
  SDL_GetRendererProperties@SDL3_0.0.0 3~
  SDL_GetRevision@SDL3_0.0.0 3~

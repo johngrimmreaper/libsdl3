@@ -396,7 +396,71 @@ The SDL_EVENT_GAMEPAD_ADDED event now provides the joystick instance ID in the w
 
 The functions SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadInstancePath(), SDL_GetGamepadInstancePlayerIndex(), SDL_GetGamepadInstanceGUID(), SDL_GetGamepadInstanceVendor(), SDL_GetGamepadInstanceProduct(), SDL_GetGamepadInstanceProductVersion(), and SDL_GetGamepadInstanceType() have been added to directly query the list of available gamepads.
 
-The gamepad face buttons have been renamed from A/B/X/Y to North/South/East/West to indicate that they are positional rather than hardware-specific. You can use SDL_GetGamepadButtonLabel() to get the labels for the face buttons, e.g. A/B/X/Y or Cross/Circle/Square/Triangle. The hint SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS is ignored, and mappings that use this hint are translated correctly into positional buttons. Applications will now need to provide a way for users to swap between South/East as their accept/cancel buttons, as this varies based on region and muscle memory. Using South as the accept button and East as the cancel button is a good default.
+The gamepad face buttons have been renamed from A/B/X/Y to North/South/East/West to indicate that they are positional rather than hardware-specific. You can use SDL_GetGamepadButtonLabel() to get the labels for the face buttons, e.g. A/B/X/Y or Cross/Circle/Square/Triangle. The hint SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS is ignored, and mappings that use this hint are translated correctly into positional buttons. Applications should provide a way for users to swap between South/East as their accept/cancel buttons, as this varies based on region and muscle memory. You can use an approach similar to the following to handle this:
+
+```c
+#define CONFIRM_BUTTON SDL_GAMEPAD_BUTTON_SOUTH
+#define CANCEL_BUTTON SDL_GAMEPAD_BUTTON_EAST
+
+SDL_bool flipped_buttons;
+
+void InitMappedButtons(SDL_Gamepad *gamepad)
+{
+    if (!GetFlippedButtonSetting(&flipped_buttons)) {
+        if (SDL_GetGamepadButtonLabel(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_GAMEPAD_BUTTON_LABEL_B) {
+            flipped_buttons = SDL_TRUE;
+        } else {
+            flipped_buttons = SDL_FALSE;
+        }
+    }
+}
+
+SDL_GamepadButton GetMappedButton(SDL_GamepadButton button)
+{
+    if (flipped_buttons) {
+        switch (button) {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            return SDL_GAMEPAD_BUTTON_EAST;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            return SDL_GAMEPAD_BUTTON_SOUTH;
+        case SDL_GAMEPAD_BUTTON_WEST:
+            return SDL_GAMEPAD_BUTTON_NORTH;
+        case SDL_GAMEPAD_BUTTON_NORTH:
+            return SDL_GAMEPAD_BUTTON_WEST;
+        default:
+            break;
+        }
+    }
+    return button;
+}
+
+SDL_GamepadButtonLabel GetConfirmActionLabel(SDL_Gamepad *gamepad)
+{
+    return SDL_GetGamepadButtonLabel(gamepad, GetMappedButton(CONFIRM_BUTTON));
+}
+
+SDL_GamepadButtonLabel GetCancelActionLabel(SDL_Gamepad *gamepad)
+{
+    return SDL_GetGamepadButtonLabel(gamepad, GetMappedButton(CANCEL_BUTTON));
+}
+
+void HandleGamepadEvent(SDL_Event *event)
+{
+    if (event->type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+        switch (GetMappedButton(event->gbutton.button)) {
+        case CONFIRM_BUTTON:
+            /* Handle confirm action */
+            break;
+        case CANCEL_BUTTON:
+            /* Handle cancel action */
+            break;
+        default:
+            /* ... */
+            break;
+        }
+    }
+}
+```
 
 SDL_GameControllerGetSensorDataWithTimestamp() has been removed. If you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_EVENT_GAMEPAD_SENSOR_UPDATE events.
 
@@ -895,6 +959,8 @@ The following functions have been renamed:
 * SDL_RenderWindowToLogical() => SDL_RenderCoordinatesFromWindow()
 
 The following functions have been removed:
+* SDL_GL_BindTexture() - use SDL_GetTextureProperties() to get the OpenGL texture ID and bind the texture directly
+* SDL_GL_UnbindTexture() - use SDL_GetTextureProperties() to get the OpenGL texture ID and unbind the texture directly
 * SDL_GetTextureUserData() - use SDL_GetTextureProperties() instead
 * SDL_RenderGetIntegerScale()
 * SDL_RenderSetIntegerScale() - this is now explicit with SDL_LOGICAL_PRESENTATION_INTEGER_SCALE
@@ -1219,34 +1285,48 @@ The information previously available in SDL_GetWindowWMInfo() is now available a
         ...
     }
 #elif defined(__LINUX__)
-    Display *xdisplay = NULL;
-    Window xwindow = 0;
-    if (SDL_GetWindowWMInfo(window, &info) && info.subsystem == SDL_SYSWM_X11) {
-        xdisplay = info.info.x11.display;
-        xwindow = info.info.x11.window;
-    }
-    if (xdisplay && xwindow) {
-        ...
+    if (SDL_GetWindowWMInfo(window, &info)) {
+        if (info.subsystem == SDL_SYSWM_X11) {
+            Display *xdisplay = info.info.x11.display;
+            Window xwindow = info.info.x11.window;
+            if (xdisplay && xwindow) {
+                ...
+            }
+        } else if (info.subsystem == SDL_SYSWM_WAYLAND) {
+            struct wl_display *display = info.info.wl.display;
+            struct wl_surface *surface = info.info.wl.surface;
+            if (display && surface) {
+                ...
+            }
+        }
     }
 #endif
 ```
 becomes:
 ```c
 #if defined(__WIN32__)
-    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.win32.hwnd", NULL);
+    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_WIN32_HWND_POINTER, NULL);
     if (hwnd) {
         ...
     }
 #elif defined(__MACOS__)
-    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.cocoa.window", NULL);
+    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_COCOA_WINDOW_POINTER, NULL);
     if (nswindow) {
         ...
     }
 #elif defined(__LINUX__)
-    Display *xdisplay = (Display *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.x11.display", NULL);
-    Window xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), "SDL.window.x11.window", 0);
-    if (xdisplay && xwindow) {
-        ...
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
+        Display *xdisplay = (Display *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_X11_DISPLAY_POINTER, NULL);
+        Window xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_X11_WINDOW_NUMBER, 0);
+        if (xdisplay && xwindow) {
+            ...
+        }
+    } else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+        struct wl_display *display = (struct wl_display *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+        struct wl_surface *surface = (struct wl_surface *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+        if (display && surface) {
+            ...
+        }
     }
 #endif
 ```
@@ -1326,11 +1406,11 @@ Rather than iterating over displays using display index, there is a new function
 SDL_CreateWindow() has been simplified and no longer takes a window position. You can use SDL_CreateWindowWithProperties() if you need to set the window position when creating it, e.g.
 ```c
     SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_SetStringProperty(props, "title", title);
-    SDL_SetNumberProperty(props, "x", x);
-    SDL_SetNumberProperty(props, "y", y);
-    SDL_SetNumberProperty(props, "width", width);
-    SDL_SetNumberProperty(props, "height", height);
+    SDL_SetStringProperty(props, SDL_PROPERTY_WINDOW_CREATE_TITLE_STRING, title);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_X_NUMBER, x);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_Y_NUMBER, y);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER, width);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER, height);
     SDL_SetNumberProperty(props, "flags", flags);
     pWindow = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
