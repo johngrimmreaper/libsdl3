@@ -1140,18 +1140,12 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
 - (void)windowWillEnterFullScreen:(NSNotification *)aNotification
 {
     SDL_Window *window = _data.window;
-    NSUInteger flags = NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
+    const NSUInteger flags = NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable | NSWindowStyleMaskTitled;
 
-    /* Don't set the titled flag on a fullscreen window if the windowed-mode window
-     * is borderless, or the window can wind up in a weird, pseudo-decorated state
-     * when leaving fullscreen if the border flag was toggled on.
+    /* For some reason, the fullscreen window won't get any mouse button events
+     * without the NSWindowStyleMaskTitled flag being set when entering fullscreen,
+     * so it's needed even if the window is borderless.
      */
-    if (!(window->flags & SDL_WINDOW_BORDERLESS)) {
-        flags |= NSWindowStyleMaskTitled;
-    } else {
-        flags |= NSWindowStyleMaskBorderless;
-    }
-
     SetWindowStyle(window, flags);
 
     _data.was_zoomed = !!(window->flags & SDL_WINDOW_MAXIMIZED);
@@ -1212,6 +1206,19 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
 
 - (void)windowWillExitFullScreen:(NSNotification *)aNotification
 {
+    SDL_Window *window = _data.window;
+
+    /* If the windowed mode borders were toggled on while in a fullscreen space,
+     * NSWindowStyleMaskTitled has to be cleared here, or the window can end up
+     * in a weird, semi-decorated state upon returning to windowed mode.
+     */
+    if (_data.border_toggled && !(window->flags & SDL_WINDOW_BORDERLESS)) {
+        const NSUInteger flags = NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
+
+        SetWindowStyle(window, flags);
+        _data.border_toggled = SDL_FALSE;
+    }
+
     isFullscreenSpace = NO;
     inFullscreenTransition = YES;
 }
@@ -1219,16 +1226,10 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
 - (void)windowDidFailToExitFullScreen:(NSNotification *)aNotification
 {
     SDL_Window *window = _data.window;
-    NSUInteger flags = NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
+    const NSUInteger flags = NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 
     if (window->is_destroying) {
         return;
-    }
-
-    if (!(window->flags & SDL_WINDOW_BORDERLESS)) {
-        flags |= NSWindowStyleMaskTitled;
-    } else {
-        flags |= NSWindowStyleMaskBorderless;
     }
     
     SetWindowStyle(window, flags);
@@ -1925,6 +1926,16 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow 
                     Cocoa_SetKeyboardFocus(window);
                 }
             }
+
+            /* FIXME: Should not need to call addChildWindow then orderOut.
+               Attaching a hidden child window to a hidden parent window will cause the child window
+               to show when the parent does. We therefore shouldn't attach the child window here as we're
+               going to do so when the child window is explicitly shown later but skipping the addChildWindow
+               entirely causes the child window to not get key focus correctly the first time it's shown. Adding
+               then immediately ordering out (removing) the window does work. */
+            if (window->flags & SDL_WINDOW_HIDDEN) {
+                [nswindow orderOut:nil];
+            }
         }
 
         if (nswindow.isOpaque) {
@@ -1953,8 +1964,8 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow 
         }
 
         SDL_PropertiesID props = SDL_GetWindowProperties(window);
-        SDL_SetProperty(props, "SDL.window.cocoa.window", (__bridge void *)data.nswindow);
-        SDL_SetNumberProperty(props, "SDL.window.cocoa.metal_view_tag", SDL_METALVIEW_TAG);
+        SDL_SetProperty(props, SDL_PROPERTY_WINDOW_COCOA_WINDOW_POINTER, (__bridge void *)data.nswindow);
+        SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER, SDL_METALVIEW_TAG);
 
         /* All done! */
         window->driverdata = (SDL_WindowData *)CFBridgingRetain(data);
@@ -1979,8 +1990,8 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
                 SDL_assert(false);
             }
         } else {
-            nswindow = (__bridge NSWindow *)SDL_GetProperty(create_props, "cocoa.window", NULL);
-            nsview = (__bridge NSView *)SDL_GetProperty(create_props, "cocoa.view", NULL);
+            nswindow = (__bridge NSWindow *)SDL_GetProperty(create_props, SDL_PROPERTY_WINDOW_CREATE_COCOA_WINDOW_POINTER, NULL);
+            nsview = (__bridge NSView *)SDL_GetProperty(create_props, SDL_PROPERTY_WINDOW_CREATE_COCOA_VIEW_POINTER, NULL);
         }
         if (nswindow && !nsview) {
             nsview = [nswindow contentView];
@@ -2455,6 +2466,8 @@ void Cocoa_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_boo
                     Cocoa_SetWindowTitle(_this, window); /* this got blanked out. */
                 }
             }
+        } else {
+            data.border_toggled = SDL_TRUE;
         }
     }
 }
