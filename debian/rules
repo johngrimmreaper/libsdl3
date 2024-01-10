@@ -57,7 +57,7 @@ else
 endif
 
 %:
-	dh $@ --buildsystem=cmake+ninja
+	dh $@ --buildsystem=cmake
 
 override_dh_auto_configure:
 	if [ $(DEB_VERSION_UPSTREAM) = 3~git20240109~6407e0c+ds ]; then \
