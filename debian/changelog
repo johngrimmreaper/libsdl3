@@ -1,6 +1,6 @@
-libsdl3 (3~git20240109~6407e0c+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20240115~99f6bcf+ds-1) UNRELEASED; urgency=medium
 
-  * New upstream snapshot prerelease-3.0.0-3269-g6407e0cc3
+  * New upstream snapshot prerelease-3.0.0-3289-g99f6bcf50
 
  -- Simon McVittie <smcv@debian.org>  Wed, 10 Jan 2024 14:24:50 +0000
 
