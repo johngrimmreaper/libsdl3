@@ -244,7 +244,7 @@ static void WIN_CheckWParamMouseButtons(Uint64 timestamp, WPARAM wParam, SDL_Win
     }
 }
 
-static void WIN_CheckRawMouseButtons(Uint64 timestamp, ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mouseID)
+static void WIN_CheckRawMouseButtons(Uint64 timestamp, HANDLE hDevice, ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mouseID)
 {
     // Add a flag to distinguish raw mouse buttons from wParam above
     rawButtons |= 0x8000000;
@@ -252,6 +252,10 @@ static void WIN_CheckRawMouseButtons(Uint64 timestamp, ULONG rawButtons, SDL_Win
     if (rawButtons != data->mouse_button_flags) {
         Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
         SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+        if (swapButtons && hDevice == NULL) {
+            /* Touchpad, already has buttons swapped */
+            swapButtons = SDL_FALSE;
+        }
         if (rawButtons & RI_MOUSE_BUTTON_1_DOWN) {
             WIN_CheckWParamMouseButton(timestamp, (rawButtons & RI_MOUSE_BUTTON_1_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
         }
@@ -517,7 +521,7 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     return 1;
 }
 
-static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, RAWMOUSE *rawmouse)
+static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, HANDLE hDevice, RAWMOUSE *rawmouse)
 {
     SDL_MouseID mouseID;
 
@@ -607,7 +611,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, RAWM
         data->last_raw_mouse_position.x = x;
         data->last_raw_mouse_position.y = y;
     }
-    WIN_CheckRawMouseButtons(timestamp, rawmouse->usButtonFlags, data, mouseID);
+    WIN_CheckRawMouseButtons(timestamp, hDevice, rawmouse->usButtonFlags, data, mouseID);
 }
 
 void WIN_PollRawMouseInput(void)
@@ -685,7 +689,7 @@ void WIN_PollRawMouseInput(void)
             timestamp += increment;
             if (input->header.dwType == RIM_TYPEMOUSE) {
                 RAWMOUSE *rawmouse = (RAWMOUSE *)((BYTE *)input + data->rawinput_offset);
-                WIN_HandleRawMouseInput(timestamp, window->driverdata, rawmouse);
+                WIN_HandleRawMouseInput(timestamp, window->driverdata, input->header.hDevice, rawmouse);
             }
         }
     }
@@ -854,7 +858,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
         if (inp.header.dwType == RIM_TYPEMOUSE) {
-            WIN_HandleRawMouseInput(WIN_GetEventTimestamp(), data, &inp.data.mouse);
+            WIN_HandleRawMouseInput(WIN_GetEventTimestamp(), data, inp.header.hDevice, &inp.data.mouse);
         }
     } break;
 #endif
@@ -1321,7 +1325,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     const int w = (rect.right - rect.left);
                     const int h = (rect.bottom - rect.top);
 
-                    const SDL_TouchID touchId = (SDL_TouchID)((size_t)input->hSource);
+                    const SDL_TouchID touchId = (SDL_TouchID)((uintptr_t)input->hSource);
+                    const SDL_FingerID fingerId = (input->dwID + 1);
 
                     /* TODO: Can we use GetRawInputDeviceInfo and HID info to
                        determine if this is a direct or indirect touch device?
@@ -1344,13 +1349,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                     /* FIXME: Should we use the input->dwTime field for the tick source of the timestamp? */
                     if (input->dwFlags & TOUCHEVENTF_DOWN) {
-                        SDL_SendTouch(WIN_GetEventTimestamp(), touchId, input->dwID, data->window, SDL_TRUE, x, y, 1.0f);
+                        SDL_SendTouch(WIN_GetEventTimestamp(), touchId, fingerId, data->window, SDL_TRUE, x, y, 1.0f);
                     }
                     if (input->dwFlags & TOUCHEVENTF_MOVE) {
-                        SDL_SendTouchMotion(WIN_GetEventTimestamp(), touchId, input->dwID, data->window, x, y, 1.0f);
+                        SDL_SendTouchMotion(WIN_GetEventTimestamp(), touchId, fingerId, data->window, x, y, 1.0f);
                     }
                     if (input->dwFlags & TOUCHEVENTF_UP) {
-                        SDL_SendTouch(WIN_GetEventTimestamp(), touchId, input->dwID, data->window, SDL_FALSE, x, y, 1.0f);
+                        SDL_SendTouch(WIN_GetEventTimestamp(), touchId, fingerId, data->window, SDL_FALSE, x, y, 1.0f);
                     }
                 }
             }

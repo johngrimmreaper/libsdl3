@@ -22,6 +22,26 @@
 
 #ifndef SDL_VIDEO_DRIVER_WINDOWS
 
+#if defined(__WIN32__) || defined(__GDK__)
+
+int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
+{
+    (void)name;
+    (void)style;
+    (void)hInst;
+    return 0;
+}
+
+void SDL_UnregisterApp(void)
+{
+}
+
+void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
+{
+}
+
+#endif /* __WIN32__ || __GDK__ */
+
 DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
 SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
 {
@@ -39,7 +59,16 @@ int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
     return SDL_Unsupported();
 }
 
-#endif
+#elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
+
+DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID);
+int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
+{
+    (void)displayID;
+    return SDL_Unsupported();
+}
+
+#endif /* !SDL_VIDEO_DRIVER_WINDOWS */
 
 #ifndef __GDK__
 
@@ -82,10 +111,3 @@ void SDL_iPhoneSetEventPump(SDL_bool enabled)
 }
 #endif
 
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
-int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
-{
-    (void)displayID;
-    return SDL_Unsupported();
-}
-#endif
