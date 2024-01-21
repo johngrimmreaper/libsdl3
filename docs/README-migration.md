@@ -47,6 +47,13 @@ The vi format comments have been removed from source code. Vim users can use the
 The following structures have been renamed:
 - SDL_atomic_t => SDL_AtomicInt
 
+The following functions have been renamed:
+* SDL_AtomicCAS() => SDL_AtomicCompareAndSwap()
+* SDL_AtomicCASPtr() => SDL_AtomicCompareAndSwapPointer()
+* SDL_AtomicLock() => SDL_LockSpinlock()
+* SDL_AtomicTryLock() => SDL_TryLockSpinlock()
+* SDL_AtomicUnlock() => SDL_UnlockSpinlock()
+
 ## SDL_audio.h
 
 The audio subsystem in SDL3 is dramatically different than SDL2. The primary way to play audio is no longer an audio callback; instead you bind SDL_AudioStreams to devices; however, there is still a callback method available if needed.
@@ -618,6 +625,65 @@ be dropped into an SDL3 or SDL2 program, to continue to provide this
 functionality to your app and aid migration. That is located in the
 [SDL_gesture GitHub repository](https://github.com/libsdl-org/SDL_gesture).
 
+## SDL_haptic.h
+
+Gamepads with simple rumble capability no longer show up in the SDL haptics interface, instead you should use SDL_RumbleGamepad().
+
+Rather than iterating over haptic devices using device index, there is a new function SDL_GetHaptics() to get the current list of haptic devices, and new functions to get information about haptic devices from their instance ID:
+```c
+{
+    if (SDL_InitSubSystem(SDL_INIT_HAPTIC) == 0) {
+        int i, num_haptics;
+        SDL_HapticID *haptics = SDL_GetHaptics(&num_haptics);
+        if (haptics) {
+            for (i = 0; i < num_haptics; ++i) {
+                SDL_HapticID instance_id = haptics[i];
+                const char *name = SDL_GetHapticInstanceName(instance_id);
+
+                SDL_Log("Haptic %" SDL_PRIu32 ": %s\n",
+                        instance_id, name ? name : "Unknown");
+            }
+            SDL_free(haptics);
+        }
+        SDL_QuitSubSystem(SDL_INIT_HAPTIC);
+    }
+}
+```
+
+SDL_HapticEffectSupported(), SDL_HapticRumbleSupported(), and SDL_IsJoystickHaptic() now return SDL_bool instead of an optional negative error code.
+
+The following functions have been renamed:
+* SDL_HapticClose() => SDL_CloseHaptic()
+* SDL_HapticDestroyEffect() => SDL_DestroyHapticEffect()
+* SDL_HapticGetEffectStatus() => SDL_GetHapticEffectStatus()
+* SDL_HapticNewEffect() => SDL_CreateHapticEffect()
+* SDL_HapticNumAxes() => SDL_GetNumHapticAxes()
+* SDL_HapticNumEffects() => SDL_GetMaxHapticEffects()
+* SDL_HapticNumEffectsPlaying() => SDL_GetMaxHapticEffectsPlaying()
+* SDL_HapticOpen() => SDL_OpenHaptic()
+* SDL_HapticOpenFromJoystick() => SDL_OpenHapticFromJoystick()
+* SDL_HapticOpenFromMouse() => SDL_OpenHapticFromMouse()
+* SDL_HapticPause() => SDL_PauseHaptic()
+* SDL_HapticQuery() => SDL_GetHapticFeatures()
+* SDL_HapticRumbleInit() => SDL_InitHapticRumble()
+* SDL_HapticRumblePlay() => SDL_PlayHapticRumble()
+* SDL_HapticRumbleStop() => SDL_StopHapticRumble()
+* SDL_HapticRunEffect() => SDL_RunHapticEffect()
+* SDL_HapticSetAutocenter() => SDL_SetHapticAutocenter()
+* SDL_HapticSetGain() => SDL_SetHapticGain()
+* SDL_HapticStopAll() => SDL_StopHapticEffects()
+* SDL_HapticStopEffect() => SDL_StopHapticEffect()
+* SDL_HapticUnpause() => SDL_ResumeHaptic()
+* SDL_HapticUpdateEffect() => SDL_UpdateHapticEffect()
+* SDL_JoystickIsHaptic() => SDL_IsJoystickHaptic()
+* SDL_MouseIsHaptic() => SDL_IsMouseHaptic()
+
+The following functions have been removed:
+* SDL_HapticIndex() - replaced with SDL_GetHapticInstanceID()
+* SDL_HapticName() - replaced with SDL_GetHapticInstanceName()
+* SDL_HapticOpened() - replaced with SDL_GetHapticFromInstanceID()
+* SDL_NumHaptics() - replaced with SDL_GetHaptics()
+
 ## SDL_hints.h
 
 SDL_AddHintCallback() now returns a standard int result instead of void, returning 0 if the function succeeds or a negative error code if there was an error.
@@ -629,15 +695,17 @@ The following hints have been removed:
 * SDL_HINT_IDLE_TIMER_DISABLED - use SDL_DisableScreenSaver instead
 * SDL_HINT_IME_SUPPORT_EXTENDED_TEXT - the normal text editing event has extended text
 * SDL_HINT_MOUSE_RELATIVE_SCALING - mouse coordinates are no longer automatically scaled by the SDL renderer
-* SDL_HINT_RENDER_LOGICAL_SIZE_MODE - the logical size mode is explicitly set with SDL_SetRenderLogicalPresentation()
 * SDL_HINT_RENDER_BATCHING - Render batching is always enabled, apps should call SDL_FlushRenderer() before calling into a lower-level graphics API.
+* SDL_HINT_RENDER_LOGICAL_SIZE_MODE - the logical size mode is explicitly set with SDL_SetRenderLogicalPresentation()
 * SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL - replaced with the "opengl" property in SDL_CreateWindowWithProperties()
 * SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN - replaced with the "vulkan" property in SDL_CreateWindowWithProperties()
 * SDL_HINT_VIDEO_HIGHDPI_DISABLED - high DPI support is always enabled
 * SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT - replaced with the "win32.pixel_format_hwnd" in SDL_CreateWindowWithProperties()
+* SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING - SDL now properly handles the 0x406D1388 Exception if no debugger intercepts it, preventing its propagation.
 * SDL_HINT_VIDEO_X11_FORCE_EGL - use SDL_HINT_VIDEO_FORCE_EGL instead
 * SDL_HINT_VIDEO_X11_XINERAMA - Xinerama no longer supported by the X11 backend
 * SDL_HINT_VIDEO_X11_XVIDMODE - Xvidmode no longer supported by the X11 backend
+* SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING
 
 * Renamed hints SDL_HINT_VIDEODRIVER and SDL_HINT_AUDIODRIVER to SDL_HINT_VIDEO_DRIVER and SDL_HINT_AUDIO_DRIVER
 * Renamed environment variables SDL_VIDEODRIVER and SDL_AUDIODRIVER to SDL_VIDEO_DRIVER and SDL_AUDIO_DRIVER
@@ -650,6 +718,7 @@ The following symbols have been renamed:
 
 The following symbols have been removed:
 * SDL_INIT_NOPARACHUTE
+* SDL_INIT_EVERYTHING - you should only initialize the subsystems you are using
 
 ## SDL_joystick.h
 
@@ -968,6 +1037,7 @@ The following functions have been removed:
 * SDL_SetTextureUserData() - use SDL_GetTextureProperties() instead
 
 The following symbols have been renamed:
+* SDL_RendererFlip => SDL_FlipMode
 * SDL_ScaleModeBest => SDL_SCALEMODE_BEST
 * SDL_ScaleModeLinear => SDL_SCALEMODE_LINEAR
 * SDL_ScaleModeNearest => SDL_SCALEMODE_NEAREST
@@ -1338,6 +1408,10 @@ The following functions have been renamed:
 * SDL_TLSCreate() => SDL_CreateTLS()
 * SDL_TLSGet() => SDL_GetTLS()
 * SDL_TLSSet() => SDL_SetTLS()
+* SDL_ThreadID() => SDL_GetCurrentThreadID()
+
+The following symbols have been renamed:
+* SDL_threadID => SDL_ThreadID
 
 ## SDL_timer.h
 
@@ -1450,7 +1524,7 @@ SDL_GetDesktopDisplayMode() and SDL_GetCurrentDisplayMode() return pointers to d
 
 Windows now have an explicit fullscreen mode that is set, using SDL_SetWindowFullscreenMode(). The fullscreen mode for a window can be queried with SDL_GetWindowFullscreenMode(), which returns a pointer to the mode, or NULL if the window will be fullscreen desktop. SDL_SetWindowFullscreen() just takes a boolean value, setting the correct fullscreen state based on the selected mode.
 
-SDL_WINDOW_FULLSCREEN_DESKTOP has been removed, and you can call SDL_GetWindowFullscreenMode() to see whether an exclusive fullscreen mode will be used or the fullscreen desktop mode will be used when the window is fullscreen.
+SDL_WINDOW_FULLSCREEN_DESKTOP has been removed, and you can call SDL_GetWindowFullscreenMode() to see whether an exclusive fullscreen mode will be used or the borderless fullscreen desktop mode will be used when the window is fullscreen.
 
 SDL_SetWindowBrightness and SDL_SetWindowGammaRamp have been removed from the API, because they interact poorly with modern operating systems and aren't able to limit their effects to the SDL window.
 
