@@ -1,8 +1,6 @@
 libSDL3.so.0 libsdl3-0 #MINVER#
 * Build-Depends-Package: libsdl3-dev
  SDL3_0.0.0@SDL3_0.0.0 3~
- (arch=linux-any)SDL_LinuxSetThreadPriority@SDL3_0.0.0 3~
- (arch=linux-any)SDL_LinuxSetThreadPriorityAndPolicy@SDL3_0.0.0 3~
  SDL_AcquireVideoCaptureFrame@SDL3_0.0.0 3~
  SDL_AddEventWatch@SDL3_0.0.0 3~
  SDL_AddGamepadMapping@SDL3_0.0.0 3~
@@ -12,15 +10,12 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_AddTimer@SDL3_0.0.0 3~
  SDL_AllocateEventMemory@SDL3_0.0.0 3~
  SDL_AtomicAdd@SDL3_0.0.0 3~
- SDL_AtomicCAS@SDL3_0.0.0 3~
- SDL_AtomicCASPtr@SDL3_0.0.0 3~
+ SDL_AtomicCompareAndSwap@SDL3_0.0.0 3~
+ SDL_AtomicCompareAndSwapPointer@SDL3_0.0.0 3~
  SDL_AtomicGet@SDL3_0.0.0 3~
  SDL_AtomicGetPtr@SDL3_0.0.0 3~
- SDL_AtomicLock@SDL3_0.0.0 3~
  SDL_AtomicSet@SDL3_0.0.0 3~
  SDL_AtomicSetPtr@SDL3_0.0.0 3~
- SDL_AtomicTryLock@SDL3_0.0.0 3~
- SDL_AtomicUnlock@SDL3_0.0.0 3~
  SDL_AttachVirtualJoystick@SDL3_0.0.0 3~
  SDL_AttachVirtualJoystickEx@SDL3_0.0.0 3~
  SDL_AudioDevicePaused@SDL3_0.0.0 3~
@@ -41,6 +36,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ClearProperty@SDL3_0.0.0 3~
  SDL_CloseAudioDevice@SDL3_0.0.0 3~
  SDL_CloseGamepad@SDL3_0.0.0 3~
+ SDL_CloseHaptic@SDL3_0.0.0 3~
  SDL_CloseJoystick@SDL3_0.0.0 3~
  SDL_CloseSensor@SDL3_0.0.0 3~
  SDL_CloseVideoCapture@SDL3_0.0.0 3~
@@ -54,6 +50,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_CreateColorCursor@SDL3_0.0.0 3~
  SDL_CreateCondition@SDL3_0.0.0 3~
  SDL_CreateCursor@SDL3_0.0.0 3~
+ SDL_CreateHapticEffect@SDL3_0.0.0 3~
  SDL_CreateMutex@SDL3_0.0.0 3~
  SDL_CreatePalette@SDL3_0.0.0 3~
  SDL_CreatePixelFormat@SDL3_0.0.0 3~
@@ -86,6 +83,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_DestroyAudioStream@SDL3_0.0.0 3~
  SDL_DestroyCondition@SDL3_0.0.0 3~
  SDL_DestroyCursor@SDL3_0.0.0 3~
+ SDL_DestroyHapticEffect@SDL3_0.0.0 3~
  SDL_DestroyMutex@SDL3_0.0.0 3~
  SDL_DestroyPalette@SDL3_0.0.0 3~
  SDL_DestroyPixelFormat@SDL3_0.0.0 3~
@@ -116,6 +114,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_FillSurfaceRects@SDL3_0.0.0 3~
  SDL_FilterEvents@SDL3_0.0.0 3~
  SDL_FlashWindow@SDL3_0.0.0 3~
+ SDL_FlipSurface@SDL3_0.0.0 3~
  SDL_FlushAudioStream@SDL3_0.0.0 3~
  SDL_FlushEvent@SDL3_0.0.0 3~
  SDL_FlushEvents@SDL3_0.0.0 3~
@@ -171,6 +170,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetCurrentDisplayMode@SDL3_0.0.0 3~
  SDL_GetCurrentDisplayOrientation@SDL3_0.0.0 3~
  SDL_GetCurrentRenderOutputSize@SDL3_0.0.0 3~
+ SDL_GetCurrentThreadID@SDL3_0.0.0 3~
  SDL_GetCurrentVideoDriver@SDL3_0.0.0 3~
  SDL_GetCursor@SDL3_0.0.0 3~
  SDL_GetDefaultAssertionHandler@SDL3_0.0.0 3~
@@ -237,6 +237,13 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetGlobalMouseState@SDL3_0.0.0 3~
  SDL_GetGlobalProperties@SDL3_0.0.0 3~
  SDL_GetGrabbedWindow@SDL3_0.0.0 3~
+ SDL_GetHapticEffectStatus@SDL3_0.0.0 3~
+ SDL_GetHapticFeatures@SDL3_0.0.0 3~
+ SDL_GetHapticFromInstanceID@SDL3_0.0.0 3~
+ SDL_GetHapticInstanceID@SDL3_0.0.0 3~
+ SDL_GetHapticInstanceName@SDL3_0.0.0 3~
+ SDL_GetHapticName@SDL3_0.0.0 3~
+ SDL_GetHaptics@SDL3_0.0.0 3~
  SDL_GetHint@SDL3_0.0.0 3~
  SDL_GetHintBoolean@SDL3_0.0.0 3~
  SDL_GetJoystickAxis@SDL3_0.0.0 3~
@@ -276,6 +283,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetKeyboardFocus@SDL3_0.0.0 3~
  SDL_GetKeyboardState@SDL3_0.0.0 3~
  SDL_GetMasksForPixelFormatEnum@SDL3_0.0.0 3~
+ SDL_GetMaxHapticEffects@SDL3_0.0.0 3~
+ SDL_GetMaxHapticEffectsPlaying@SDL3_0.0.0 3~
  SDL_GetMemoryFunctions@SDL3_0.0.0 3~
  SDL_GetModState@SDL3_0.0.0 3~
  SDL_GetMouseFocus@SDL3_0.0.0 3~
@@ -285,6 +294,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetNumAudioDrivers@SDL3_0.0.0 3~
  SDL_GetNumGamepadTouchpadFingers@SDL3_0.0.0 3~
  SDL_GetNumGamepadTouchpads@SDL3_0.0.0 3~
+ SDL_GetNumHapticAxes@SDL3_0.0.0 3~
  SDL_GetNumJoystickAxes@SDL3_0.0.0 3~
  SDL_GetNumJoystickButtons@SDL3_0.0.0 3~
  SDL_GetNumJoystickHats@SDL3_0.0.0 3~
@@ -420,33 +430,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetWindowTitle@SDL3_0.0.0 3~
  SDL_GetYUVConversionMode@SDL3_0.0.0 3~
  SDL_GetYUVConversionModeForResolution@SDL3_0.0.0 3~
- SDL_HapticClose@SDL3_0.0.0 3~
- SDL_HapticDestroyEffect@SDL3_0.0.0 3~
  SDL_HapticEffectSupported@SDL3_0.0.0 3~
- SDL_HapticGetEffectStatus@SDL3_0.0.0 3~
- SDL_HapticIndex@SDL3_0.0.0 3~
- SDL_HapticName@SDL3_0.0.0 3~
- SDL_HapticNewEffect@SDL3_0.0.0 3~
- SDL_HapticNumAxes@SDL3_0.0.0 3~
- SDL_HapticNumEffects@SDL3_0.0.0 3~
- SDL_HapticNumEffectsPlaying@SDL3_0.0.0 3~
- SDL_HapticOpen@SDL3_0.0.0 3~
- SDL_HapticOpenFromJoystick@SDL3_0.0.0 3~
- SDL_HapticOpenFromMouse@SDL3_0.0.0 3~
- SDL_HapticOpened@SDL3_0.0.0 3~
- SDL_HapticPause@SDL3_0.0.0 3~
- SDL_HapticQuery@SDL3_0.0.0 3~
- SDL_HapticRumbleInit@SDL3_0.0.0 3~
- SDL_HapticRumblePlay@SDL3_0.0.0 3~
- SDL_HapticRumbleStop@SDL3_0.0.0 3~
  SDL_HapticRumbleSupported@SDL3_0.0.0 3~
- SDL_HapticRunEffect@SDL3_0.0.0 3~
- SDL_HapticSetAutocenter@SDL3_0.0.0 3~
- SDL_HapticSetGain@SDL3_0.0.0 3~
- SDL_HapticStopAll@SDL3_0.0.0 3~
- SDL_HapticStopEffect@SDL3_0.0.0 3~
- SDL_HapticUnpause@SDL3_0.0.0 3~
- SDL_HapticUpdateEffect@SDL3_0.0.0 3~
  SDL_HasARMSIMD@SDL3_0.0.0 3~
  SDL_HasAVX2@SDL3_0.0.0 3~
  SDL_HasAVX512F@SDL3_0.0.0 3~
@@ -473,16 +458,20 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_HideCursor@SDL3_0.0.0 3~
  SDL_HideWindow@SDL3_0.0.0 3~
  SDL_Init@SDL3_0.0.0 3~
+ SDL_InitHapticRumble@SDL3_0.0.0 3~
  SDL_InitSubSystem@SDL3_0.0.0 3~
  SDL_IsGamepad@SDL3_0.0.0 3~
+ SDL_IsJoystickHaptic@SDL3_0.0.0 3~
  SDL_IsJoystickVirtual@SDL3_0.0.0 3~
+ SDL_IsMouseHaptic@SDL3_0.0.0 3~
  SDL_IsTablet@SDL3_0.0.0 3~
  SDL_JoystickConnected@SDL3_0.0.0 3~
  SDL_JoystickEventsEnabled@SDL3_0.0.0 3~
  SDL_JoystickHasLED@SDL3_0.0.0 3~
  SDL_JoystickHasRumble@SDL3_0.0.0 3~
  SDL_JoystickHasRumbleTriggers@SDL3_0.0.0 3~
- SDL_JoystickIsHaptic@SDL3_0.0.0 3~
+ (arch=linux-any)SDL_LinuxSetThreadPriority@SDL3_0.0.0 3~
+ (arch=linux-any)SDL_LinuxSetThreadPriorityAndPolicy@SDL3_0.0.0 3~
  SDL_LoadBMP@SDL3_0.0.0 3~
  SDL_LoadBMP_RW@SDL3_0.0.0 3~
  SDL_LoadFile@SDL3_0.0.0 3~
@@ -497,6 +486,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_LockProperties@SDL3_0.0.0 3~
  SDL_LockRWLockForReading@SDL3_0.0.0 3~
  SDL_LockRWLockForWriting@SDL3_0.0.0 3~
+ SDL_LockSpinlock@SDL3_0.0.0 3~
  SDL_LockSurface@SDL3_0.0.0 3~
  SDL_LockTexture@SDL3_0.0.0 3~
  SDL_LockTextureToSurface@SDL3_0.0.0 3~
@@ -525,8 +515,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_Metal_GetLayer@SDL3_0.0.0 3~
  SDL_MinimizeWindow@SDL3_0.0.0 3~
  SDL_MixAudioFormat@SDL3_0.0.0 3~
- SDL_MouseIsHaptic@SDL3_0.0.0 3~
- SDL_NumHaptics@SDL3_0.0.0 3~
  SDL_OnApplicationDidBecomeActive@SDL3_0.0.0 3~
  SDL_OnApplicationDidEnterBackground@SDL3_0.0.0 3~
  SDL_OnApplicationDidReceiveMemoryWarning@SDL3_0.0.0 3~
@@ -536,14 +524,19 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_OpenAudioDevice@SDL3_0.0.0 3~
  SDL_OpenAudioDeviceStream@SDL3_0.0.0 3~
  SDL_OpenGamepad@SDL3_0.0.0 3~
+ SDL_OpenHaptic@SDL3_0.0.0 3~
+ SDL_OpenHapticFromJoystick@SDL3_0.0.0 3~
+ SDL_OpenHapticFromMouse@SDL3_0.0.0 3~
  SDL_OpenJoystick@SDL3_0.0.0 3~
  SDL_OpenSensor@SDL3_0.0.0 3~
  SDL_OpenURL@SDL3_0.0.0 3~
  SDL_OpenVideoCapture@SDL3_0.0.0 3~
  SDL_OpenVideoCaptureWithSpec@SDL3_0.0.0 3~
  SDL_PauseAudioDevice@SDL3_0.0.0 3~
+ SDL_PauseHaptic@SDL3_0.0.0 3~
  SDL_PeepEvents@SDL3_0.0.0 3~
  SDL_PenConnected@SDL3_0.0.0 3~
+ SDL_PlayHapticRumble@SDL3_0.0.0 3~
  SDL_PollEvent@SDL3_0.0.0 3~
  SDL_PostSemaphore@SDL3_0.0.0 3~
  SDL_PremultiplyAlpha@SDL3_0.0.0 3~
@@ -571,6 +564,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ReadS32LE@SDL3_0.0.0 3~
  SDL_ReadS64BE@SDL3_0.0.0 3~
  SDL_ReadS64LE@SDL3_0.0.0 3~
+ SDL_ReadSurfacePixel@SDL3_0.0.0 3~
  SDL_ReadU16BE@SDL3_0.0.0 3~
  SDL_ReadU16LE@SDL3_0.0.0 3~
  SDL_ReadU32BE@SDL3_0.0.0 3~
@@ -607,11 +601,13 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ResetKeyboard@SDL3_0.0.0 3~
  SDL_RestoreWindow@SDL3_0.0.0 3~
  SDL_ResumeAudioDevice@SDL3_0.0.0 3~
+ SDL_ResumeHaptic@SDL3_0.0.0 3~
  SDL_RumbleGamepad@SDL3_0.0.0 3~
  SDL_RumbleGamepadTriggers@SDL3_0.0.0 3~
  SDL_RumbleJoystick@SDL3_0.0.0 3~
  SDL_RumbleJoystickTriggers@SDL3_0.0.0 3~
  SDL_RunApp@SDL3_0.0.0 3~
+ SDL_RunHapticEffect@SDL3_0.0.0 3~
  SDL_SIMDGetAlignment@SDL3_0.0.0 3~
  SDL_SaveBMP@SDL3_0.0.0 3~
  SDL_SaveBMP_RW@SDL3_0.0.0 3~
@@ -638,6 +634,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetGamepadMapping@SDL3_0.0.0 3~
  SDL_SetGamepadPlayerIndex@SDL3_0.0.0 3~
  SDL_SetGamepadSensorEnabled@SDL3_0.0.0 3~
+ SDL_SetHapticAutocenter@SDL3_0.0.0 3~
+ SDL_SetHapticGain@SDL3_0.0.0 3~
  SDL_SetHint@SDL3_0.0.0 3~
  SDL_SetHintWithPriority@SDL3_0.0.0 3~
  SDL_SetJoystickEventsEnabled@SDL3_0.0.0 3~
@@ -711,6 +709,9 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SoftStretch@SDL3_0.0.0 3~
  SDL_StartTextInput@SDL3_0.0.0 3~
  SDL_StartVideoCapture@SDL3_0.0.0 3~
+ SDL_StopHapticEffect@SDL3_0.0.0 3~
+ SDL_StopHapticEffects@SDL3_0.0.0 3~
+ SDL_StopHapticRumble@SDL3_0.0.0 3~
  SDL_StopTextInput@SDL3_0.0.0 3~
  SDL_StopVideoCapture@SDL3_0.0.0 3~
  SDL_SurfaceHasColorKey@SDL3_0.0.0 3~
@@ -718,10 +719,10 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SyncWindow@SDL3_0.0.0 3~
  SDL_TextInputActive@SDL3_0.0.0 3~
  SDL_TextInputShown@SDL3_0.0.0 3~
- SDL_ThreadID@SDL3_0.0.0 3~
  SDL_TryLockMutex@SDL3_0.0.0 3~
  SDL_TryLockRWLockForReading@SDL3_0.0.0 3~
  SDL_TryLockRWLockForWriting@SDL3_0.0.0 3~
+ SDL_TryLockSpinlock@SDL3_0.0.0 3~
  SDL_TryWaitSemaphore@SDL3_0.0.0 3~
  SDL_UnbindAudioStream@SDL3_0.0.0 3~
  SDL_UnbindAudioStreams@SDL3_0.0.0 3~
@@ -731,9 +732,11 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_UnlockMutex@SDL3_0.0.0 3~
  SDL_UnlockProperties@SDL3_0.0.0 3~
  SDL_UnlockRWLock@SDL3_0.0.0 3~
+ SDL_UnlockSpinlock@SDL3_0.0.0 3~
  SDL_UnlockSurface@SDL3_0.0.0 3~
  SDL_UnlockTexture@SDL3_0.0.0 3~
  SDL_UpdateGamepads@SDL3_0.0.0 3~
+ SDL_UpdateHapticEffect@SDL3_0.0.0 3~
  SDL_UpdateJoysticks@SDL3_0.0.0 3~
  SDL_UpdateNVTexture@SDL3_0.0.0 3~
  SDL_UpdateSensors@SDL3_0.0.0 3~
