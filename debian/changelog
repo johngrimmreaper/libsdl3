@@ -1,8 +1,9 @@
-libsdl3 (3~git20240121~a28a42c+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20240121~a28a42c+ds-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-3381-ga28a42cfc
+  * d/libsdl3-0.symbols: Update
 
- -- Simon McVittie <smcv@debian.org>  Mon, 22 Jan 2024 12:21:20 +0000
+ -- Simon McVittie <smcv@debian.org>  Mon, 22 Jan 2024 12:35:53 +0000
 
 libsdl3 (3~git20240115~99f6bcf+ds-1) experimental; urgency=medium
 
