@@ -140,9 +140,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GamepadEventsEnabled@SDL3_0.0.0 3~
  SDL_GamepadHasAxis@SDL3_0.0.0 3~
  SDL_GamepadHasButton@SDL3_0.0.0 3~
- SDL_GamepadHasLED@SDL3_0.0.0 3~
- SDL_GamepadHasRumble@SDL3_0.0.0 3~
- SDL_GamepadHasRumbleTriggers@SDL3_0.0.0 3~
  SDL_GamepadHasSensor@SDL3_0.0.0 3~
  SDL_GamepadSensorEnabled@SDL3_0.0.0 3~
  SDL_GetAssertionHandler@SDL3_0.0.0 3~
@@ -198,6 +195,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetGamepadButtonFromString@SDL3_0.0.0 3~
  SDL_GetGamepadButtonLabel@SDL3_0.0.0 3~
  SDL_GetGamepadButtonLabelForType@SDL3_0.0.0 3~
+ SDL_GetGamepadCaps@SDL3_0.0.0 3~
  SDL_GetGamepadFirmwareVersion@SDL3_0.0.0 3~
  SDL_GetGamepadFromInstanceID@SDL3_0.0.0 3~
  SDL_GetGamepadFromPlayerIndex@SDL3_0.0.0 3~
@@ -249,6 +247,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetJoystickAxis@SDL3_0.0.0 3~
  SDL_GetJoystickAxisInitialState@SDL3_0.0.0 3~
  SDL_GetJoystickButton@SDL3_0.0.0 3~
+ SDL_GetJoystickCaps@SDL3_0.0.0 3~
  SDL_GetJoystickFirmwareVersion@SDL3_0.0.0 3~
  SDL_GetJoystickFromInstanceID@SDL3_0.0.0 3~
  SDL_GetJoystickFromPlayerIndex@SDL3_0.0.0 3~
@@ -467,9 +466,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_IsTablet@SDL3_0.0.0 3~
  SDL_JoystickConnected@SDL3_0.0.0 3~
  SDL_JoystickEventsEnabled@SDL3_0.0.0 3~
- SDL_JoystickHasLED@SDL3_0.0.0 3~
- SDL_JoystickHasRumble@SDL3_0.0.0 3~
- SDL_JoystickHasRumbleTriggers@SDL3_0.0.0 3~
  (arch=linux-any)SDL_LinuxSetThreadPriority@SDL3_0.0.0 3~
  (arch=linux-any)SDL_LinuxSetThreadPriorityAndPolicy@SDL3_0.0.0 3~
  SDL_LoadBMP@SDL3_0.0.0 3~

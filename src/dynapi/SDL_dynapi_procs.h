@@ -50,7 +50,7 @@ SDL_DYNAPI_PROC(size_t,SDL_RWprintf,(SDL_RWops *a, SDL_PRINTF_FORMAT_STRING cons
 #undef SDL_CreateThread
 #endif
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c, pfnSDL_CurrentBeginThread d, pfnSDL_CurrentEndThread e),(a,b,c,d,e),return)
 #else
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c),(a,b,c),return)
@@ -60,7 +60,7 @@ SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *
 #undef SDL_CreateThreadWithStackSize
 #endif
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d, pfnSDL_CurrentBeginThread e, pfnSDL_CurrentEndThread f),(a,b,c,d,e,f),return)
 #else
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d),(a,b,c,d),return)
@@ -215,9 +215,6 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadConnected,(SDL_Gamepad *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadEventsEnabled,(void),(),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadHasAxis,(SDL_Gamepad *a, SDL_GamepadAxis b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadHasButton,(SDL_Gamepad *a, SDL_GamepadButton b),(a,b),return)
-SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadHasLED,(SDL_Gamepad *a),(a),return)
-SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadHasRumble,(SDL_Gamepad *a),(a),return)
-SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadHasRumbleTriggers,(SDL_Gamepad *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadHasSensor,(SDL_Gamepad *a, SDL_SensorType b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadSensorEnabled,(SDL_Gamepad *a, SDL_SensorType b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_AssertionHandler,SDL_GetAssertionHandler,(void **a),(a),return)
@@ -491,9 +488,6 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_IsJoystickVirtual,(SDL_JoystickID a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_IsTablet,(void),(),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_JoystickConnected,(SDL_Joystick *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_JoystickEventsEnabled,(void),(),return)
-SDL_DYNAPI_PROC(SDL_bool,SDL_JoystickHasLED,(SDL_Joystick *a),(a),return)
-SDL_DYNAPI_PROC(SDL_bool,SDL_JoystickHasRumble,(SDL_Joystick *a),(a),return)
-SDL_DYNAPI_PROC(SDL_bool,SDL_JoystickHasRumbleTriggers,(SDL_Joystick *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_IsJoystickHaptic,(SDL_Joystick *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadBMP,(const char *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadBMP_RW,(SDL_RWops *a, SDL_bool b),(a,b),return)
@@ -1015,3 +1009,5 @@ SDL_DYNAPI_PROC(SDL_HapticID,SDL_GetHapticInstanceID,(SDL_Haptic *a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetHapticName,(SDL_Haptic *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_ReadSurfacePixel,(SDL_Surface *a, int b, int c, Uint8 *d, Uint8 *e, Uint8 *f, Uint8 *g),(a,b,c,d,e,f,g),return)
 SDL_DYNAPI_PROC(int,SDL_FlipSurface,(SDL_Surface *a, SDL_FlipMode b),(a,b),return)
+SDL_DYNAPI_PROC(Uint32,SDL_GetGamepadCaps,(SDL_Gamepad *a),(a),return)
+SDL_DYNAPI_PROC(Uint32,SDL_GetJoystickCaps,(SDL_Joystick *a),(a),return)

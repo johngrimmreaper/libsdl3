@@ -353,7 +353,7 @@ int SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
 
 Uint32 SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    return SDL_JOYCAP_RUMBLE;
+    return SDL_JOYSTICK_CAP_RUMBLE;
 }
 
 void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
@@ -376,7 +376,7 @@ void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
         result = XINPUTGETBATTERYINFORMATION(joystick->hwdata->userid, BATTERY_DEVTYPE_GAMEPAD, &XBatteryInformation);
     }
 
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     /* XInputOnGameInput doesn't ever change dwPacketNumber, so have to just update every frame */
     UpdateXInputJoystickState(joystick, &XInputState, &XBatteryInformation);
 #else
