@@ -109,11 +109,12 @@ License: Mozilla-permissive and Expat and Zlib
 Files:
  src/video/khronos/EGL/*.h
  src/video/khronos/GLES2/gl2platform.h
+ src/video/khronos/vk_video/*.h
  src/video/khronos/vulkan/*.h
 Copyright:
- 2013-2022 The Khronos Group Inc.
- 2015-2017 Valve Corporation
- 2015-2017 LunarG, Inc.
+ 2014-2024 The Khronos Group Inc.
+ 2015-2023 Valve Corporation
+ 2015-2023 LunarG, Inc.
 License: Apache-2.0
 
 Files: src/video/haiku/SDL_bkeyboard.cc
@@ -163,6 +164,12 @@ Copyright:
  2020 Carlos Garnacho
  2022 Kenny Levinsen
 License: Expat and MIT-open-group
+
+Files:
+ wayland-protocols/kde-output-order-v1.xml
+Copyright:
+ 2022 Xaver Hugl
+License: MIT-CMU
 
 Files: debian/*
 Copyright: 2015-2020, Gianfranco Costamagna <locutusofborg@debian.org>
@@ -479,6 +486,28 @@ License: RSA_Data_Security
  ** These notices must be retained in any copies of any part of this  **
  ** documentation and/or software.                                    **
  ***********************************************************************
+
+License: MIT-CMU
+ By obtaining, using, and/or copying this software and/or its associated
+ documentation, you agree that you have read, understood, and will comply
+ with the following terms and conditions:
+ .
+ Permission to use, copy, modify, and distribute this software and
+ its associated documentation for any purpose and without fee is hereby
+ granted, provided that the above copyright notice appears in all copies,
+ and that both that copyright notice and this permission notice appear
+ in supporting documentation, and that the name of the copyright holder
+ not be used in advertising or publicity pertaining to distribution of
+ the software without specific, written prior permission.
+ .
+ THE COPYRIGHT HOLDER DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY
+ SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ RESULTING FROM THE LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+Comment: SPDX: MIT-CMU
 
 License: MIT-open-group
  Permission to use, copy, modify, distribute, and sell this
