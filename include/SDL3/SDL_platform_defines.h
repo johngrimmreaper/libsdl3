@@ -86,12 +86,15 @@
 #ifndef TARGET_OS_SIMULATOR
 #define TARGET_OS_SIMULATOR 0
 #endif
-#ifndef TARGET_OS_XR
-#define TARGET_OS_XR 0
+#ifndef TARGET_OS_VISION
+#define TARGET_OS_VISION 0
 #endif
 
 #if TARGET_OS_TV
 #define SDL_PLATFORM_TVOS   1
+#endif
+#if TARGET_OS_VISION
+#define SDL_PLATFORM_VISIONOS 1
 #endif
 #if TARGET_OS_IPHONE
 #define SDL_PLATFORM_IOS    1
@@ -132,7 +135,9 @@
 #define SDL_PLATFORM_CYGWIN 1
 #endif
 
-#if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN) || defined(__MINGW32__)
+#if defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
+#define SDL_PLATFORM_WINDOWS  1    /* Win32 api and Windows-based OSs */
+
 /* Try to find out if we're compiling for WinRT, GDK or non-WinRT/GDK */
 #if defined(_MSC_VER) && defined(__has_include)
 #if __has_include(<winapifamily.h>)
@@ -170,13 +175,10 @@
 #elif defined(_GAMING_XBOX_SCARLETT)
 #define SDL_PLATFORM_XBOXSERIES 1
 #else
-#define SDL_PLATFORM_WINDOWS    1
+#define SDL_PLATFORM_WIN32      1
 #endif
 #endif /* defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN) */
 
-#ifdef SDL_PLATFORM_WINDOWS
-#define SDL_PLATFORM_WIN32  1
-#endif
 /* This is to support generic "any GDK" separate from a platform-specific GDK */
 #if defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 #define SDL_PLATFORM_GDK    1

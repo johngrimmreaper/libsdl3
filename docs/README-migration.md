@@ -565,9 +565,9 @@ The following functions have been removed:
 * SDL_GameControllerEventState() - replaced with SDL_SetGamepadEventsEnabled() and SDL_GamepadEventsEnabled()
 * SDL_GameControllerGetBindForAxis() - replaced with SDL_GetGamepadBindings()
 * SDL_GameControllerGetBindForButton() - replaced with SDL_GetGamepadBindings()
-* SDL_GameControllerHasLED() - replaced with SDL_GetGamepadCaps()
-* SDL_GameControllerHasRumble() - replaced with SDL_GetGamepadCaps()
-* SDL_GameControllerHasRumbleTriggers() - replaced with SDL_GetGamepadCaps()
+* SDL_GameControllerHasLED() - replaced with SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN
+* SDL_GameControllerHasRumble() - replaced with SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN
+* SDL_GameControllerHasRumbleTriggers() - replaced with SDL_PROP_GAMEPAD_CAP_TRIGGER_RUMBLE_BOOLEAN
 * SDL_GameControllerMappingForDeviceIndex() - replaced with SDL_GetGamepadInstanceMapping()
 * SDL_GameControllerMappingForIndex() - replaced with SDL_GetGamepadMappings()
 * SDL_GameControllerNameForIndex() - replaced with SDL_GetGamepadInstanceName()
@@ -811,9 +811,9 @@ The following functions have been removed:
 * SDL_JoystickGetDeviceProductVersion() - replaced with SDL_GetJoystickInstanceProductVersion()
 * SDL_JoystickGetDeviceType() - replaced with SDL_GetJoystickInstanceType()
 * SDL_JoystickGetDeviceVendor() - replaced with SDL_GetJoystickInstanceVendor()
-* SDL_JoystickHasLED() - replaced with SDL_GetJoystickCaps()
-* SDL_JoystickHasRumble() - replaced with SDL_GetJoystickCaps()
-* SDL_JoystickHasRumbleTriggers() - replaced with SDL_GetJoystickCaps()
+* SDL_JoystickHasLED() - replaced with SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN
+* SDL_JoystickHasRumble() - replaced with SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN
+* SDL_JoystickHasRumbleTriggers() - replaced with SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickInstanceName()
 * SDL_JoystickNumBalls() - API has been removed, see https://github.com/libsdl-org/SDL/issues/6766
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
@@ -861,7 +861,15 @@ SDL3 doesn't have a static libSDLmain to link against anymore.
 Instead SDL_main.h is now a header-only library **and not included by SDL.h anymore**.
 
 Using it is really simple: Just `#include <SDL3/SDL_main.h>` in the source file with your standard
-`int main(int argc, char* argv[])` function.
+`int main(int argc, char* argv[])` function. See docs/README-main-functions.md for details.
+
+Several platform-specific entry point functions have been removed as unnecessary. If for some reason you explicitly need them, here are easy replacements:
+
+```c
+#define SDL_WinRTRunApp(MAIN_FUNC, RESERVED)  SDL_RunApp(0, NULL, MAIN_FUNC, RESERVED)
+#define SDL_UIKitRunApp(ARGC, ARGV, MAIN_FUNC)  SDL_RunApp(ARGC, ARGV, MAIN_FUNC, NULL)
+#define SDL_GDKRunApp(MAIN_FUNC, RESERVED)  SDL_RunApp(0, NULL, MAIN_FUNC, RESERVED)
+```
 
 ## SDL_metal.h
 
@@ -938,11 +946,6 @@ The following symbols have been renamed:
 
 ## SDL_platform.h
 
-The following platform preprocessor macros have been removed:
-* __DREAMCAST__
-* __NACL__
-* __PNACL__
-
 The following platform preprocessor macros have been renamed:
 
 | SDL2              | SDL3                      |
@@ -975,12 +978,21 @@ The following platform preprocessor macros have been renamed:
 | `__TVOS__`        | `SDL_PLATFORM_TVOS`       |
 | `__unix__`        | `SDL_PLATFORM_UNI`        |
 | `__VITA__`        | `SDL_PLATFORM_VITA`       |
-| `__WIN32__`       | `SDL_PLATFORM_WINRT`      |
-| `__WINDOWS__`     | `SDL_PLATFORM_WINDOWS`    |
+| `__WIN32__`       | `SDL_PLATFORM_WIN32`      |
 | `__WINGDK__`      | `SDL_PLATFORM_WINGDK`     |
 | `__WINRT__`       | `SDL_PLATFORM_WINRT`      |
 | `__XBOXONE__`     | `SDL_PLATFORM_XBOXONE`    |
 | `__XBOXSERIES__`  | `SDL_PLATFORM_XBOXSERIES` |
+
+You can use the Python script [rename_macros.py](https://github.com/libsdl-org/SDL/blob/main/build-scripts/rename_macros.py) to automatically rename these in your source code.
+
+A new macro `SDL_PLATFORM_WINDOWS` has been added that is true for all Windows platforms, including Xbox, GDK, etc.
+
+The following platform preprocessor macros have been removed:
+* `__DREAMCAST__`
+* `__NACL__`
+* `__PNACL__`
+* `__WINDOWS__`
 
 ## SDL_rect.h
 
@@ -1429,25 +1441,25 @@ The information previously available in SDL_GetWindowWMInfo() is now available a
 becomes:
 ```c
 #if defined(SDL_PLATFORM_WIN32)
-    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_WIN32_HWND_POINTER, NULL);
+    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
     if (hwnd) {
         ...
     }
 #elif defined(SDL_PLATFORM_MACOS)
-    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_COCOA_WINDOW_POINTER, NULL);
+    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
     if (nswindow) {
         ...
     }
 #elif defined(SDL_PLATFORM_LINUX)
     if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
-        Display *xdisplay = (Display *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_X11_DISPLAY_POINTER, NULL);
-        Window xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_X11_WINDOW_NUMBER, 0);
+        Display *xdisplay = (Display *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+        Window xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
         if (xdisplay && xwindow) {
             ...
         }
     } else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
-        struct wl_display *display = (struct wl_display *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
-        struct wl_surface *surface = (struct wl_surface *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+        struct wl_display *display = (struct wl_display *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+        struct wl_surface *surface = (struct wl_surface *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
         if (display && surface) {
             ...
         }
@@ -1497,6 +1509,8 @@ SDL_GetNumTouchFingers() returns a negative error code if there was an error.
 
 SDL_GetTouchName is replaced with SDL_GetTouchDeviceName(), which takes an SDL_TouchID instead of an index.
 
+SDL_TouchID and SDL_FingerID are now Uint64 with 0 being an invalid value.
+
 The following functions have been removed:
 * SDL_GetNumTouchDevices() - replaced with SDL_GetTouchDevices()
 * SDL_GetTouchDevice() - replaced with SDL_GetTouchDevices()
@@ -1508,6 +1522,8 @@ SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in S
 
 
 ## SDL_video.h
+
+Several video backends have had their names lower-cased ("kmsdrm", "rpi", "android", "psp", "ps2", "vita"). SDL already does a case-insensitive compare for SDL_HINT_VIDEO_DRIVER tests, but if your app is calling SDL_GetVideoDriver() or SDL_GetCurrentVideoDriver() and doing case-sensitive compares on those strings, please update your code.
 
 SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific video driver using SDL_VIDEO_DRIVER hint.
 
@@ -1534,11 +1550,11 @@ Rather than iterating over displays using display index, there is a new function
 SDL_CreateWindow() has been simplified and no longer takes a window position. You can use SDL_CreateWindowWithProperties() if you need to set the window position when creating it, e.g.
 ```c
     SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_SetStringProperty(props, SDL_PROPERTY_WINDOW_CREATE_TITLE_STRING, title);
-    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_X_NUMBER, x);
-    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_Y_NUMBER, y);
-    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER, width);
-    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER, height);
+    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, title);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, x);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, y);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, width);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, height);
     SDL_SetNumberProperty(props, "flags", flags);
     pWindow = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
