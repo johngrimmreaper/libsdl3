@@ -196,8 +196,14 @@ typedef enum
       (SDL_PIXELORDER(format) == SDL_PACKEDORDER_BGRA))))
 
 #define SDL_ISPIXELFORMAT_10BIT(format)    \
-      ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED32) && \
-       (SDL_PIXELLAYOUT(format) == SDL_PACKEDLAYOUT_2101010))
+      (!SDL_ISPIXELFORMAT_FOURCC(format) && \
+       ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED32) && \
+        (SDL_PIXELLAYOUT(format) == SDL_PACKEDLAYOUT_2101010)))
+
+#define SDL_ISPIXELFORMAT_FLOAT(format)    \
+      (!SDL_ISPIXELFORMAT_FOURCC(format) && \
+       ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF16) || \
+        (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF32)))
 
 /* The flag is set to 1 because 0x1? is not in the printable ASCII range */
 #define SDL_ISPIXELFORMAT_FOURCC(format)    \
@@ -320,40 +326,58 @@ typedef enum
                                SDL_PACKEDLAYOUT_2101010, 32, 4),
     SDL_PIXELFORMAT_RGB48 =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_RGB, 0,
-                               48, 3),
+                               48, 6),
     SDL_PIXELFORMAT_BGR48 =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_BGR, 0,
-                               48, 3),
+                               48, 6),
     SDL_PIXELFORMAT_RGBA64 =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_RGBA, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_ARGB64 =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_ARGB, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_BGRA64 =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_BGRA, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_ABGR64 =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_ABGR, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_RGB48_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_RGB, 0,
-                               48, 3),
+                               48, 6),
     SDL_PIXELFORMAT_BGR48_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_BGR, 0,
-                               48, 3),
+                               48, 6),
     SDL_PIXELFORMAT_RGBA64_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_RGBA, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_ARGB64_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_ARGB, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_BGRA64_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_BGRA, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_ABGR64_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_ABGR, 0,
-                               64, 4),
+                               64, 8),
+    SDL_PIXELFORMAT_RGB96_FLOAT =
+        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_RGB, 0,
+                               96, 12),
+    SDL_PIXELFORMAT_BGR96_FLOAT =
+        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_BGR, 0,
+                               96, 12),
+    SDL_PIXELFORMAT_RGBA128_FLOAT =
+        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_RGBA, 0,
+                               128, 16),
+    SDL_PIXELFORMAT_ARGB128_FLOAT =
+        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_ARGB, 0,
+                               128, 16),
+    SDL_PIXELFORMAT_BGRA128_FLOAT =
+        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_BGRA, 0,
+                               128, 16),
+    SDL_PIXELFORMAT_ABGR128_FLOAT =
+        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_ABGR, 0,
+                               128, 16),
 
     /* Aliases for RGBA byte arrays of color data, for the current platform */
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -482,7 +506,7 @@ typedef enum
     SDL_TRANSFER_CHARACTERISTICS_PQ = 16,           /**< SMPTE ST 2084 for 10-, 12-, 14- and 16-bit systems */
     SDL_TRANSFER_CHARACTERISTICS_SMPTE428 = 17,     /**< SMPTE ST 428-1 */
     SDL_TRANSFER_CHARACTERISTICS_HLG = 18,          /**< ARIB STD-B67, known as "Hybrid log-gamma" */
-    SDL_TRANSFER_COEFFICIENTS_CUSTOM = 31
+    SDL_TRANSFER_CHARACTERISTICS_CUSTOM = 31
 } SDL_TransferCharacteristics;
 
 /**
@@ -564,7 +588,7 @@ typedef enum
                               SDL_CHROMA_LOCATION_LEFT),
     SDL_COLORSPACE_BT601_FULL =     /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601 */
         SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                              SDL_COLOR_RANGE_LIMITED,
+                              SDL_COLOR_RANGE_FULL,
                               SDL_COLOR_PRIMARIES_BT601,
                               SDL_TRANSFER_CHARACTERISTICS_BT601,
                               SDL_MATRIX_COEFFICIENTS_BT601,
@@ -578,7 +602,7 @@ typedef enum
                               SDL_CHROMA_LOCATION_LEFT),
     SDL_COLORSPACE_BT709_FULL =     /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709 */
         SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                              SDL_COLOR_RANGE_LIMITED,
+                              SDL_COLOR_RANGE_FULL,
                               SDL_COLOR_PRIMARIES_BT709,
                               SDL_TRANSFER_CHARACTERISTICS_BT709,
                               SDL_MATRIX_COEFFICIENTS_BT709,
@@ -601,6 +625,19 @@ typedef struct SDL_Color
     Uint8 a;
 } SDL_Color;
 #define SDL_Colour SDL_Color
+
+/**
+ * The bits of this structure can be directly reinterpreted as a float-packed
+ * color which uses the SDL_PIXELFORMAT_RGBA128_FLOAT format
+ */
+typedef struct SDL_FColor
+{
+    float r;
+    float g;
+    float b;
+    float a;
+} SDL_FColor;
+#define SDL_FColour SDL_FColor
 
 typedef struct SDL_Palette
 {
