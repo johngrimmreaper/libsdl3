@@ -7,10 +7,15 @@ Files-Excluded: Android.mk
                 src/hidapi/documentation/*.png
                 src/hidapi/*/*.sln
                 src/hidapi/*/*.vcproj
+                src/render/direct3d/D3D9_*Shader*.h
+                src/render/direct3d11/D3D11_*Shader*.h
+                src/render/direct3d12/D3D12_*RootSig*.h
+                src/render/direct3d12/D3D12_*Shader*.h
                 src/render/metal/SDL_shaders_metal_*.h
                 test/android
                 test/emscripten
                 test/gamepad_*.h
+                test/glass.h
                 test/icon.h
                 test/n3ds
                 test/unifont-*
