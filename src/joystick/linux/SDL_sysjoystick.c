@@ -991,7 +991,7 @@ static int LINUX_JoystickInit(void)
 {
     const char *devices = SDL_GetHint(SDL_HINT_JOYSTICK_DEVICE);
 
-    SDL_classic_joysticks = SDL_GetHintBoolean(SDL_HINT_LINUX_JOYSTICK_CLASSIC, SDL_FALSE);
+    SDL_classic_joysticks = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_LINUX_CLASSIC, SDL_FALSE);
 
     enumeration_method = ENUMERATION_UNSET;
 
@@ -1178,7 +1178,7 @@ static SDL_bool GuessIfAxesAreDigitalHat(struct input_absinfo *absinfo_x, struct
     }
 
     /* If the hint says so, treat all hats as digital. */
-    if (SDL_GetHintBoolean(SDL_HINT_LINUX_DIGITAL_HATS, SDL_FALSE)) {
+    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_LINUX_DIGITAL_HATS, SDL_FALSE)) {
         return SDL_TRUE;
     }
 
@@ -1204,8 +1204,8 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd, int fd_sensor)
     unsigned long relbit[NBITS(REL_MAX)] = { 0 };
     unsigned long ffbit[NBITS(FF_MAX)] = { 0 };
     Uint8 key_pam_size, abs_pam_size;
-    SDL_bool use_deadzones = SDL_GetHintBoolean(SDL_HINT_LINUX_JOYSTICK_DEADZONES, SDL_FALSE);
-    SDL_bool use_hat_deadzones = SDL_GetHintBoolean(SDL_HINT_LINUX_HAT_DEADZONES, SDL_TRUE);
+    SDL_bool use_deadzones = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_LINUX_DEADZONES, SDL_FALSE);
+    SDL_bool use_hat_deadzones = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_LINUX_HAT_DEADZONES, SDL_TRUE);
 
     SDL_AssertJoysticksLocked();
 
