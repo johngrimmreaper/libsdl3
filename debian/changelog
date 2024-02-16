@@ -1,3 +1,11 @@
+libsdl3 (3~git20240216~cb95653+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream snapshot prerelease-3.0.0-3646-gcb9565354
+  * d/copyright: Exclude more generated files
+  * d/rules: Regenerate test/glass.h from test/glass.bmp
+
+ -- Simon McVittie <smcv@debian.org>  Fri, 16 Feb 2024 11:08:20 +0000
+
 libsdl3 (3~git20240202~7c089f4+ds-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-3508-g7c089f4e5
