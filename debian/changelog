@@ -1,6 +1,6 @@
-libsdl3 (3~git20240307~57a160c+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20240307~f53bdc9+ds-1) UNRELEASED; urgency=medium
 
-  * New upstream snapshot prerelease-3.0.0-3894-g57a160c9a
+  * New upstream snapshot prerelease-3.0.0-3895-gf53bdc953
   * d/copyright: Exclude more generated files
   * d/rules: Regenerate more generated files
     - d/control: Build-depend on glslang-tools, for glslangValidator
