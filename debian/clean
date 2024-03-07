@@ -1,3 +1,5 @@
 src/render/vulkan/VULKAN_PixelShader_*.h
 src/render/vulkan/VULKAN_VertexShader.h
 test/gamepad_*.h
+test/glass.h
+test/icon.h
