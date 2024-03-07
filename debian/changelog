@@ -2,9 +2,12 @@ libsdl3 (3~git20240307~57a160c+ds-1) UNRELEASED; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-3894-g57a160c9a
   * d/copyright: Exclude more generated files
-  * d/rules: Regenerate test/glass.h from test/glass.bmp
+  * d/rules: Regenerate more generated files
+    - d/control: Build-depend on glslang-tools, for glslangValidator
+  * d/clean: Clean up more generated files
+  * d/libsdl3-0.symbols: Update
 
- -- Simon McVittie <smcv@debian.org>  Fri, 16 Feb 2024 11:08:20 +0000
+ -- Simon McVittie <smcv@debian.org>  Thu, 07 Mar 2024 13:26:25 +0000
 
 libsdl3 (3~git20240202~7c089f4+ds-1) experimental; urgency=medium
 
