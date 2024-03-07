@@ -1,13 +1,14 @@
 libSDL3.so.0 libsdl3-0 #MINVER#
 * Build-Depends-Package: libsdl3-dev
  SDL3_0.0.0@SDL3_0.0.0 3~
- SDL_AcquireVideoCaptureFrame@SDL3_0.0.0 3~
+ SDL_AcquireCameraFrame@SDL3_0.0.0 3~
  SDL_AddEventWatch@SDL3_0.0.0 3~
  SDL_AddGamepadMapping@SDL3_0.0.0 3~
  SDL_AddGamepadMappingsFromFile@SDL3_0.0.0 3~
  SDL_AddGamepadMappingsFromRW@SDL3_0.0.0 3~
  SDL_AddHintCallback@SDL3_0.0.0 3~
  SDL_AddTimer@SDL3_0.0.0 3~
+ SDL_AddVulkanRenderSemaphores@SDL3_0.0.0 3~
  SDL_AllocateEventMemory@SDL3_0.0.0 3~
  SDL_AtomicAdd@SDL3_0.0.0 3~
  SDL_AtomicCompareAndSwap@SDL3_0.0.0 3~
@@ -32,14 +33,13 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ClearClipboardData@SDL3_0.0.0 3~
  SDL_ClearComposition@SDL3_0.0.0 3~
  SDL_ClearError@SDL3_0.0.0 3~
- SDL_ClearHints@SDL3_0.0.0 3~
  SDL_ClearProperty@SDL3_0.0.0 3~
  SDL_CloseAudioDevice@SDL3_0.0.0 3~
+ SDL_CloseCamera@SDL3_0.0.0 3~
  SDL_CloseGamepad@SDL3_0.0.0 3~
  SDL_CloseHaptic@SDL3_0.0.0 3~
  SDL_CloseJoystick@SDL3_0.0.0 3~
  SDL_CloseSensor@SDL3_0.0.0 3~
- SDL_CloseVideoCapture@SDL3_0.0.0 3~
  SDL_ComposeCustomBlendMode@SDL3_0.0.0 3~
  SDL_ConvertAudioSamples@SDL3_0.0.0 3~
  SDL_ConvertEventToRenderCoordinates@SDL3_0.0.0 3~
@@ -48,6 +48,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ConvertSurface@SDL3_0.0.0 3~
  SDL_ConvertSurfaceFormat@SDL3_0.0.0 3~
  SDL_ConvertSurfaceFormatAndColorspace@SDL3_0.0.0 3~
+ SDL_CopyProperties@SDL3_0.0.0 3~
  SDL_CreateAudioStream@SDL3_0.0.0 3~
  SDL_CreateColorCursor@SDL3_0.0.0 3~
  SDL_CreateCondition@SDL3_0.0.0 3~
@@ -162,10 +163,20 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetBooleanProperty@SDL3_0.0.0 3~
  SDL_GetCPUCacheLineSize@SDL3_0.0.0 3~
  SDL_GetCPUCount@SDL3_0.0.0 3~
+ SDL_GetCameraDeviceName@SDL3_0.0.0 3~
+ SDL_GetCameraDevicePosition@SDL3_0.0.0 3~
+ SDL_GetCameraDeviceSupportedFormats@SDL3_0.0.0 3~
+ SDL_GetCameraDevices@SDL3_0.0.0 3~
+ SDL_GetCameraDriver@SDL3_0.0.0 3~
+ SDL_GetCameraFormat@SDL3_0.0.0 3~
+ SDL_GetCameraInstanceID@SDL3_0.0.0 3~
+ SDL_GetCameraPermissionState@SDL3_0.0.0 3~
+ SDL_GetCameraProperties@SDL3_0.0.0 3~
  SDL_GetClipboardData@SDL3_0.0.0 3~
  SDL_GetClipboardText@SDL3_0.0.0 3~
  SDL_GetClosestFullscreenDisplayMode@SDL3_0.0.0 3~
  SDL_GetCurrentAudioDriver@SDL3_0.0.0 3~
+ SDL_GetCurrentCameraDriver@SDL3_0.0.0 3~
  SDL_GetCurrentDisplayMode@SDL3_0.0.0 3~
  SDL_GetCurrentDisplayOrientation@SDL3_0.0.0 3~
  SDL_GetCurrentRenderOutputSize@SDL3_0.0.0 3~
@@ -291,6 +302,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetNaturalDisplayOrientation@SDL3_0.0.0 3~
  SDL_GetNumAllocations@SDL3_0.0.0 3~
  SDL_GetNumAudioDrivers@SDL3_0.0.0 3~
+ SDL_GetNumCameraDrivers@SDL3_0.0.0 3~
  SDL_GetNumGamepadTouchpadFingers@SDL3_0.0.0 3~
  SDL_GetNumGamepadTouchpads@SDL3_0.0.0 3~
  SDL_GetNumHapticAxes@SDL3_0.0.0 3~
@@ -299,8 +311,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetNumJoystickHats@SDL3_0.0.0 3~
  SDL_GetNumRenderDrivers@SDL3_0.0.0 3~
  SDL_GetNumTouchFingers@SDL3_0.0.0 3~
- SDL_GetNumVideoCaptureFormats@SDL3_0.0.0 3~
- SDL_GetNumVideoCaptureFrameSizes@SDL3_0.0.0 3~
  SDL_GetNumVideoDrivers@SDL3_0.0.0 3~
  SDL_GetNumberProperty@SDL3_0.0.0 3~
  SDL_GetOriginalMemoryFunctions@SDL3_0.0.0 3~
@@ -339,10 +349,10 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetRelativeMouseMode@SDL3_0.0.0 3~
  SDL_GetRelativeMouseState@SDL3_0.0.0 3~
  SDL_GetRenderClipRect@SDL3_0.0.0 3~
+ SDL_GetRenderColorScale@SDL3_0.0.0 3~
  SDL_GetRenderDrawBlendMode@SDL3_0.0.0 3~
  SDL_GetRenderDrawColor@SDL3_0.0.0 3~
  SDL_GetRenderDrawColorFloat@SDL3_0.0.0 3~
- SDL_GetRenderDrawColorspace@SDL3_0.0.0 3~
  SDL_GetRenderDriver@SDL3_0.0.0 3~
  SDL_GetRenderLogicalPresentation@SDL3_0.0.0 3~
  SDL_GetRenderMetalCommandEncoder@SDL3_0.0.0 3~
@@ -402,12 +412,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetTouchFinger@SDL3_0.0.0 3~
  SDL_GetUserFolder@SDL3_0.0.0 3~
  SDL_GetVersion@SDL3_0.0.0 3~
- SDL_GetVideoCaptureDeviceName@SDL3_0.0.0 3~
- SDL_GetVideoCaptureDevices@SDL3_0.0.0 3~
- SDL_GetVideoCaptureFormat@SDL3_0.0.0 3~
- SDL_GetVideoCaptureFrameSize@SDL3_0.0.0 3~
- SDL_GetVideoCaptureSpec@SDL3_0.0.0 3~
- SDL_GetVideoCaptureStatus@SDL3_0.0.0 3~
  SDL_GetVideoDriver@SDL3_0.0.0 3~
  SDL_GetWindowBordersSize@SDL3_0.0.0 3~
  SDL_GetWindowDisplayScale@SDL3_0.0.0 3~
@@ -432,8 +436,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetWindowSizeInPixels@SDL3_0.0.0 3~
  SDL_GetWindowSurface@SDL3_0.0.0 3~
  SDL_GetWindowTitle@SDL3_0.0.0 3~
- SDL_GetYUVConversionMode@SDL3_0.0.0 3~
- SDL_GetYUVConversionModeForResolution@SDL3_0.0.0 3~
  SDL_HapticEffectSupported@SDL3_0.0.0 3~
  SDL_HapticRumbleSupported@SDL3_0.0.0 3~
  SDL_HasARMSIMD@SDL3_0.0.0 3~
@@ -450,6 +452,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_HasMMX@SDL3_0.0.0 3~
  SDL_HasNEON@SDL3_0.0.0 3~
  SDL_HasPrimarySelectionText@SDL3_0.0.0 3~
+ SDL_HasProperty@SDL3_0.0.0 3~
  SDL_HasRectIntersection@SDL3_0.0.0 3~
  SDL_HasRectIntersectionFloat@SDL3_0.0.0 3~
  SDL_HasSSE2@SDL3_0.0.0 3~
@@ -458,7 +461,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_HasSSE42@SDL3_0.0.0 3~
  SDL_HasSSE@SDL3_0.0.0 3~
  SDL_HasScreenKeyboardSupport@SDL3_0.0.0 3~
- SDL_HasWindowSurface@SDL3_0.0.0 3~
  SDL_HideCursor@SDL3_0.0.0 3~
  SDL_HideWindow@SDL3_0.0.0 3~
  SDL_Init@SDL3_0.0.0 3~
@@ -524,6 +526,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_OnApplicationWillTerminate@SDL3_0.0.0 3~
  SDL_OpenAudioDevice@SDL3_0.0.0 3~
  SDL_OpenAudioDeviceStream@SDL3_0.0.0 3~
+ SDL_OpenCameraDevice@SDL3_0.0.0 3~
  SDL_OpenGamepad@SDL3_0.0.0 3~
  SDL_OpenHaptic@SDL3_0.0.0 3~
  SDL_OpenHapticFromJoystick@SDL3_0.0.0 3~
@@ -531,8 +534,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_OpenJoystick@SDL3_0.0.0 3~
  SDL_OpenSensor@SDL3_0.0.0 3~
  SDL_OpenURL@SDL3_0.0.0 3~
- SDL_OpenVideoCapture@SDL3_0.0.0 3~
- SDL_OpenVideoCaptureWithSpec@SDL3_0.0.0 3~
  SDL_PauseAudioDevice@SDL3_0.0.0 3~
  SDL_PauseHaptic@SDL3_0.0.0 3~
  SDL_PeepEvents@SDL3_0.0.0 3~
@@ -574,7 +575,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ReadU64LE@SDL3_0.0.0 3~
  SDL_ReadU8@SDL3_0.0.0 3~
  SDL_RegisterEvents@SDL3_0.0.0 3~
- SDL_ReleaseVideoCaptureFrame@SDL3_0.0.0 3~
+ SDL_ReleaseCameraFrame@SDL3_0.0.0 3~
  SDL_ReloadGamepadMappings@SDL3_0.0.0 3~
  SDL_RemoveTimer@SDL3_0.0.0 3~
  SDL_RenderClear@SDL3_0.0.0 3~
@@ -585,6 +586,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_RenderFillRects@SDL3_0.0.0 3~
  SDL_RenderGeometry@SDL3_0.0.0 3~
  SDL_RenderGeometryRaw@SDL3_0.0.0 3~
+ SDL_RenderGeometryRawFloat@SDL3_0.0.0 3~
  SDL_RenderLine@SDL3_0.0.0 3~
  SDL_RenderLines@SDL3_0.0.0 3~
  SDL_RenderPoint@SDL3_0.0.0 3~
@@ -595,6 +597,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_RenderRects@SDL3_0.0.0 3~
  SDL_RenderTexture@SDL3_0.0.0 3~
  SDL_RenderTextureRotated@SDL3_0.0.0 3~
+ SDL_RenderViewportSet@SDL3_0.0.0 3~
  SDL_ReportAssertion@SDL3_0.0.0 3~
  SDL_ResetAssertionReport@SDL3_0.0.0 3~
  SDL_ResetHint@SDL3_0.0.0 3~
@@ -656,10 +659,10 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetPropertyWithCleanup@SDL3_0.0.0 3~
  SDL_SetRelativeMouseMode@SDL3_0.0.0 3~
  SDL_SetRenderClipRect@SDL3_0.0.0 3~
+ SDL_SetRenderColorScale@SDL3_0.0.0 3~
  SDL_SetRenderDrawBlendMode@SDL3_0.0.0 3~
  SDL_SetRenderDrawColor@SDL3_0.0.0 3~
  SDL_SetRenderDrawColorFloat@SDL3_0.0.0 3~
- SDL_SetRenderDrawColorspace@SDL3_0.0.0 3~
  SDL_SetRenderLogicalPresentation@SDL3_0.0.0 3~
  SDL_SetRenderScale@SDL3_0.0.0 3~
  SDL_SetRenderTarget@SDL3_0.0.0 3~
@@ -683,7 +686,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetTextureColorModFloat@SDL3_0.0.0 3~
  SDL_SetTextureScaleMode@SDL3_0.0.0 3~
  SDL_SetThreadPriority@SDL3_0.0.0 3~
- SDL_SetVideoCaptureSpec@SDL3_0.0.0 3~
  SDL_SetWindowAlwaysOnTop@SDL3_0.0.0 3~
  SDL_SetWindowBordered@SDL3_0.0.0 3~
  SDL_SetWindowFocusable@SDL3_0.0.0 3~
@@ -702,10 +704,10 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetWindowOpacity@SDL3_0.0.0 3~
  SDL_SetWindowPosition@SDL3_0.0.0 3~
  SDL_SetWindowResizable@SDL3_0.0.0 3~
+ SDL_SetWindowShape@SDL3_0.0.0 3~
  SDL_SetWindowSize@SDL3_0.0.0 3~
  SDL_SetWindowTitle@SDL3_0.0.0 3~
  SDL_SetX11EventHook@SDL3_0.0.0 3~
- SDL_SetYUVConversionMode@SDL3_0.0.0 3~
  SDL_ShowCursor@SDL3_0.0.0 3~
  SDL_ShowMessageBox@SDL3_0.0.0 3~
  SDL_ShowSimpleMessageBox@SDL3_0.0.0 3~
@@ -714,12 +716,10 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SignalCondition@SDL3_0.0.0 3~
  SDL_SoftStretch@SDL3_0.0.0 3~
  SDL_StartTextInput@SDL3_0.0.0 3~
- SDL_StartVideoCapture@SDL3_0.0.0 3~
  SDL_StopHapticEffect@SDL3_0.0.0 3~
  SDL_StopHapticEffects@SDL3_0.0.0 3~
  SDL_StopHapticRumble@SDL3_0.0.0 3~
  SDL_StopTextInput@SDL3_0.0.0 3~
- SDL_StopVideoCapture@SDL3_0.0.0 3~
  SDL_SurfaceHasColorKey@SDL3_0.0.0 3~
  SDL_SurfaceHasRLE@SDL3_0.0.0 3~
  SDL_SyncWindow@SDL3_0.0.0 3~
@@ -765,6 +765,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_WarpMouseGlobal@SDL3_0.0.0 3~
  SDL_WarpMouseInWindow@SDL3_0.0.0 3~
  SDL_WasInit@SDL3_0.0.0 3~
+ SDL_WindowHasSurface@SDL3_0.0.0 3~
  SDL_WriteS16BE@SDL3_0.0.0 3~
  SDL_WriteS16LE@SDL3_0.0.0 3~
  SDL_WriteS32BE@SDL3_0.0.0 3~
@@ -793,6 +794,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_atof@SDL3_0.0.0 3~
  SDL_atoi@SDL3_0.0.0 3~
  SDL_bsearch@SDL3_0.0.0 3~
+ SDL_bsearch_r@SDL3_0.0.0 3~
  SDL_calloc@SDL3_0.0.0 3~
  SDL_ceil@SDL3_0.0.0 3~
  SDL_ceilf@SDL3_0.0.0 3~
@@ -870,6 +872,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_pow@SDL3_0.0.0 3~
  SDL_powf@SDL3_0.0.0 3~
  SDL_qsort@SDL3_0.0.0 3~
+ SDL_qsort_r@SDL3_0.0.0 3~
  SDL_realloc@SDL3_0.0.0 3~
  SDL_round@SDL3_0.0.0 3~
  SDL_roundf@SDL3_0.0.0 3~
