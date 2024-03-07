@@ -1181,17 +1181,13 @@ static int D3D_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             break;
         }
 
-        case SDL_RENDERCMD_SETCOLORSCALE:
-        {
-            break;
-        }
-
         case SDL_RENDERCMD_SETVIEWPORT:
         {
             SDL_Rect *viewport = &data->drawstate.viewport;
             if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof(cmd->data.viewport.rect)) != 0) {
                 SDL_copyp(viewport, &cmd->data.viewport.rect);
                 data->drawstate.viewport_dirty = SDL_TRUE;
+                data->drawstate.cliprect_dirty = SDL_TRUE;
             }
             break;
         }
@@ -1624,7 +1620,6 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     renderer->SetRenderTarget = D3D_SetRenderTarget;
     renderer->QueueSetViewport = D3D_QueueNoOp;
     renderer->QueueSetDrawColor = D3D_QueueNoOp;
-    renderer->QueueSetColorScale = D3D_QueueNoOp;
     renderer->QueueDrawPoints = D3D_QueueDrawPoints;
     renderer->QueueDrawLines = D3D_QueueDrawPoints; /* lines and points queue vertices the same way. */
     renderer->QueueGeometry = D3D_QueueGeometry;
