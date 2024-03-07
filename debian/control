@@ -11,6 +11,7 @@ Build-Depends:
  cmake,
  debhelper-compat (= 13),
  fcitx-libs-dev,
+ glslang-tools:native,
  libasound2-dev [linux-any],
  libdbus-1-dev,
  libdecor-0-dev (>= 0.2.0) [linux-any],

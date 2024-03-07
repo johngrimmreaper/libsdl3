@@ -12,6 +12,8 @@ Files-Excluded: Android.mk
                 src/render/direct3d12/D3D12_*RootSig*.h
                 src/render/direct3d12/D3D12_*Shader*.h
                 src/render/metal/SDL_shaders_metal_*.h
+                src/render/vulkan/VULKAN_PixelShader_*.h
+                src/render/vulkan/VULKAN_VertexShader.h
                 test/android
                 test/emscripten
                 test/gamepad_*.h
