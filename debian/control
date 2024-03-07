@@ -41,7 +41,7 @@ Build-Depends:
  libxt-dev,
  libxv-dev,
  libxxf86vm-dev,
- pkg-config,
+ pkgconf,
  wayland-protocols
 Build-Depends-Indep:
  graphviz <!nodoc>,

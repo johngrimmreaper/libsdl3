@@ -14,7 +14,7 @@ if [ -n "${DEB_HOST_GNU_TYPE:-}" ]; then
     cat <<EOF > "$WORKDIR/toolchain.cmake"
 set(CMAKE_C_COMPILER $DEB_HOST_GNU_TYPE-gcc)
 set(CMAKE_CXX_COMPILER $DEB_HOST_GNU_TYPE-g++)
-set(PKG_CONFIG_EXECUTABLE $DEB_HOST_GNU_TYPE-pkg-config)
+set(PKG_CONFIG_EXECUTABLE $DEB_HOST_GNU_TYPE-pkgconf)
 EOF
     CCFILE=-DCMAKE_TOOLCHAIN_FILE="$WORKDIR/toolchain.cmake"
 else
