@@ -1,6 +1,6 @@
-libsdl3 (3~git20240216~cb95653+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3~git20240307~57a160c+ds-1) UNRELEASED; urgency=medium
 
-  * New upstream snapshot prerelease-3.0.0-3646-gcb9565354
+  * New upstream snapshot prerelease-3.0.0-3894-g57a160c9a
   * d/copyright: Exclude more generated files
   * d/rules: Regenerate test/glass.h from test/glass.bmp
 
