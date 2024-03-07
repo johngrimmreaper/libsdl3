@@ -18,16 +18,27 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
-#include "../../include/SDL3/SDL_video_capture.h"
+#include "SDL_internal.h"
 
-#ifndef SDL_video_capture_c_h_
-#define SDL_video_capture_c_h_
+/* Vulkan shader implementation */
 
-/* Initialize the video_capture subsystem */
-int SDL_VideoCaptureInit(void);
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* Shutdown the video_capture subsystem */
-void SDL_QuitVideoCapture(void);
+typedef enum
+{
+    SHADER_SOLID,
+    SHADER_RGB,
+    SHADER_ADVANCED,
+    NUM_SHADERS
+} VULKAN_Shader;
 
-#endif /* SDL_video_capture_c_h_ */
+extern void VULKAN_GetVertexShader(VULKAN_Shader shader, const uint32_t **outBytecode, size_t *outSize);
+extern void VULKAN_GetPixelShader(VULKAN_Shader shader, const uint32_t **outBytecode, size_t *outSize);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
