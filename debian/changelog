@@ -6,8 +6,12 @@ libsdl3 (3~git20240307~f53bdc9+ds-1) UNRELEASED; urgency=medium
     - d/control: Build-depend on glslang-tools, for glslangValidator
   * d/clean: Clean up more generated files
   * d/libsdl3-0.symbols: Update
+  * d/control, d/tests: Prefer pkgconf over pkg-config
+  * d/tests: Explicitly depend on pkgconf
+  * d/tests: Update for upstream API changes
+  * d/watch: Watch for tagged upstream prereleases
 
- -- Simon McVittie <smcv@debian.org>  Thu, 07 Mar 2024 13:26:25 +0000
+ -- Simon McVittie <smcv@debian.org>  Mon, 25 Mar 2024 15:34:08 +0000
 
 libsdl3 (3~git20240202~7c089f4+ds-1) experimental; urgency=medium
 
