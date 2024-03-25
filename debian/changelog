@@ -1,3 +1,21 @@
+libsdl3 (3.1.0+ds-1) experimental; urgency=medium
+
+  * New upstream prerelease
+  * d/copyright: Update
+  * d/copyright: Exclude more generated files
+  * d/libsdl3-0.symbols: Update
+  * d/rules: Regenerate more generated files
+    - d/control: Build-depend on glslang-tools, for glslangValidator
+  * d/clean: Clean up more generated files
+  * d/control, d/tests: Prefer pkgconf over pkg-config
+  * d/tests: Explicitly depend on pkgconf
+  * d/tests: Update for upstream API changes
+  * d/watch: Watch for tagged upstream prereleases
+  * d/rules: Stop regenerating VERSION.txt
+  * d/rules: Show the commands we run to generate Vulkan shaders
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 25 Mar 2024 16:59:30 +0000
+
 libsdl3 (3~git20240202~7c089f4+ds-1) experimental; urgency=medium
 
   * New upstream snapshot prerelease-3.0.0-3508-g7c089f4e5

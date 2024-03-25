@@ -2,8 +2,10 @@
  * Intrinsics test suite
  */
 
+#ifndef NO_BUILD_CONFIG
 /* Disable intrinsics that are unsupported by the current compiler */
 #include <build_config/SDL_build_config.h>
+#endif
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_intrin.h>
@@ -251,7 +253,7 @@ SDL_TARGETING("sse4.1") static void kernel_ints_mul_sse4_1(Sint32 *dest, const S
 
 #ifdef SDL_SSE4_2_INTRINSICS
 SDL_TARGETING("sse4.2") static Uint32 calculate_crc32c_sse4_2(const char *text) {
-    Uint32 crc32c = ~0;
+    Uint32 crc32c = ~0u;
     size_t len = SDL_strlen(text);
 
 #if defined(__x86_64__) || defined(_M_X64)

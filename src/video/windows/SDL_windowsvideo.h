@@ -44,6 +44,7 @@
 #include "SDL_windowsopengl.h"
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#include "SDL_windowsshape.h"
 #include "SDL_windowskeyboard.h"
 #include "SDL_windowsmodes.h"
 #include "SDL_windowsmouse.h"

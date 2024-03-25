@@ -136,6 +136,10 @@ int Emscripten_VideoInit(SDL_VideoDevice *_this)
 
     Emscripten_InitMouse();
 
+    /* Assume we have a mouse and keyboard */
+    SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, SDL_FALSE);
+    SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, SDL_FALSE);
+
     /* We're done! */
     return 0;
 }
@@ -299,6 +303,7 @@ static int Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *wi
             EmscriptenFullscreenStrategy strategy;
             SDL_bool is_fullscreen_desktop = !window->fullscreen_exclusive;
 
+            SDL_zero(strategy);
             strategy.scaleMode = is_fullscreen_desktop ? EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH : EMSCRIPTEN_FULLSCREEN_SCALE_ASPECT;
 
             if (!is_fullscreen_desktop) {

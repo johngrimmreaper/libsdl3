@@ -15,7 +15,7 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
     SDL_Window *window;
     SDL_Event event;
     int w, h;
-    Uint32 flags;
+    SDL_WindowFlags flags;
     SDL_bool needs_renderer = SDL_FALSE;
     SDL_bool needs_events_pumped = SDL_FALSE;
 
@@ -55,6 +55,7 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
              * so delay to give the window time to actually appear on the desktop.
              */
             SDL_Delay(100);
+            SDL_DestroyRenderer(renderer);
         } else {
             SDLTest_Log("Unable to create a renderer, some tests may fail on Wayland/XWayland");
         }
@@ -197,7 +198,7 @@ static int video_createWindowVariousFlags(void *arg)
     const char *title = "video_createWindowVariousFlags Test Window";
     int w, h;
     int fVariation;
-    Uint32 flags;
+    SDL_WindowFlags flags;
 
     /* Standard window */
     w = SDLTest_RandomIntegerInRange(320, 1024);
@@ -269,7 +270,7 @@ static int video_getWindowFlags(void *arg)
 {
     SDL_Window *window;
     const char *title = "video_getWindowFlags Test Window";
-    Uint32 flags;
+    SDL_WindowFlags flags;
     Uint32 actualFlags;
 
     /* Reliable flag set always set in test window */
@@ -1682,13 +1683,11 @@ static int video_getSetWindowData(void *arg)
     result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), NULL, NULL);
     SDLTest_AssertPass("Call to SDL_GetWindowData(name=NULL)");
     SDLTest_AssertCheck(result == NULL, "Validate that result is NULL");
-    checkInvalidParameterError();
 
     /* Get data with empty name */
     result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), "", NULL);
     SDLTest_AssertPass("Call to SDL_GetWindowData(name='')");
     SDLTest_AssertCheck(result == NULL, "Validate that result is NULL");
-    checkInvalidParameterError();
 
     /* Clean up */
     destroyVideoSuiteTestWindow(window);
@@ -1788,6 +1787,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                          * so delay to give the window time to actually appear on the desktop.
                          */
                         SDL_Delay(100);
+                        SDL_DestroyRenderer(renderer);
                     } else {
                         SDLTest_Log("Unable to create a renderer, tests may fail under Wayland");
                     }
@@ -1933,14 +1933,14 @@ static int video_getSetWindowState(void *arg)
     SDL_Window *window;
     int result;
     SDL_Rect display;
-    Uint32 flags;
+    SDL_WindowFlags flags;
     int windowedX, windowedY;
     int currentX, currentY;
     int desiredX = 0, desiredY = 0;
     int windowedW, windowedH;
     int currentW, currentH;
     int desiredW = 0, desiredH = 0;
-    Uint32 skipFlags = 0;
+    SDL_WindowFlags skipFlags = 0;
     const SDL_bool restoreHint = SDL_GetHintBoolean("SDL_BORDERLESS_RESIZABLE_STYLE", SDL_TRUE);
     const SDL_bool skipPos = SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0;
 

@@ -105,6 +105,12 @@ static void PSP_JoystickDetect(void)
 {
 }
 
+static SDL_bool PSP_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+{
+    /* We don't override any other drivers */
+    return SDL_FALSE;
+}
+
 /* Function to get the device-dependent name of a joystick */
 static const char *PSP_JoystickGetDeviceName(int device_index)
 {
@@ -203,7 +209,9 @@ static void PSP_JoystickUpdate(SDL_Joystick *joystick)
     static unsigned char old_x = 0, old_y = 0;
     Uint64 timestamp = SDL_GetTicksNS();
 
-    sceCtrlReadBufferPositive(&pad, 1);
+    if (sceCtrlPeekBufferPositive(&pad, 1) <= 0) {
+        return;
+    }
     buttons = pad.Buttons;
     x = pad.Lx;
     y = pad.Ly;
@@ -251,6 +259,7 @@ SDL_JoystickDriver SDL_PSP_JoystickDriver = {
     PSP_JoystickInit,
     PSP_JoystickGetCount,
     PSP_JoystickDetect,
+    PSP_JoystickIsDevicePresent,
     PSP_JoystickGetDeviceName,
     PSP_JoystickGetDevicePath,
     PSP_JoystickGetDeviceSteamVirtualGamepadSlot,

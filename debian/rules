@@ -60,12 +60,12 @@ endif
 	dh $@ --buildsystem=cmake
 
 override_dh_auto_configure:
-	if [ $(DEB_VERSION_UPSTREAM) = 3~git20240202~7c089f4+ds ]; then \
-		echo prerelease-3.0.0-3508-g7c089f4e5 > VERSION.txt; \
-	fi
-	set -e; for bmp in test/icon.bmp test/gamepad_*.bmp; do \
+	set -e; for bmp in test/icon.bmp test/gamepad_*.bmp test/glass.bmp; do \
 		python3 cmake/xxd.py -i "$${bmp}" -o "$${bmp%.bmp}.h"; \
 	done
+	# This is intended as a Windows batch file, but at the time of writing
+	# it's so simple that it's also a valid shell script
+	cd src/render/vulkan && sh -ex ./compile_shaders.bat
 	dh_auto_configure -- $(confflags)
 
 execute_after_dh_auto_build:

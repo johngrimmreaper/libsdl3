@@ -7,10 +7,17 @@ Files-Excluded: Android.mk
                 src/hidapi/documentation/*.png
                 src/hidapi/*/*.sln
                 src/hidapi/*/*.vcproj
+                src/render/direct3d/D3D9_*Shader*.h
+                src/render/direct3d11/D3D11_*Shader*.h
+                src/render/direct3d12/D3D12_*RootSig*.h
+                src/render/direct3d12/D3D12_*Shader*.h
                 src/render/metal/SDL_shaders_metal_*.h
+                src/render/vulkan/VULKAN_PixelShader_*.h
+                src/render/vulkan/VULKAN_VertexShader.h
                 test/android
                 test/emscripten
                 test/gamepad_*.h
+                test/glass.h
                 test/icon.h
                 test/n3ds
                 test/unifont-*
@@ -158,8 +165,9 @@ Copyright:
  2015-2016 Jan Arne Petersen
  2015-2017 Samsung Electronics Co., Ltd
  2015-2018 Red Hat, Inc.
+ 2018-2023 Simon Ser
  2018 Purism SPC
- 2018 Simon Ser
+ 2018 The Chromium Authors
  2020 Aleix Pol Gonzalez
  2020 Carlos Garnacho
  2022 Kenny Levinsen
@@ -185,7 +193,7 @@ Copyright: 2015-2020, Gianfranco Costamagna <locutusofborg@debian.org>
            2001, Branden Robinson <branden@debian.org>
            2012, Canonical Ltd.
            2018-2024, Simon McVittie
-           2022-2023, Collabora Ltd.
+           2022-2024, Collabora Ltd.
 License: LGPL-2.1+
 
 License: BSL-1.0

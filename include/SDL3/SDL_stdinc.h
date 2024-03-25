@@ -186,6 +186,16 @@ typedef int64_t Sint64;
 #define SDL_MIN_UINT64  ((Uint64)(0x0000000000000000ull))   /* 0 */
 typedef uint64_t Uint64;
 
+/**
+ * SDL times are signed, 64-bit integers representing nanoseconds since the Unix epoch (Jan 1, 1970)
+ *
+ * They can be converted between POSIX time_t values with SDL_NS_TO_SECONDS() and SDL_SECONDS_TO_NS(),
+ * and between Windows FILETIME values with SDL_TimeToWindows() and SDL_TimeFromWindows().
+ */
+#define SDL_MAX_TIME SDL_MAX_SINT64
+#define SDL_MIN_TIME SDL_MIN_SINT64
+typedef Sint64 SDL_Time;
+
 /* @} *//* Basic data types */
 
 /**
@@ -497,6 +507,9 @@ extern DECLSPEC int SDLCALL SDL_setenv(const char *name, const char *value, int 
 
 extern DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (const void *, const void *));
 extern DECLSPEC void * SDLCALL SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (const void *, const void *));
+
+extern DECLSPEC void SDLCALL SDL_qsort_r(void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (void *, const void *, const void *), void *userdata);
+extern DECLSPEC void * SDLCALL SDL_bsearch_r(const void *key, const void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (void *, const void *, const void *), void *userdata);
 
 extern DECLSPEC int SDLCALL SDL_abs(int x);
 

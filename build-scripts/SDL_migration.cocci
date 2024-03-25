@@ -1051,7 +1051,7 @@ typedef SDL_GameController, SDL_Gamepad;
 @@
 @@
 - SDL_GameControllerAddMappingsFromRW
-+ SDL_AddGamepadMappingsFromRW
++ SDL_AddGamepadMappingsFromIO
   (...)
 @@
 typedef SDL_GameControllerAxis, SDL_GamepadAxis;
@@ -1804,25 +1804,15 @@ expression e2;
 @@
 @@
 - RW_SEEK_CUR
-+ SDL_RW_SEEK_CUR
++ SDL_IO_SEEK_CUR
 @@
 @@
 - RW_SEEK_END
-+ SDL_RW_SEEK_END
++ SDL_IO_SEEK_END
 @@
 @@
 - RW_SEEK_SET
-+ SDL_RW_SEEK_SET
-@@
-@@
-- SDL_AllocRW
-+ SDL_CreateRW
-  (...)
-@@
-@@
-- SDL_FreeRW
-+ SDL_DestroyRW
-  (...)
++ SDL_IO_SEEK_SET
 @@
 @@
 - SDL_SensorClose
@@ -2153,6 +2143,10 @@ expression e;
 + SDL_EVENT_JOYSTICK_AXIS_MOTION
 @@
 @@
+- SDL_JOYBALLMOTION
++ SDL_EVENT_JOYSTICK_BALL_MOTION
+@@
+@@
 - SDL_JOYHATMOTION
 + SDL_EVENT_JOYSTICK_HAT_MOTION
 @@
@@ -2413,20 +2407,40 @@ SDL_Event e1;
 - e1.caxis
 + e1.gaxis
 @@
+SDL_Event *e1;
+@@
+- e1->caxis
++ e1->gaxis
+@@
 SDL_Event e1;
 @@
 - e1.cbutton
 + e1.gbutton
+@@
+SDL_Event *e1;
+@@
+- e1->cbutton
++ e1->gbutton
 @@
 SDL_Event e1;
 @@
 - e1.cdevice
 + e1.gdevice
 @@
+SDL_Event *e1;
+@@
+- e1->cdevice
++ e1->gdevice
+@@
 SDL_Event e1;
 @@
 - e1.ctouchpad
 + e1.gtouchpad
+@@
+SDL_Event *e1;
+@@
+- e1->ctouchpad
++ e1->gtouchpad
 @@
 SDL_Event e1;
 @@
@@ -2435,28 +2449,48 @@ SDL_Event e1;
 @@
 SDL_Event *e1;
 @@
-- e1->caxis
-+ e1->gaxis
-@@
-SDL_Event *e1;
-@@
-- e1->cbutton
-+ e1->gbutton
-@@
-SDL_Event *e1;
-@@
-- e1->cdevice
-+ e1->gdevice
-@@
-SDL_Event *e1;
-@@
-- e1->ctouchpad
-+ e1->gtouchpad
-@@
-SDL_Event *e1;
-@@
 - e1->csensor
 + e1->gsensor
+@@
+SDL_Event e1;
+@@
+- e1.wheel.mouseX
++ e1.wheel.mouse_x
+@@
+SDL_Event *e1;
+@@
+- e1->wheel.mouseX
++ e1->wheel.mouse_x
+@@
+SDL_Event e1;
+@@
+- e1.wheel.mouseY
++ e1.wheel.mouse_y
+@@
+SDL_Event *e1;
+@@
+- e1->wheel.mouseY
++ e1->wheel.mouse_y
+@@
+SDL_Event e1;
+@@
+- e1.tfinger.touchId
++ e1.tfinger.touchID
+@@
+SDL_Event *e1;
+@@
+- e1->tfinger.touchId
++ e1->tfinger.touchID
+@@
+SDL_Event e1;
+@@
+- e1.tfinger.fingerId
++ e1.tfinger.fingerID
+@@
+SDL_Event *e1;
+@@
+- e1->tfinger.fingerId
++ e1->tfinger.fingerID
 @@
 expression e1, e2, e3, e4;
 @@
@@ -2903,4 +2937,185 @@ expression e1, e2, e3, e4;
 @@
 - SDL_threadID
 + SDL_ThreadID
+  (...)
+@@
+@@
+- SDL_HasWindowSurface
++ SDL_WindowHasSurface
+  (...)
+@@
+SDL_PixelFormat e1;
+@@
+- e1.BitsPerPixel
++ e1.bits_per_pixel
+@@
+SDL_PixelFormat *e1;
+@@
+- e1->BitsPerPixel
++ e1->bits_per_pixel
+@@
+SDL_PixelFormat e1;
+@@
+- e1.BytesPerPixel
++ e1.bytes_per_pixel
+@@
+SDL_PixelFormat *e1;
+@@
+- e1->BytesPerPixel
++ e1->bytes_per_pixel
+@@
+SDL_MessageBoxButtonData e1;
+@@
+- e1.buttonid
++ e1.buttonID
+@@
+SDL_MessageBoxButtonData *e1;
+@@
+- e1->buttonid
++ e1->buttonID
+@@
+SDL_GamepadBinding e1;
+@@
+- e1.inputType
++ e1.input_type
+@@
+SDL_GamepadBinding *e1;
+@@
+- e1->inputType
++ e1->input_type
+@@
+SDL_GamepadBinding e1;
+@@
+- e1.outputType
++ e1.output_type
+@@
+SDL_GamepadBinding *e1;
+@@
+- e1->outputType
++ e1->output_type
+@@
+typedef SDL_version, SDL_Version;
+@@
+- SDL_version
++ SDL_Version
+@@
+@@
+- SDL_HINT_ALLOW_TOPMOST
++ SDL_HINT_WINDOW_ALLOW_TOPMOST
+@@
+@@
+- SDL_HINT_DIRECTINPUT_ENABLED
++ SDL_HINT_JOYSTICK_DIRECTINPUT
+@@
+@@
+- SDL_HINT_GDK_TEXTINPUT_DEFAULT
++ SDL_HINT_GDK_TEXTINPUT_DEFAULT_TEXT
+@@
+@@
+- SDL_HINT_JOYSTICK_GAMECUBE_RUMBLE_BRAKE
++ SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE
+@@
+@@
+- SDL_HINT_LINUX_DIGITAL_HATS
++ SDL_HINT_JOYSTICK_LINUX_DIGITAL_HATS
+@@
+@@
+- SDL_HINT_LINUX_HAT_DEADZONES
++ SDL_HINT_JOYSTICK_LINUX_HAT_DEADZONES
+@@
+@@
+- SDL_HINT_LINUX_JOYSTICK_CLASSIC
++ SDL_HINT_JOYSTICK_LINUX_CLASSIC
+@@
+@@
+- SDL_HINT_LINUX_JOYSTICK_DEADZONES
++ SDL_HINT_JOYSTICK_LINUX_DEADZONES
+@@
+@@
+- SDL_HINT_PS2_DYNAMIC_VSYNC
++ SDL_HINT_RENDER_PS2_DYNAMIC_VSYNC
+@@
+@@
+- SDL_JoystickNumBalls
++ SDL_GetNumJoystickBalls
+  (...)
+@@
+@@
+- SDL_JoystickGetBall
++ SDL_GetJoystickBall
+  (...)
+@@
+@@
+- SDL_RWclose
++ SDL_CloseIO
+  (...)
+@@
+@@
+- SDL_RWread
++ SDL_ReadIO
+  (...)
+@@
+@@
+- SDL_RWwrite
++ SDL_WriteIO
+  (...)
+@@
+@@
+- SDL_RWtell
++ SDL_TellIO
+  (...)
+@@
+@@
+- SDL_RWsize
++ SDL_SizeIO
+  (...)
+@@
+@@
+- SDL_RWseek
++ SDL_SeekIO
+  (...)
+@@
+@@
+- SDL_LoadBMP_RW
++ SDL_LoadBMP_IO
+  (...)
+@@
+@@
+- SDL_LoadWAV_RW
++ SDL_LoadWAV_IO
+  (...)
+@@
+@@
+- SDL_SaveBMP_RW
++ SDL_SaveBMP_IO
+  (...)
+@@
+@@
+- SDL_RWFromFile
++ SDL_IOFromFile
+  (...)
+@@
+@@
+- SDL_RWFromMem
++ SDL_IOFromMem
+  (...)
+@@
+@@
+- SDL_RWFromConstMem
++ SDL_IOFromConstMem
+  (...)
+@@
+typedef SDL_RWops, SDL_IOStream;
+@@
+- SDL_RWops
++ SDL_IOStream
+@@
+@@
+- SDL_LogGetOutputFunction
++ SDL_GetLogOutputFunction
+  (...)
+@@
+@@
+- SDL_LogSetOutputFunction
++ SDL_SetLogOutputFunction
   (...)

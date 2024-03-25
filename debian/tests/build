@@ -31,8 +31,8 @@ cat <<EOF > use-sdl.c
 
 int main(void)
 {
-    SDL_version compiled;
-    SDL_version linked;
+    SDL_Version compiled;
+    SDL_Version linked;
 
     SDL_VERSION(&compiled);
     SDL_GetVersion(&linked);
@@ -57,7 +57,7 @@ for cc in "${CROSS_COMPILE}gcc" clang; do
 
     # Deliberately word-splitting cflags, pkg-config output
     # shellcheck disable=SC2046,SC2086
-    "$cc" $cflags -o "${exe}" use-sdl.c $("${CROSS_COMPILE}pkg-config" --cflags --libs sdl3)
+    "$cc" $cflags -o "${exe}" use-sdl.c $("${CROSS_COMPILE}pkgconf" --cflags --libs sdl3)
 
     echo "build (with $cc): OK"
     [ -x "${exe}" ]

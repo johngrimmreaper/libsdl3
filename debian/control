@@ -11,6 +11,7 @@ Build-Depends:
  cmake,
  debhelper-compat (= 13),
  fcitx-libs-dev,
+ glslang-tools,
  libasound2-dev [linux-any],
  libdbus-1-dev,
  libdecor-0-dev (>= 0.2.0) [linux-any],
@@ -40,7 +41,7 @@ Build-Depends:
  libxt-dev,
  libxv-dev,
  libxxf86vm-dev,
- pkg-config,
+ pkgconf,
  wayland-protocols
 Build-Depends-Indep:
  graphviz <!nodoc>,

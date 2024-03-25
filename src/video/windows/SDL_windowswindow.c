@@ -453,7 +453,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
     }
     if (!(window->flags & SDL_WINDOW_MINIMIZED)) {
         RECT rect;
-        if (GetClientRect(hwnd, &rect) && !IsRectEmpty(&rect)) {
+        if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
             int w = rect.right;
             int h = rect.bottom;
 
@@ -719,7 +719,11 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
                    We can use (-1, -1, 0, 0) boundary to make sure no pixels are being blurred
                 */
                 HRGN rgn = CreateRectRgn(-1, -1, 0, 0);
-                DWM_BLURBEHIND bb = {DWM_BB_ENABLE | DWM_BB_BLURREGION, TRUE, rgn, FALSE};
+                DWM_BLURBEHIND bb;
+                bb.flags = (DWM_BB_ENABLE | DWM_BB_BLURREGION);
+                bb.enable = TRUE;
+                bb.blur_region = rgn;
+                bb.transition_on_maxed = FALSE;
                 DwmEnableBlurBehindWindowFunc(hwnd, &bb);
                 DeleteObject(rgn);
             }
@@ -1372,23 +1376,27 @@ void WIN_UngrabKeyboard(SDL_Window *window)
     }
 }
 
-void WIN_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
+int WIN_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
     WIN_UpdateClipCursor(window);
+    return 0;
 }
 
-void WIN_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
+int WIN_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
     WIN_UpdateClipCursor(window);
+    return 0;
 }
 
-void WIN_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
+int WIN_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
     if (grabbed) {
         WIN_GrabKeyboard(window);
     } else {
         WIN_UngrabKeyboard(window);
     }
+
+    return 0;
 }
 #endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
@@ -1560,14 +1568,24 @@ void WIN_UpdateClipCursor(SDL_Window *window)
             }
         }
     } else {
-        POINT first, second;
+        SDL_bool unclip_cursor = SDL_FALSE;
 
-        first.x = clipped_rect.left;
-        first.y = clipped_rect.top;
-        second.x = clipped_rect.right - 1;
-        second.y = clipped_rect.bottom - 1;
-        if (PtInRect(&data->cursor_clipped_rect, first) &&
-            PtInRect(&data->cursor_clipped_rect, second)) {
+        /* If the cursor is clipped to the screen, clear the clip state */
+        if (clipped_rect.left == 0 && clipped_rect.top == 0) {
+            unclip_cursor = SDL_TRUE;
+        } else {
+            POINT first, second;
+
+            first.x = clipped_rect.left;
+            first.y = clipped_rect.top;
+            second.x = clipped_rect.right - 1;
+            second.y = clipped_rect.bottom - 1;
+            if (PtInRect(&data->cursor_clipped_rect, first) &&
+                PtInRect(&data->cursor_clipped_rect, second)) {
+                unclip_cursor = SDL_TRUE;
+            }
+        }
+        if (unclip_cursor) {
             ClipCursor(NULL);
             SDL_zero(data->cursor_clipped_rect);
         }

@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 /* The SDL joystick structure */
+
 typedef struct SDL_JoystickAxisInfo
 {
     Sint16 initial_value;           /* Initial axis state */
@@ -42,6 +43,12 @@ typedef struct SDL_JoystickAxisInfo
     SDL_bool sent_initial_value;    /* Whether we've sent the initial axis value */
     SDL_bool sending_initial_value; /* Whether we are sending the initial axis value */
 } SDL_JoystickAxisInfo;
+
+typedef struct SDL_JoystickBallData
+{
+    int dx;
+    int dy;
+} SDL_JoystickBallData;
 
 typedef struct SDL_JoystickTouchpadFingerInfo
 {
@@ -81,6 +88,9 @@ struct SDL_Joystick
 
     int naxes _guarded; /* Number of axis controls on the joystick */
     SDL_JoystickAxisInfo *axes _guarded;
+
+    int nballs _guarded; /* Number of trackballs on the joystick */
+    SDL_JoystickBallData *balls _guarded; /* Current ball motion deltas */
 
     int nhats _guarded;   /* Number of hats on the joystick */
     Uint8 *hats _guarded; /* Current hat states */
@@ -157,6 +167,9 @@ typedef struct SDL_JoystickDriver
 
     /* Function to cause any queued joystick insertions to be processed */
     void (*Detect)(void);
+
+    /* Function to determine whether a device is currently detected by this driver */
+    SDL_bool (*IsDevicePresent)(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
     /* Function to get the device-dependent name of a joystick */
     const char *(*GetDeviceName)(int device_index);
@@ -245,6 +258,7 @@ extern SDL_JoystickDriver SDL_PS2_JoystickDriver;
 extern SDL_JoystickDriver SDL_PSP_JoystickDriver;
 extern SDL_JoystickDriver SDL_VITA_JoystickDriver;
 extern SDL_JoystickDriver SDL_N3DS_JoystickDriver;
+extern SDL_JoystickDriver SDL_GAMEINPUT_JoystickDriver;
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
