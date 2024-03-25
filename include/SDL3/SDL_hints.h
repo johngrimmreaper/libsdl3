@@ -121,9 +121,9 @@ extern "C" {
  *
  * For *nix platforms, this string should be formatted in reverse-DNS notation and follow some basic rules to be valid:
  *
- * - The application ID must be composed of two or more elements separated by a period (‘.’) character.
+ * - The application ID must be composed of two or more elements separated by a period (.) character.
  *
- * - Each element must contain one or more of the alphanumeric characters (A-Z, a-z, 0-9) plus underscore (‘_’) and hyphen (‘-’) and must not start with a digit. Note that hyphens, while technically allowed, should not be used if possible, as they are not supported by all components that use the ID, such as D-Bus. For maximum compatibility, replace hyphens with an underscore.
+ * - Each element must contain one or more of the alphanumeric characters (A-Z, a-z, 0-9) plus underscore (_) and hyphen (-) and must not start with a digit. Note that hyphens, while technically allowed, should not be used if possible, as they are not supported by all components that use the ID, such as D-Bus. For maximum compatibility, replace hyphens with an underscore.
  *
  * - The empty string is not a valid element (ie: your application ID may not start or end with a period and it is not valid to have two periods in a row).
  *
@@ -372,6 +372,37 @@ extern "C" {
 #define SDL_HINT_CAMERA_DRIVER "SDL_CAMERA_DRIVER"
 
 /**
+ *  A variable that limits what CPU features are available.
+ *
+ *  By default, SDL marks all features the current CPU supports as available.
+ *  This hint allows to limit these to a subset.
+ *
+ *  When the hint is unset, or empty, SDL will enable all detected CPU
+ *  features.
+ *
+ * The variable can be set to a comma separated list containing the following items:
+ *   "all"
+ *   "altivec"
+ *   "sse"
+ *   "sse2"
+ *   "sse3"
+ *   "sse41"
+ *   "sse42"
+ *   "avx"
+ *   "avx2"
+ *   "avx512f"
+ *   "arm-simd"
+ *   "neon"
+ *   "lsx"
+ *   "lasx"
+ *
+ *  The items can be prefixed by '+'/'-' to add/remove features.
+ *
+ *  This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_CPU_FEATURE_MASK "SDL_CPU_FEATURE_MASK"
+
+/**
  * A variable controlling whether DirectInput should be used for controllers
  *
  * The variable can be set to the following values:
@@ -439,10 +470,11 @@ extern "C" {
  * A variable that controls whether the on-screen keyboard should be shown when text input is active
  *
  * The variable can be set to the following values:
+ *   "auto"    - The on-screen keyboard will be shown if there is no physical keyboard attached. (default)
  *   "0"       - Do not show the on-screen keyboard.
- *   "1"       - Show the on-screen keyboard. (default)
+ *   "1"       - Show the on-screen keyboard, if available.
  *
- * This hint must be set before text input is activated.
+ * This hint must be set before SDL_StartTextInput() is called
  */
 #define SDL_HINT_ENABLE_SCREEN_KEYBOARD "SDL_ENABLE_SCREEN_KEYBOARD"
 
@@ -454,7 +486,7 @@ extern "C" {
  *   "1"       - Log most events (other than the really spammy ones).
  *   "2"       - Include mouse and finger motion events.
  *
- * This is generally meant to be used to debug SDL itself, but can be useful for application developers that need better visibility into what is going on in the event queue. Logged events are sent through SDL_Log(), which means by default they appear on stdout on most platforms or maybe OutputDebugString() on Windows, and can be funneled by the app with SDL_LogSetOutputFunction(), etc.
+ * This is generally meant to be used to debug SDL itself, but can be useful for application developers that need better visibility into what is going on in the event queue. Logged events are sent through SDL_Log(), which means by default they appear on stdout on most platforms or maybe OutputDebugString() on Windows, and can be funneled by the app with SDL_SetLogOutputFunction(), etc.
  *
  * This hint can be set anytime.
  */
@@ -934,12 +966,25 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI on macOS, and "0" on other platforms.
  *
- * It is not possible to use this driver on Windows, due to limitations in the default drivers
- * installed. See https://github.com/ViGEm/DsHidMini for an alternative driver on Windows.
+ * For official Sony driver (sixaxis.sys) use SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER.
+ * See https://github.com/ViGEm/DsHidMini for an alternative driver on Windows.
  *
  * This hint should be set before enumerating controllers.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_PS3 "SDL_JOYSTICK_HIDAPI_PS3"
+
+/**
+ * A variable controlling whether the Sony driver (sixaxis.sys) for PS3 controllers (Sixaxis/DualShock 3) should be used.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Sony driver (sixaxis.sys) is not used.
+ *   "1"       - Sony driver (sixaxis.sys) is used.
+ *
+ * The default value is 0.
+ *
+ * This hint should be set before enumerating controllers.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER "SDL_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER"
 
 /**
  * A variable controlling whether the HIDAPI driver for PS4 controllers should be used.
@@ -1892,6 +1937,24 @@ extern "C" {
 #define SDL_HINT_SHUTDOWN_DBUS_ON_QUIT "SDL_SHUTDOWN_DBUS_ON_QUIT"
 
 /**
+ * A variable that specifies a backend to use for title storage.
+ *
+ * By default, SDL will try all available storage backends in a reasonable order until it finds one that can work, but this hint allows the app or user to force a specific target, such as "pc" if, say, you are on Steam but want to avoid SteamRemoteStorage for title data.
+ *
+ * This hint should be set before SDL is initialized.
+ */
+#define SDL_HINT_STORAGE_TITLE_DRIVER "SDL_STORAGE_TITLE_DRIVER"
+
+/**
+ * A variable that specifies a backend to use for user storage.
+ *
+ * By default, SDL will try all available storage backends in a reasonable order until it finds one that can work, but this hint allows the app or user to force a specific target, such as "pc" if, say, you are on Steam but want to avoid SteamRemoteStorage for user data.
+ *
+ * This hint should be set before SDL is initialized.
+ */
+#define SDL_HINT_STORAGE_USER_DRIVER "SDL_STORAGE_USER_DRIVER"
+
+/**
  * Specifies whether SDL_THREAD_PRIORITY_TIME_CRITICAL should be treated as realtime.
  *
  * On some platforms, like Linux, a realtime priority thread may be subject to restrictions that require special handling by the application. This hint exists to let SDL know that the app is prepared to handle said restrictions.
@@ -2248,7 +2311,7 @@ extern "C" {
  *   "ignorezero"  - Like "truncate", but ignore fact chunk if the number of samples is zero.
  *   "ignore"      - Ignore fact chunk entirely. (default)
  *
- * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_RW()
+ * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_IO()
  */
 #define SDL_HINT_WAVE_FACT_CHUNK   "SDL_WAVE_FACT_CHUNK"
 
@@ -2265,7 +2328,7 @@ extern "C" {
  *   "ignore"       - Ignore the RIFF chunk size and always search up to 4 GiB.
  *   "maximum"      - Search for chunks until the end of file. (not recommended)
  *
- * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_RW()
+ * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_IO()
  */
 #define SDL_HINT_WAVE_RIFF_CHUNK_SIZE   "SDL_WAVE_RIFF_CHUNK_SIZE"
 
@@ -2280,7 +2343,7 @@ extern "C" {
  *   "dropframe"  - Decode until the first incomplete sample frame.
  *   "dropblock"  - Decode until the first incomplete block. (default)
  *
- * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_RW()
+ * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_IO()
  */
 #define SDL_HINT_WAVE_TRUNCATION   "SDL_WAVE_TRUNCATION"
 
@@ -2533,6 +2596,7 @@ typedef enum
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
+ * \sa SDL_ResetHint
  * \sa SDL_SetHint
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
@@ -2553,6 +2617,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
+ * \sa SDL_ResetHint
  * \sa SDL_SetHintWithPriority
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
@@ -2570,8 +2635,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetHint
  * \sa SDL_SetHint
+ * \sa SDL_ResetHints
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
 
@@ -2584,8 +2649,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetHint
- * \sa SDL_SetHint
  * \sa SDL_ResetHint
  */
 extern DECLSPEC void SDLCALL SDL_ResetHints(void);

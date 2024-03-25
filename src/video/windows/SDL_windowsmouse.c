@@ -178,7 +178,7 @@ done:
 
 static SDL_Cursor *WIN_CreateDefaultCursor()
 {
-    SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
+    SDL_Cursor *cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         cursor->driverdata = LoadCursor(NULL, IDC_ARROW);
     }
@@ -263,7 +263,7 @@ static HBITMAP CreateMaskBitmap(SDL_Surface *surface, SDL_bool is_monochrome)
         return NULL;
     }
 
-    dst = pixels;
+    dst = (Uint8 *)pixels;
 
     /* Make the mask completely transparent. */
     SDL_memset(dst, 0xff, size);
@@ -327,7 +327,7 @@ static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         return NULL;
     }
 
-    cursor = SDL_calloc(1, sizeof(*cursor));
+    cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         cursor->driverdata = hcursor;
     } else {
@@ -419,7 +419,7 @@ static SDL_Cursor *WIN_CreateSystemCursor(SDL_SystemCursor id)
         break;
     }
 
-    cursor = SDL_calloc(1, sizeof(*cursor));
+    cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         HCURSOR hcursor;
 
@@ -493,7 +493,7 @@ static int WIN_WarpMouse(SDL_Window *window, float x, float y)
     WIN_SetCursorPos(pt.x, pt.y);
 
     /* Send the exact mouse motion associated with this warp */
-    SDL_SendMouseMotion(0, window, SDL_GetMouse()->mouseID, 0, x, y);
+    SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, x, y);
     return 0;
 }
 

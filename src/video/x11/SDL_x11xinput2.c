@@ -95,6 +95,59 @@ static SDL_Window *xinput2_get_sdlwindow(SDL_VideoData *videodata, Window window
     return windowdata ? windowdata->window : NULL;
 }
 
+static void xinput2_init_device_list(SDL_VideoData *videodata)
+{
+    XIDeviceInfo *info;
+    int ndevices;
+
+    info = X11_XIQueryDevice(videodata->display, XIAllDevices, &ndevices);
+
+    for (int i = 0; i < ndevices; i++) {
+        XIDeviceInfo *dev = &info[i];
+
+        switch (dev->use) {
+        case XIMasterKeyboard:
+            SDL_AddKeyboard((SDL_KeyboardID)dev->deviceid, dev->name, SDL_FALSE);
+            break;
+        case XISlaveKeyboard:
+            SDL_AddKeyboard((SDL_KeyboardID)dev->deviceid, dev->name, SDL_FALSE);
+            break;
+        case XIMasterPointer:
+            SDL_AddMouse((SDL_MouseID)dev->deviceid, dev->name, SDL_FALSE);
+            break;
+        case XISlavePointer:
+            SDL_AddMouse((SDL_MouseID)dev->deviceid, dev->name, SDL_FALSE);
+            break;
+        default:
+            break;
+        }
+
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+        for (int j = 0; j < dev->num_classes; j++) {
+            SDL_TouchID touchId;
+            SDL_TouchDeviceType touchType;
+            XIAnyClassInfo *class = dev->classes[j];
+            XITouchClassInfo *t = (XITouchClassInfo *)class;
+
+            /* Only touch devices */
+            if (class->type != XITouchClass) {
+                continue;
+            }
+
+            if (t->mode == XIDependentTouch) {
+                touchType = SDL_TOUCH_DEVICE_INDIRECT_RELATIVE;
+            } else { /* XIDirectTouch */
+                touchType = SDL_TOUCH_DEVICE_DIRECT;
+            }
+
+            touchId = t->sourceid;
+            SDL_AddTouch(touchId, touchType, dev->name);
+        }
+#endif // SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+    }
+    X11_XIFreeDeviceInfo(info);
+}
+
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
 static void xinput2_normalize_touch_coordinates(SDL_Window *window, double in_x, double in_y, float *out_x, float *out_y)
 {
@@ -119,7 +172,7 @@ static void xinput2_normalize_touch_coordinates(SDL_Window *window, double in_x,
 
 #endif /* SDL_VIDEO_DRIVER_X11_XINPUT2 */
 
-void X11_InitXinput2(SDL_VideoDevice *_this)
+SDL_bool X11_InitXinput2(SDL_VideoDevice *_this)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     SDL_VideoData *data = _this->driverdata;
@@ -140,13 +193,13 @@ void X11_InitXinput2(SDL_VideoDevice *_this)
      */
     if (!SDL_X11_HAVE_XINPUT2 ||
         !X11_XQueryExtension(data->display, "XInputExtension", &xinput2_opcode, &event, &err)) {
-        return; /* X server does not have XInput at all */
+        return SDL_FALSE; /* X server does not have XInput at all */
     }
 
     /* We need at least 2.2 for Multitouch, 2.0 otherwise. */
     version = query_xinput2_version(data->display, 2, 2);
     if (!xinput2_version_atleast(version, 2, 0)) {
-        return; /* X server does not support the version we want at all. */
+        return SDL_FALSE; /* X server does not support the version we want at all. */
     }
 
     xinput2_initialized = 1;
@@ -156,6 +209,8 @@ void X11_InitXinput2(SDL_VideoDevice *_this)
 #endif
 
     /* Enable raw motion events for this display */
+    SDL_zero(eventmask);
+    SDL_zeroa(mask);
     eventmask.deviceid = XIAllMasterDevices;
     eventmask.mask_len = sizeof(mask);
     eventmask.mask = mask;
@@ -173,9 +228,7 @@ void X11_InitXinput2(SDL_VideoDevice *_this)
     }
 #endif
 
-    if (X11_XISelectEvents(data->display, DefaultRootWindow(data->display), &eventmask, 1) != Success) {
-        return;
-    }
+    X11_XISelectEvents(data->display, DefaultRootWindow(data->display), &eventmask, 1);
 
     SDL_zero(eventmask);
     SDL_zeroa(mask);
@@ -184,9 +237,13 @@ void X11_InitXinput2(SDL_VideoDevice *_this)
     eventmask.mask = mask;
 
     XISetMask(mask, XI_HierarchyChanged);
-    if (X11_XISelectEvents(data->display, DefaultRootWindow(data->display), &eventmask, 1) != Success) {
-        return;
-    }
+    X11_XISelectEvents(data->display, DefaultRootWindow(data->display), &eventmask, 1);
+
+    xinput2_init_device_list(data);
+
+    return SDL_TRUE;
+#else
+    return SDL_FALSE;
 #endif
 }
 
@@ -348,7 +405,7 @@ int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             }
         }
 
-        SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 1, (float)processed_coords[0], (float)processed_coords[1]);
+        SDL_SendMouseMotion(0, mouse->focus, (SDL_MouseID)rawev->sourceid, SDL_TRUE, (float)processed_coords[0], (float)processed_coords[1]);
         devinfo->prev_coords[0] = coords[0];
         devinfo->prev_coords[1] = coords[1];
         return 1;
@@ -418,10 +475,10 @@ int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             }
 
             if (pressed) {
-                X11_HandleButtonPress(_this, windowdata, button,
+                X11_HandleButtonPress(_this, windowdata, (SDL_MouseID)xev->sourceid, button,
                                       xev->event_x, xev->event_y, xev->time);
             } else {
-                X11_HandleButtonRelease(_this, windowdata, button);
+                X11_HandleButtonRelease(_this, windowdata, (SDL_MouseID)xev->sourceid, button);
             }
         }
     } break;
@@ -468,7 +525,7 @@ int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
                 SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
                 if (window) {
                     X11_ProcessHitTest(_this, window->driverdata, (float)xev->event_x, (float)xev->event_y, SDL_FALSE);
-                    SDL_SendMouseMotion(0, window, 0, 0, (float)xev->event_x, (float)xev->event_y);
+                    SDL_SendMouseMotion(0, window, (SDL_MouseID)xev->sourceid, SDL_FALSE, (float)xev->event_x, (float)xev->event_y);
                 }
             }
         }
@@ -512,42 +569,6 @@ int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
 
 void X11_InitXinput2Multitouch(SDL_VideoDevice *_this)
 {
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
-    SDL_VideoData *data = _this->driverdata;
-    XIDeviceInfo *info;
-    int ndevices, i, j;
-
-    if (!X11_Xinput2IsMultitouchSupported()) {
-        return;
-    }
-
-    info = X11_XIQueryDevice(data->display, XIAllDevices, &ndevices);
-
-    for (i = 0; i < ndevices; i++) {
-        XIDeviceInfo *dev = &info[i];
-        for (j = 0; j < dev->num_classes; j++) {
-            SDL_TouchID touchId;
-            SDL_TouchDeviceType touchType;
-            XIAnyClassInfo *class = dev->classes[j];
-            XITouchClassInfo *t = (XITouchClassInfo *)class;
-
-            /* Only touch devices */
-            if (class->type != XITouchClass) {
-                continue;
-            }
-
-            if (t->mode == XIDependentTouch) {
-                touchType = SDL_TOUCH_DEVICE_INDIRECT_RELATIVE;
-            } else { /* XIDirectTouch */
-                touchType = SDL_TOUCH_DEVICE_DIRECT;
-            }
-
-            touchId = t->sourceid;
-            SDL_AddTouch(touchId, touchType, dev->name);
-        }
-    }
-    X11_XIFreeDeviceInfo(info);
-#endif
 }
 
 void X11_Xinput2SelectTouch(SDL_VideoDevice *_this, SDL_Window *window)

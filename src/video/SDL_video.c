@@ -236,7 +236,7 @@ static void SDLCALL SDL_CleanupWindowTextureData(void *userdata, void *value)
     SDL_free(data);
 }
 
-static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
 {
     SDL_RendererInfo info;
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
@@ -363,7 +363,7 @@ static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window *window, 
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
-    data = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
+    data = (SDL_WindowTextureData *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
     if (!data || !data->texture) {
         return SDL_SetError("No window texture data");
     }
@@ -395,7 +395,7 @@ int SDL_SetWindowTextureVSync(SDL_Window *window, int vsync)
 {
     SDL_WindowTextureData *data;
 
-    data = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
+    data = (SDL_WindowTextureData *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
     if (!data) {
         return -1;
     }
@@ -561,22 +561,6 @@ int SDL_VideoInit(const char *driver_name)
     if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, SDL_FALSE)) {
         SDL_DisableScreenSaver();
     }
-
-#if !defined(SDL_VIDEO_DRIVER_N3DS)
-    {
-        /* In the initial state we don't want to pop up an on-screen keyboard,
-         * but we do want to allow text input from other mechanisms.
-         */
-        const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
-        if (!hint) {
-            SDL_SetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD, "0");
-        }
-        SDL_StartTextInput();
-        if (!hint) {
-            SDL_SetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD, NULL);
-        }
-    }
-#endif /* !SDL_VIDEO_DRIVER_N3DS */
 
     SDL_PostInitMouse();
 
@@ -1765,7 +1749,10 @@ int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen, SDL_bool c
         if (commit) {
             int ret = 0;
             if (_this->SetWindowFullscreen) {
-                ret = _this->SetWindowFullscreen(_this, window, display ? display : SDL_GetVideoDisplayForFullscreenWindow(window), SDL_FALSE);
+                SDL_VideoDisplay *full_screen_display = display ? display : SDL_GetVideoDisplayForFullscreenWindow(window);
+                if (full_screen_display) {
+                    ret = _this->SetWindowFullscreen(_this, window, full_screen_display, SDL_FALSE);
+                }
             } else {
                 resized = SDL_TRUE;
             }
@@ -2010,7 +1997,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     int y = (int)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_UNDEFINED);
     int w = (int)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 0);
     int h = (int)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 0);
-    SDL_Window *parent = SDL_GetProperty(props, SDL_PROP_WINDOW_CREATE_PARENT_POINTER, NULL);
+    SDL_Window *parent = (SDL_Window *)SDL_GetProperty(props, SDL_PROP_WINDOW_CREATE_PARENT_POINTER, NULL);
     SDL_WindowFlags flags = SDL_GetWindowFlagProperties(props);
     SDL_WindowFlags type_flags, graphics_flags;
     SDL_bool undefined_x = SDL_FALSE;
@@ -3047,7 +3034,7 @@ int SDL_SyncWindow(SDL_Window *window)
 
 static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
 {
-    Uint32 format = 0;
+    SDL_PixelFormatEnum format = SDL_PIXELFORMAT_UNKNOWN;
     void *pixels = NULL;
     int pitch = 0;
     SDL_bool created_framebuffer = SDL_FALSE;
@@ -4805,24 +4792,25 @@ void SDL_WM_SetIcon(SDL_Surface *icon, Uint8 *mask)
 
 void SDL_StartTextInput(void)
 {
-    SDL_Window *window;
+    if (!_this) {
+        return;
+    }
 
-    /* First, enable text events */
-    SDL_SetEventEnabled(SDL_EVENT_TEXT_INPUT, SDL_TRUE);
-    SDL_SetEventEnabled(SDL_EVENT_TEXT_EDITING, SDL_TRUE);
-
-    /* Then show the on-screen keyboard, if any */
-    if (SDL_GetHintBoolean(SDL_HINT_ENABLE_SCREEN_KEYBOARD, SDL_TRUE)) {
-        window = SDL_GetKeyboardFocus();
-        if (window && _this && _this->ShowScreenKeyboard) {
+    /* Show the on-screen keyboard, if desired */
+    const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
+    if (((!hint || SDL_strcasecmp(hint, "auto")) && !SDL_HasKeyboard()) ||
+        SDL_GetStringBoolean(hint, SDL_FALSE)) {
+        SDL_Window *window = SDL_GetKeyboardFocus();
+        if (window && _this->ShowScreenKeyboard) {
             _this->ShowScreenKeyboard(_this, window);
         }
     }
 
     /* Finally start the text input system */
-    if (_this && _this->StartTextInput) {
+    if (_this->StartTextInput) {
         _this->StartTextInput(_this);
     }
+    _this->text_input_active = SDL_TRUE;
 }
 
 void SDL_ClearComposition(void)
@@ -4843,29 +4831,29 @@ SDL_bool SDL_TextInputShown(void)
 
 SDL_bool SDL_TextInputActive(void)
 {
-    return SDL_EventEnabled(SDL_EVENT_TEXT_INPUT);
+    return _this && _this->text_input_active;
 }
 
 void SDL_StopTextInput(void)
 {
-    SDL_Window *window;
+    if (!_this) {
+        return;
+    }
 
     /* Stop the text input system */
-    if (_this && _this->StopTextInput) {
+    if (_this->StopTextInput) {
         _this->StopTextInput(_this);
     }
 
-    /* Hide the on-screen keyboard, if any */
-    if (SDL_GetHintBoolean(SDL_HINT_ENABLE_SCREEN_KEYBOARD, SDL_TRUE)) {
-        window = SDL_GetKeyboardFocus();
-        if (window && _this && _this->HideScreenKeyboard) {
+    /* Hide the on-screen keyboard, if desired */
+    const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
+    if (((!hint || SDL_strcasecmp(hint, "auto")) && !SDL_HasKeyboard()) ||
+        SDL_GetStringBoolean(hint, SDL_FALSE)) {
+        SDL_Window *window = SDL_GetKeyboardFocus();
+        if (window && _this->HideScreenKeyboard) {
             _this->HideScreenKeyboard(_this, window);
         }
     }
-
-    /* Finally disable text events */
-    SDL_SetEventEnabled(SDL_EVENT_TEXT_INPUT, SDL_FALSE);
-    SDL_SetEventEnabled(SDL_EVENT_TEXT_EDITING, SDL_FALSE);
 }
 
 int SDL_SetTextInputRect(const SDL_Rect *rect)
