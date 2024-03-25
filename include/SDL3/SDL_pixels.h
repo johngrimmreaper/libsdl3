@@ -540,8 +540,8 @@ typedef enum
 typedef enum
 {
     SDL_CHROMA_LOCATION_NONE = 0,   /**< RGB, no chroma sampling */
-    SDL_CHROMA_LOCATION_LEFT = 1,   /**< In MPEG-2, MPEG-4, and AVC, Cb and Cr are taken on midpoint of the left-edge of the 2×2 square. In other words, they have the same horizontal location as the top-left pixel, but is shifted one-half pixel down vertically. */
-    SDL_CHROMA_LOCATION_CENTER = 2, /**< In JPEG/JFIF, H.261, and MPEG-1, Cb and Cr are taken at the center of 2×2 the square. In other words, they are offset one-half pixel to the right and one-half pixel down compared to the top-left pixel. */
+    SDL_CHROMA_LOCATION_LEFT = 1,   /**< In MPEG-2, MPEG-4, and AVC, Cb and Cr are taken on midpoint of the left-edge of the 2x2 square. In other words, they have the same horizontal location as the top-left pixel, but is shifted one-half pixel down vertically. */
+    SDL_CHROMA_LOCATION_CENTER = 2, /**< In JPEG/JFIF, H.261, and MPEG-1, Cb and Cr are taken at the center of the 2x2 square. In other words, they are offset one-half pixel to the right and one-half pixel down compared to the top-left pixel. */
     SDL_CHROMA_LOCATION_TOPLEFT = 3 /**< In HEVC for BT.2020 and BT.2100 content (in particular on Blu-rays), Cb and Cr are sampled at the same location as the group's top-left Y pixel ("co-sited", "co-located"). */
 } SDL_ChromaLocation;
 
@@ -792,6 +792,7 @@ extern DECLSPEC SDL_PixelFormatEnum SDLCALL SDL_GetPixelFormatEnumForMasks(int b
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DestroyPixelFormat
+ * \sa SDL_SetPixelFormatPalette
  */
 extern DECLSPEC SDL_PixelFormat * SDLCALL SDL_CreatePixelFormat(SDL_PixelFormatEnum pixel_format);
 
@@ -819,6 +820,8 @@ extern DECLSPEC void SDLCALL SDL_DestroyPixelFormat(SDL_PixelFormat *format);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DestroyPalette
+ * \sa SDL_SetPaletteColors
+ * \sa SDL_SetPixelFormatPalette
  */
 extern DECLSPEC SDL_Palette *SDLCALL SDL_CreatePalette(int ncolors);
 
@@ -831,9 +834,6 @@ extern DECLSPEC SDL_Palette *SDLCALL SDL_CreatePalette(int ncolors);
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreatePalette
- * \sa SDL_DestroyPalette
  */
 extern DECLSPEC int SDLCALL SDL_SetPixelFormatPalette(SDL_PixelFormat * format,
                                                       SDL_Palette *palette);
@@ -849,9 +849,6 @@ extern DECLSPEC int SDLCALL SDL_SetPixelFormatPalette(SDL_PixelFormat * format,
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreatePalette
- * \sa SDL_CreateSurface
  */
 extern DECLSPEC int SDLCALL SDL_SetPaletteColors(SDL_Palette * palette,
                                                  const SDL_Color * colors,

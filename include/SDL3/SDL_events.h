@@ -143,20 +143,25 @@ typedef enum
     SDL_EVENT_TEXT_INPUT,              /**< Keyboard text input */
     SDL_EVENT_KEYMAP_CHANGED,          /**< Keymap changed due to a system event such as an
                                             input language or keyboard layout change. */
+    SDL_EVENT_KEYBOARD_ADDED,          /**< A new keyboard has been inserted into the system */
+    SDL_EVENT_KEYBOARD_REMOVED,        /**< A keyboard has been removed */
 
     /* Mouse events */
     SDL_EVENT_MOUSE_MOTION    = 0x400, /**< Mouse moved */
     SDL_EVENT_MOUSE_BUTTON_DOWN,       /**< Mouse button pressed */
     SDL_EVENT_MOUSE_BUTTON_UP,         /**< Mouse button released */
     SDL_EVENT_MOUSE_WHEEL,             /**< Mouse wheel motion */
+    SDL_EVENT_MOUSE_ADDED,             /**< A new mouse has been inserted into the system */
+    SDL_EVENT_MOUSE_REMOVED,           /**< A mouse has been removed */
 
     /* Joystick events */
     SDL_EVENT_JOYSTICK_AXIS_MOTION  = 0x600, /**< Joystick axis motion */
-    SDL_EVENT_JOYSTICK_HAT_MOTION   = 0x602, /**< Joystick hat position change */
+    SDL_EVENT_JOYSTICK_BALL_MOTION,          /**< Joystick trackball motion */
+    SDL_EVENT_JOYSTICK_HAT_MOTION,           /**< Joystick hat position change */
     SDL_EVENT_JOYSTICK_BUTTON_DOWN,          /**< Joystick button pressed */
     SDL_EVENT_JOYSTICK_BUTTON_UP,            /**< Joystick button released */
-    SDL_EVENT_JOYSTICK_ADDED,         /**< A new joystick has been inserted into the system */
-    SDL_EVENT_JOYSTICK_REMOVED,       /**< An opened joystick has been removed */
+    SDL_EVENT_JOYSTICK_ADDED,                /**< A new joystick has been inserted into the system */
+    SDL_EVENT_JOYSTICK_REMOVED,              /**< An opened joystick has been removed */
     SDL_EVENT_JOYSTICK_BATTERY_UPDATED,      /**< Joystick battery level change */
     SDL_EVENT_JOYSTICK_UPDATE_COMPLETE,      /**< Joystick update is complete */
 
@@ -227,7 +232,11 @@ typedef enum
     /**
      *  This last event is only for bounding internal arrays
      */
-    SDL_EVENT_LAST    = 0xFFFF
+    SDL_EVENT_LAST    = 0xFFFF,
+
+    /* This just makes sure the enum is the size of Uint32 */
+    SDL_EVENT_ENUM_PADDING = 0x7FFFFFFF
+
 } SDL_EventType;
 
 /**
@@ -235,7 +244,7 @@ typedef enum
  */
 typedef struct SDL_CommonEvent
 {
-    Uint32 type;
+    Uint32 type;        /**< Event type, shared with all events, Uint32 to cover user events which are not in the SDL_EventType enumeration */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
 } SDL_CommonEvent;
@@ -266,6 +275,17 @@ typedef struct SDL_WindowEvent
 } SDL_WindowEvent;
 
 /**
+ *  Keyboard device event structure (event.kdevice.*)
+ */
+typedef struct SDL_KeyboardDeviceEvent
+{
+    SDL_EventType type; /**< ::SDL_EVENT_KEYBOARD_ADDED or ::SDL_EVENT_KEYBOARD_REMOVED */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_KeyboardID which;   /**< The keyboard instance id */
+} SDL_KeyboardDeviceEvent;
+
+/**
  *  Keyboard button event structure (event.key.*)
  */
 typedef struct SDL_KeyboardEvent
@@ -274,6 +294,7 @@ typedef struct SDL_KeyboardEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with keyboard focus, if any */
+    SDL_KeyboardID which;  /**< The keyboard instance id, or 0 if unknown or virtual */
     Uint8 state;        /**< ::SDL_PRESSED or ::SDL_RELEASED */
     Uint8 repeat;       /**< Non-zero if this is a key repeat */
     Uint8 padding2;
@@ -314,6 +335,17 @@ typedef struct SDL_TextInputEvent
     SDL_WindowID windowID; /**< The window with keyboard focus, if any */
     char *text;         /**< The input text */
 } SDL_TextInputEvent;
+
+/**
+ *  Mouse device event structure (event.mdevice.*)
+ */
+typedef struct SDL_MouseDeviceEvent
+{
+    SDL_EventType type; /**< ::SDL_EVENT_MOUSE_ADDED or ::SDL_EVENT_MOUSE_REMOVED */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_MouseID which;  /**< The mouse instance id */
+} SDL_MouseDeviceEvent;
 
 /**
  *  Mouse motion event structure (event.motion.*)
@@ -383,6 +415,23 @@ typedef struct SDL_JoyAxisEvent
     Sint16 value;       /**< The axis value (range: -32768 to 32767) */
     Uint16 padding4;
 } SDL_JoyAxisEvent;
+
+/**
+ *  \brief Joystick trackball motion event structure (event.jball.*)
+ */
+typedef struct SDL_JoyBallEvent
+{
+    Uint32 type;        /**< ::SDL_JOYBALLMOTION */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_JoystickID which; /**< The joystick instance id */
+    Uint8 ball;         /**< The joystick trackball index */
+    Uint8 padding1;
+    Uint8 padding2;
+    Uint8 padding3;
+    Sint16 xrel;        /**< The relative motion in the X direction */
+    Sint16 yrel;        /**< The relative motion in the Y direction */
+} SDL_JoyBallEvent;
 
 /**
  *  Joystick hat position change event structure (event.jhat.*)
@@ -539,6 +588,7 @@ typedef struct SDL_AudioDeviceEvent
 typedef struct SDL_CameraDeviceEvent
 {
     SDL_EventType type; /**< ::SDL_EVENT_CAMERA_DEVICE_ADDED, ::SDL_EVENT_CAMERA_DEVICE_REMOVED, ::SDL_EVENT_CAMERA_DEVICE_APPROVED, ::SDL_EVENT_CAMERA_DEVICE_DENIED */
+    Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_CameraDeviceID which;       /**< SDL_CameraDeviceID for the device being added or removed or changing */
     Uint8 padding1;
@@ -676,7 +726,7 @@ typedef struct SDL_QuitEvent
  */
 typedef struct SDL_UserEvent
 {
-    Uint32 type;        /**< ::SDL_EVENT_USER through ::SDL_EVENT_LAST-1 */
+    Uint32 type;        /**< ::SDL_EVENT_USER through ::SDL_EVENT_LAST-1, Uint32 because these are not in the SDL_EventType enumeration */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The associated window if any */
@@ -691,24 +741,27 @@ typedef struct SDL_UserEvent
  */
 typedef union SDL_Event
 {
-    Uint32 type;                            /**< Event type, shared with all events */
+    Uint32 type;                            /**< Event type, shared with all events, Uint32 to cover user events which are not in the SDL_EventType enumeration */
     SDL_CommonEvent common;                 /**< Common event data */
     SDL_DisplayEvent display;               /**< Display event data */
     SDL_WindowEvent window;                 /**< Window event data */
+    SDL_KeyboardDeviceEvent kdevice;        /**< Keyboard device change event data */
     SDL_KeyboardEvent key;                  /**< Keyboard event data */
     SDL_TextEditingEvent edit;              /**< Text editing event data */
     SDL_TextInputEvent text;                /**< Text input event data */
+    SDL_MouseDeviceEvent mdevice;           /**< Mouse device change event data */
     SDL_MouseMotionEvent motion;            /**< Mouse motion event data */
     SDL_MouseButtonEvent button;            /**< Mouse button event data */
     SDL_MouseWheelEvent wheel;              /**< Mouse wheel event data */
+    SDL_JoyDeviceEvent jdevice;             /**< Joystick device change event data */
     SDL_JoyAxisEvent jaxis;                 /**< Joystick axis event data */
+    SDL_JoyBallEvent jball;                 /**< Joystick ball event data */
     SDL_JoyHatEvent jhat;                   /**< Joystick hat event data */
     SDL_JoyButtonEvent jbutton;             /**< Joystick button event data */
-    SDL_JoyDeviceEvent jdevice;             /**< Joystick device change event data */
     SDL_JoyBatteryEvent jbattery;           /**< Joystick battery event data */
+    SDL_GamepadDeviceEvent gdevice;         /**< Gamepad device event data */
     SDL_GamepadAxisEvent gaxis;             /**< Gamepad axis event data */
     SDL_GamepadButtonEvent gbutton;         /**< Gamepad button event data */
-    SDL_GamepadDeviceEvent gdevice;         /**< Gamepad device event data */
     SDL_GamepadTouchpadEvent gtouchpad;     /**< Gamepad touchpad event data */
     SDL_GamepadSensorEvent gsensor;         /**< Gamepad sensor event data */
     SDL_AudioDeviceEvent adevice;           /**< Audio device event data */
