@@ -29,6 +29,7 @@ Files-Excluded: Android.mk
                 VisualC-GDK
                 VisualC-WinRT
                 Xcode
+# TODO: Also exclude generated src/stdlib/SDL_casefolding.h next time
 
 Files: *
 Copyright:
