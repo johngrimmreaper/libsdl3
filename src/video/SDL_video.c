@@ -314,9 +314,12 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
     *format = info.texture_formats[0];
 
     for (i = 0; i < info.num_texture_formats; ++i) {
-        if (!SDL_ISPIXELFORMAT_FOURCC(info.texture_formats[i]) &&
-            transparent == SDL_ISPIXELFORMAT_ALPHA(info.texture_formats[i])) {
-            *format = info.texture_formats[i];
+        SDL_PixelFormatEnum texture_format = info.texture_formats[i];
+        if (!SDL_ISPIXELFORMAT_FOURCC(texture_format) &&
+            !SDL_ISPIXELFORMAT_10BIT(texture_format) &&
+            !SDL_ISPIXELFORMAT_FLOAT(texture_format) &&
+            transparent == SDL_ISPIXELFORMAT_ALPHA(texture_format)) {
+            *format = texture_format;
             break;
         }
     }
@@ -1911,12 +1914,7 @@ static void ApplyWindowFlags(SDL_Window *window, SDL_WindowFlags flags)
     }
 
     if (flags & SDL_WINDOW_MOUSE_GRABBED) {
-        /* We must specifically call SDL_SetWindowGrab() and not
-           SDL_SetWindowMouseGrab() here because older applications may use
-           this flag plus SDL_HINT_GRAB_KEYBOARD to indicate that they want
-           the keyboard grabbed too and SDL_SetWindowMouseGrab() won't do that.
-        */
-        SDL_SetWindowGrab(window, SDL_TRUE);
+        SDL_SetWindowMouseGrab(window, SDL_TRUE);
     }
     if (flags & SDL_WINDOW_KEYBOARD_GRABBED) {
         SDL_SetWindowKeyboardGrab(window, SDL_TRUE);
@@ -3311,23 +3309,6 @@ void SDL_UpdateWindowGrab(SDL_Window *window)
     }
 }
 
-int SDL_SetWindowGrab(SDL_Window *window, SDL_bool grabbed)
-{
-    int ret_mouse_grab = 0;
-    int ret_keyboard_grab = 0;
-
-    CHECK_WINDOW_MAGIC(window, -1);
-    CHECK_WINDOW_NOT_POPUP(window, -1);
-
-    ret_mouse_grab = SDL_SetWindowMouseGrab(window, grabbed);
-
-    if (SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE)) {
-        ret_keyboard_grab = SDL_SetWindowKeyboardGrab(window, grabbed);
-    }
-
-    return (!ret_mouse_grab && !ret_keyboard_grab) ? 0 : -1;
-}
-
 int SDL_SetWindowKeyboardGrab(SDL_Window *window, SDL_bool grabbed)
 {
     CHECK_WINDOW_MAGIC(window, -1);
@@ -3386,11 +3367,6 @@ int SDL_SetWindowMouseGrab(SDL_Window *window, SDL_bool grabbed)
         return -1;
     }
     return 0;
-}
-
-SDL_bool SDL_GetWindowGrab(SDL_Window *window)
-{
-    return SDL_GetWindowKeyboardGrab(window) || SDL_GetWindowMouseGrab(window);
 }
 
 SDL_bool SDL_GetWindowKeyboardGrab(SDL_Window *window)
@@ -3658,6 +3634,11 @@ void SDL_DestroyWindow(SDL_Window *window)
     }
 
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DESTROYED, 0, 0);
+
+    SDL_Renderer *renderer = SDL_GetRenderer(window);
+    if (renderer) {
+        SDL_DestroyRenderer(renderer);
+    }
 
     SDL_DestroyProperties(window->props);
 
@@ -4798,7 +4779,7 @@ void SDL_StartTextInput(void)
 
     /* Show the on-screen keyboard, if desired */
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
-    if (((!hint || SDL_strcasecmp(hint, "auto")) && !SDL_HasKeyboard()) ||
+    if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
         SDL_GetStringBoolean(hint, SDL_FALSE)) {
         SDL_Window *window = SDL_GetKeyboardFocus();
         if (window && _this->ShowScreenKeyboard) {
@@ -4820,15 +4801,6 @@ void SDL_ClearComposition(void)
     }
 }
 
-SDL_bool SDL_TextInputShown(void)
-{
-    if (_this && _this->IsTextInputShown) {
-        return _this->IsTextInputShown(_this);
-    }
-
-    return SDL_FALSE;
-}
-
 SDL_bool SDL_TextInputActive(void)
 {
     return _this && _this->text_input_active;
@@ -4844,10 +4816,11 @@ void SDL_StopTextInput(void)
     if (_this->StopTextInput) {
         _this->StopTextInput(_this);
     }
+    _this->text_input_active = SDL_FALSE;
 
     /* Hide the on-screen keyboard, if desired */
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
-    if (((!hint || SDL_strcasecmp(hint, "auto")) && !SDL_HasKeyboard()) ||
+    if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
         SDL_GetStringBoolean(hint, SDL_FALSE)) {
         SDL_Window *window = SDL_GetKeyboardFocus();
         if (window && _this->HideScreenKeyboard) {

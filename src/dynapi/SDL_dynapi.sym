@@ -232,6 +232,7 @@ SDL3_0.0.0 {
     SDL_GetGamepadButtonFromString;
     SDL_GetGamepadButtonLabel;
     SDL_GetGamepadButtonLabelForType;
+    SDL_GetGamepadConnectionState;
     SDL_GetGamepadFirmwareVersion;
     SDL_GetGamepadFromInstanceID;
     SDL_GetGamepadFromPlayerIndex;
@@ -252,7 +253,7 @@ SDL3_0.0.0 {
     SDL_GetGamepadName;
     SDL_GetGamepadPath;
     SDL_GetGamepadPlayerIndex;
-    SDL_GetGamepadPowerLevel;
+    SDL_GetGamepadPowerInfo;
     SDL_GetGamepadProduct;
     SDL_GetGamepadProductVersion;
     SDL_GetGamepadProperties;
@@ -287,6 +288,7 @@ SDL3_0.0.0 {
     SDL_GetJoystickAxisInitialState;
     SDL_GetJoystickBall;
     SDL_GetJoystickButton;
+    SDL_GetJoystickConnectionState;
     SDL_GetJoystickFirmwareVersion;
     SDL_GetJoystickFromInstanceID;
     SDL_GetJoystickFromPlayerIndex;
@@ -307,7 +309,7 @@ SDL3_0.0.0 {
     SDL_GetJoystickName;
     SDL_GetJoystickPath;
     SDL_GetJoystickPlayerIndex;
-    SDL_GetJoystickPowerLevel;
+    SDL_GetJoystickPowerInfo;
     SDL_GetJoystickProduct;
     SDL_GetJoystickProductVersion;
     SDL_GetJoystickProperties;
@@ -462,7 +464,6 @@ SDL3_0.0.0 {
     SDL_GetWindowFlags;
     SDL_GetWindowFromID;
     SDL_GetWindowFullscreenMode;
-    SDL_GetWindowGrab;
     SDL_GetWindowICCProfile;
     SDL_GetWindowID;
     SDL_GetWindowKeyboardGrab;
@@ -752,7 +753,6 @@ SDL3_0.0.0 {
     SDL_SetWindowFocusable;
     SDL_SetWindowFullscreen;
     SDL_SetWindowFullscreenMode;
-    SDL_SetWindowGrab;
     SDL_SetWindowHitTest;
     SDL_SetWindowIcon;
     SDL_SetWindowInputFocus;
@@ -791,7 +791,6 @@ SDL3_0.0.0 {
     SDL_SyncWindow;
     SDL_TellIO;
     SDL_TextInputActive;
-    SDL_TextInputShown;
     SDL_TimeFromWindows;
     SDL_TimeToDateTime;
     SDL_TimeToWindows;

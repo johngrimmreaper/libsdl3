@@ -20,9 +20,8 @@
 */
 #include "SDL_internal.h"
 
-/* TODO: Macro? */
-
 #import <Cocoa/Cocoa.h>
+#import <UniformTypeIdentifiers/UTType.h>
 
 typedef enum
 {
@@ -33,6 +32,10 @@ typedef enum
 
 void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location, SDL_bool allow_many)
 {
+#if defined(SDL_PLATFORM_TVOS) || defined(SDL_PLATFORM_IOS)
+    SDL_SetError("tvOS and iOS don't support path-based file dialogs");
+    callback(userdata, NULL, -1);
+#else
     /* NSOpenPanel inherits from NSSavePanel */
     NSSavePanel *dialog;
     NSOpenPanel *dialog_as_open;
@@ -57,6 +60,7 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
 
     int n = -1;
     while (filters[++n].name && filters[n].pattern);
+    // On macOS 11.0 and up, this is an array of UTType. Prior to that, it's an array of NSString
     NSMutableArray *types = [[NSMutableArray alloc] initWithCapacity:n ];
 
     int has_all_files = 0;
@@ -73,7 +77,11 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
         for (char *c = pattern; *c; c++) {
             if (*c == ';') {
                 *c = '\0';
-                [types addObject: [NSString stringWithFormat: @"%s", pattern_ptr]];
+                if(@available(macOS 11.0, *)) {
+                    [types addObject: [UTType typeWithFilenameExtension:[NSString stringWithFormat: @"%s", pattern_ptr]]];
+                } else {
+                    [types addObject: [NSString stringWithFormat: @"%s", pattern_ptr]];
+                }
                 pattern_ptr = c + 1;
             } else if (!((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z') || (*c >= '0' && *c <= '9') || *c == '.' || *c == '_' || *c == '-' || (*c == '*' && (c[1] == '\0' || c[1] == ';')))) {
                 SDL_SetError("Illegal character in pattern name: %c (Only alphanumeric characters, periods, underscores and hyphens allowed)", *c);
@@ -83,7 +91,11 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
                 has_all_files = 1;
             }
         }
-        [types addObject: [NSString stringWithFormat: @"%s", pattern_ptr]];
+        if(@available(macOS 11.0, *)) {
+            [types addObject: [UTType typeWithFilenameExtension:[NSString stringWithFormat: @"%s", pattern_ptr]]];
+        } else {
+            [types addObject: [NSString stringWithFormat: @"%s", pattern_ptr]];
+        }
 
         SDL_free(pattern);
     }
@@ -151,6 +163,7 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
             callback(userdata, files, -1);
         }
     }
+#endif // defined(SDL_PLATFORM_TVOS) || defined(SDL_PLATFORM_IOS)
 }
 
 void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location, SDL_bool allow_many)

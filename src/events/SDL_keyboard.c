@@ -945,9 +945,6 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
     Uint8 repeat = SDL_FALSE;
     const Uint8 source = flags & KEYBOARD_SOURCE_MASK;
 
-    /* We currently don't have raw keyboard mode, so all key events are global */
-    keyboardID = SDL_GLOBAL_KEYBOARD_ID;
-
     if (scancode == SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
         return 0;
     }
@@ -1180,6 +1177,14 @@ int SDL_SendKeyboardText(const char *text)
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
 
+    if (!SDL_TextInputActive()) {
+        return 0;
+    }
+
+    if (!text || !*text) {
+        return 0;
+    }
+
     /* Don't post text events for unprintable characters */
     if (SDL_iscntrl((unsigned char)*text)) {
         return 0;
@@ -1209,6 +1214,14 @@ int SDL_SendEditingText(const char *text, int start, int length)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
+
+    if (!SDL_TextInputActive()) {
+        return 0;
+    }
+
+    if (!text) {
+        return 0;
+    }
 
     /* Post the event, if desired */
     posted = 0;

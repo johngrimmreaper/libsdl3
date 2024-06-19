@@ -340,11 +340,7 @@ files2headers(gamepad_image_headers
     gamepad_axis_arrow.bmp
     gamepad_axis.bmp
     gamepad_back.bmp
-    gamepad_battery_empty.bmp
-    gamepad_battery_full.bmp
-    gamepad_battery_low.bmp
-    gamepad_battery_medium.bmp
-    gamepad_battery_unknown.bmp
+    gamepad_battery.bmp
     gamepad_battery_wired.bmp
     gamepad_button_background.bmp
     gamepad_button.bmp
@@ -624,10 +620,11 @@ foreach(TARGET ${SDL_TEST_EXECUTABLES})
 endforeach()
 
 add_sdl_test(testautomation-no-simd testautomation)
-set_property(TEST testautomation-no-simd APPEND PROPERTY ENVIRONMENT "SDL_CPU_FEATURE_MASK=-all")
-
 add_sdl_test(testplatform-no-simd testplatform)
-set_property(TEST testplatform-no-simd APPEND PROPERTY ENVIRONMENT "SDL_CPU_FEATURE_MASK=-all")
+set_property(TEST testautomation-no-simd testplatform-no-simd APPEND PROPERTY ENVIRONMENT "SDL_CPU_FEATURE_MASK=-all")
+
+# testautomation creates temporary files which might conflict
+set_property(TEST testautomation-no-simd testautomation PROPERTY RUN_SERIAL TRUE)
 
 if(SDL_INSTALL_TESTS)
     if(RISCOS)

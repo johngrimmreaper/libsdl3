@@ -655,19 +655,6 @@ extern "C" {
 #define SDL_HINT_GDK_TEXTINPUT_TITLE "SDL_GDK_TEXTINPUT_TITLE"
 
 /**
- * A variable controlling whether grabbing input grabs the keyboard
- *
- * The variable can be set to the following values:
- *   "0"       - Grab will affect only the mouse. (default)
- *   "1"       - Grab will affect mouse and keyboard.
- *
- * By default SDL will not grab the keyboard so system shortcuts still work.
- *
- * This hint can be set anytime.
- */
-#define SDL_HINT_GRAB_KEYBOARD              "SDL_GRAB_KEYBOARD"
-
-/**
  * A variable to control whether SDL_hid_enumerate() enumerates all HID devices or only controllers.
  *
  * The variable can be set to the following values:
@@ -2394,6 +2381,17 @@ extern "C" {
 #define SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN    "SDL_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN"
 
 /**
+ * A variable controlling whether SDL generates window-close events for Alt+F4 on Windows.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - SDL will only do normal key handling for Alt+F4.
+ *   "1"       - SDL will generate a window-close event when it sees Alt+F4. (default)
+ *
+ * This hint can be set anytime.
+ */
+#define SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4 "SDL_WINDOWS_CLOSE_ON_ALT_F4"
+
+/**
  * A variable controlling whether menus can be opened with their keyboard shortcut (Alt+mnemonic).
  *
  * If the mnemonics are enabled, then menus can be opened by pressing the Alt key and the corresponding mnemonic (for example, Alt+F opens the File menu). However, in case an invalid mnemonic is pressed, Windows makes an audible beep to convey that nothing happened. This is true even if the window has no menu at all!
@@ -2420,6 +2418,17 @@ extern "C" {
  * This hint can be set anytime.
  */
 #define SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP "SDL_WINDOWS_ENABLE_MESSAGELOOP"
+
+/**
+ * A variable controlling whether raw keyboard events are used on Windows
+ *
+ * The variable can be set to the following values:
+ *   "0"       - The Windows message loop is used for keyboard events.
+ *   "1"       - Low latency raw keyboard events are used. (default)
+ *
+ * This hint can be set anytime.
+ */
+#define SDL_HINT_WINDOWS_RAW_KEYBOARD   "SDL_WINDOWS_RAW_KEYBOARD"
 
 /**
  * A variable controlling whether SDL uses Critical Sections for mutexes on Windows.
@@ -2454,17 +2463,6 @@ extern "C" {
  */
 #define SDL_HINT_WINDOWS_INTRESOURCE_ICON       "SDL_WINDOWS_INTRESOURCE_ICON"
 #define SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL "SDL_WINDOWS_INTRESOURCE_ICON_SMALL"
-
-/**
- * A variable controlling whether SDL generates window-close events for Alt+F4 on Windows.
- *
- * The variable can be set to the following values:
- *   "0"       - SDL will only do normal key handling for Alt+F4.
- *   "1"       - SDL will generate a window-close event when it sees Alt+F4. (default)
- *
- * This hint can be set anytime.
- */
-#define SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4 "SDL_WINDOWS_CLOSE_ON_ALT_F4"
 
 /**
  * A variable controlling whether SDL uses the D3D9Ex API introduced in Windows Vista, instead of normal D3D9.
