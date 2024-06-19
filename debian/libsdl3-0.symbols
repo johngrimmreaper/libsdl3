@@ -217,6 +217,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetGamepadButtonFromString@SDL3_0.0.0 3.1.0~
  SDL_GetGamepadButtonLabel@SDL3_0.0.0 3.1.0~
  SDL_GetGamepadButtonLabelForType@SDL3_0.0.0 3.1.0~
+ SDL_GetGamepadConnectionState@SDL3_0.0.0 3.1.1~
  SDL_GetGamepadFirmwareVersion@SDL3_0.0.0 3.1.0~
  SDL_GetGamepadFromInstanceID@SDL3_0.0.0 3.1.0~
  SDL_GetGamepadFromPlayerIndex@SDL3_0.0.0 3.1.0~
@@ -237,7 +238,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetGamepadName@SDL3_0.0.0 3.1.0~
  SDL_GetGamepadPath@SDL3_0.0.0 3.1.0~
  SDL_GetGamepadPlayerIndex@SDL3_0.0.0 3.1.0~
- SDL_GetGamepadPowerLevel@SDL3_0.0.0 3.1.0~
+ SDL_GetGamepadPowerInfo@SDL3_0.0.0 3.1.1~
  SDL_GetGamepadProduct@SDL3_0.0.0 3.1.0~
  SDL_GetGamepadProductVersion@SDL3_0.0.0 3.1.0~
  SDL_GetGamepadProperties@SDL3_0.0.0 3.1.0~
@@ -272,6 +273,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetJoystickAxisInitialState@SDL3_0.0.0 3.1.0~
  SDL_GetJoystickBall@SDL3_0.0.0 3.1.0~
  SDL_GetJoystickButton@SDL3_0.0.0 3.1.0~
+ SDL_GetJoystickConnectionState@SDL3_0.0.0 3.1.1~
  SDL_GetJoystickFirmwareVersion@SDL3_0.0.0 3.1.0~
  SDL_GetJoystickFromInstanceID@SDL3_0.0.0 3.1.0~
  SDL_GetJoystickFromPlayerIndex@SDL3_0.0.0 3.1.0~
@@ -292,7 +294,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetJoystickName@SDL3_0.0.0 3.1.0~
  SDL_GetJoystickPath@SDL3_0.0.0 3.1.0~
  SDL_GetJoystickPlayerIndex@SDL3_0.0.0 3.1.0~
- SDL_GetJoystickPowerLevel@SDL3_0.0.0 3.1.0~
+ SDL_GetJoystickPowerInfo@SDL3_0.0.0 3.1.1~
  SDL_GetJoystickProduct@SDL3_0.0.0 3.1.0~
  SDL_GetJoystickProductVersion@SDL3_0.0.0 3.1.0~
  SDL_GetJoystickProperties@SDL3_0.0.0 3.1.0~
@@ -440,7 +442,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetWindowFlags@SDL3_0.0.0 3.1.0~
  SDL_GetWindowFromID@SDL3_0.0.0 3.1.0~
  SDL_GetWindowFullscreenMode@SDL3_0.0.0 3.1.0~
- SDL_GetWindowGrab@SDL3_0.0.0 3.1.0~
  SDL_GetWindowICCProfile@SDL3_0.0.0 3.1.0~
  SDL_GetWindowID@SDL3_0.0.0 3.1.0~
  SDL_GetWindowKeyboardGrab@SDL3_0.0.0 3.1.0~
@@ -723,7 +724,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetWindowFocusable@SDL3_0.0.0 3.1.0~
  SDL_SetWindowFullscreen@SDL3_0.0.0 3.1.0~
  SDL_SetWindowFullscreenMode@SDL3_0.0.0 3.1.0~
- SDL_SetWindowGrab@SDL3_0.0.0 3.1.0~
  SDL_SetWindowHitTest@SDL3_0.0.0 3.1.0~
  SDL_SetWindowIcon@SDL3_0.0.0 3.1.0~
  SDL_SetWindowInputFocus@SDL3_0.0.0 3.1.0~
@@ -761,7 +761,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SyncWindow@SDL3_0.0.0 3.1.0~
  SDL_TellIO@SDL3_0.0.0 3.1.0~
  SDL_TextInputActive@SDL3_0.0.0 3.1.0~
- SDL_TextInputShown@SDL3_0.0.0 3.1.0~
  SDL_TimeFromWindows@SDL3_0.0.0 3.1.0~
  SDL_TimeToDateTime@SDL3_0.0.0 3.1.0~
  SDL_TimeToWindows@SDL3_0.0.0 3.1.0~
