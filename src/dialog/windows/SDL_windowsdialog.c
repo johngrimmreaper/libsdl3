@@ -20,9 +20,6 @@
 */
 #include "SDL_internal.h"
 
-/* TODO: Macro? */
-
-/* TODO: Better includes? */
 #include <windows.h>
 #include <shlobj.h>
 #include "../../core/windows/SDL_windows.h"
@@ -44,6 +41,7 @@ typedef struct
 {
     SDL_Window* parent;
     SDL_DialogFileCallback callback;
+    const char* default_folder;
     void* userdata;
 } winFArgs;
 
@@ -188,7 +186,7 @@ void windows_ShowFileDialog(void *ptr)
     dialog.nMaxFileTitle = MAX_PATH;
     dialog.lpstrInitialDir = *initfolder ? initfolder : NULL;
     dialog.lpstrTitle = NULL;
-    dialog.Flags = flags | OFN_EXPLORER | OFN_HIDEREADONLY;
+    dialog.Flags = flags | OFN_EXPLORER | OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
     dialog.nFileOffset = 0;
     dialog.nFileExtension = 0;
     dialog.lpstrDefExt = NULL;
@@ -327,6 +325,31 @@ int windows_file_dialog_thread(void* ptr)
     return 0;
 }
 
+int CALLBACK browse_callback_proc(
+				HWND hwnd, 
+				UINT uMsg, 
+				LPARAM lParam, 
+				LPARAM lpData)
+{
+  
+	switch (uMsg)
+	{
+	case BFFM_INITIALIZED :
+		if(lpData)
+        {
+		  SendMessage(hwnd, BFFM_SETSELECTION, TRUE, lpData);
+        }
+		break;
+	case BFFM_SELCHANGED :
+		break;
+	case BFFM_VALIDATEFAILED :
+		break;
+	default:
+		break;
+	}
+	return 0; 
+}
+
 void windows_ShowFolderDialog(void* ptr)
 {
     winFArgs *args = (winFArgs *) ptr;
@@ -349,11 +372,13 @@ void windows_ShowFolderDialog(void* ptr)
     dialog.pszDisplayName = buffer;
     dialog.lpszTitle = NULL;
     dialog.ulFlags = BIF_USENEWUI;
-    dialog.lpfn = NULL;
-    dialog.lParam = 0;
+    dialog.lpfn = browse_callback_proc;
+    dialog.lParam = (LPARAM)args->default_folder;
     dialog.iImage = 0;
 
-    if (SHBrowseForFolderW(&dialog)) {
+    LPITEMIDLIST lpItem = SHBrowseForFolderW(&dialog);
+    if (lpItem != NULL) {
+        SHGetPathFromIDListW(lpItem, buffer);
         char *chosen_file = WIN_StringToUTF8W(buffer);
         const char *files[2] = { chosen_file, NULL };
         callback(userdata, (const char * const*) files, -1);
@@ -447,6 +472,7 @@ void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, S
 
     args->parent = window;
     args->callback = callback;
+    args->default_folder = default_location;
     args->userdata = userdata;
 
     thread = SDL_CreateThreadInternal(windows_folder_dialog_thread, "SDL_ShowOpenFolderDialog", 0, (void *) args);

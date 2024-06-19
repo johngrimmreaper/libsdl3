@@ -74,6 +74,7 @@ static SDL_GUID pen_guid_zero = { { 0 } };
     penvar = SDL_GetPenPtr(instance_id);          \
     if (!(penvar)) {                              \
         SDL_SetError("Stale SDL_PenID");          \
+        SDL_UNLOCK_PENS();                        \
         return (err_return);                      \
     }
 
@@ -269,7 +270,7 @@ static void pen_sort(void)
               pen_compare);
     pen_handler.sorted = SDL_TRUE;
 }
-#include<stdio.h>
+
 SDL_Pen *SDL_PenModifyBegin(Uint32 instance_id)
 {
     SDL_PenID id = { 0 };

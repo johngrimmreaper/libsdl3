@@ -32,8 +32,9 @@
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsframebuffer.h"
-#include "SDL_windowsvulkan.h"
 #include "SDL_windowsmessagebox.h"
+#include "SDL_windowsrawinput.h"
+#include "SDL_windowsvulkan.h"
 
 #ifdef SDL_GDK_TEXTINPUT
 #include "../gdk/SDL_gdktextinput.h"
@@ -49,6 +50,13 @@ static void WIN_VideoQuit(SDL_VideoDevice *_this);
 SDL_bool g_WindowsEnableMessageLoop = SDL_TRUE;
 SDL_bool g_WindowsEnableMenuMnemonics = SDL_FALSE;
 SDL_bool g_WindowFrameUsableWhileCursorHidden = SDL_TRUE;
+
+static void SDLCALL UpdateWindowsRawKeyboard(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    SDL_VideoDevice *_this = (SDL_VideoDevice *)userdata;
+    SDL_bool enabled = SDL_GetStringBoolean(newValue, SDL_TRUE);
+    WIN_SetRawKeyboardEnabled(_this, enabled);
+}
 
 static void SDLCALL UpdateWindowsEnableMessageLoop(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
@@ -99,6 +107,7 @@ static void WIN_DeleteDevice(SDL_VideoDevice *device)
     if (device->wakeup_lock) {
         SDL_DestroyMutex(device->wakeup_lock);
     }
+    SDL_free(device->driverdata->rawinput);
     SDL_free(device->driverdata);
     SDL_free(device);
 }
@@ -256,7 +265,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->StopTextInput = WIN_StopTextInput;
     device->SetTextInputRect = WIN_SetTextInputRect;
     device->ClearComposition = WIN_ClearComposition;
-    device->IsTextInputShown = WIN_IsTextInputShown;
 
     device->SetClipboardData = WIN_SetClipboardData;
     device->GetClipboardData = WIN_GetClipboardData;
@@ -270,7 +278,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->StopTextInput = GDK_StopTextInput;
     device->SetTextInputRect = GDK_SetTextInputRect;
     device->ClearComposition = GDK_ClearComposition;
-    device->IsTextInputShown = GDK_IsTextInputShown;
 
     device->HasScreenKeyboardSupport = GDK_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = GDK_ShowScreenKeyboard;
@@ -460,6 +467,7 @@ int WIN_VideoInit(SDL_VideoDevice *_this)
     WIN_CheckKeyboardAndMouseHotplug(_this, SDL_TRUE);
 #endif
 
+    SDL_AddHintCallback(SDL_HINT_WINDOWS_RAW_KEYBOARD, UpdateWindowsRawKeyboard, _this);
     SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, UpdateWindowsEnableMessageLoop, NULL);
     SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS, UpdateWindowsEnableMenuMnemonics, NULL);
     SDL_AddHintCallback(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, UpdateWindowFrameUsableWhileCursorHidden, NULL);
@@ -479,6 +487,14 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
     WIN_QuitKeyboard(_this);
     WIN_QuitMouse(_this);
 #endif
+
+    SDL_DelHintCallback(SDL_HINT_WINDOWS_RAW_KEYBOARD, UpdateWindowsRawKeyboard, _this);
+    SDL_DelHintCallback(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, UpdateWindowsEnableMessageLoop, NULL);
+    SDL_DelHintCallback(SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS, UpdateWindowsEnableMenuMnemonics, NULL);
+    SDL_DelHintCallback(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, UpdateWindowFrameUsableWhileCursorHidden, NULL);
+
+    WIN_SetRawMouseEnabled(_this, SDL_FALSE);
+    WIN_SetRawKeyboardEnabled(_this, SDL_FALSE);
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
