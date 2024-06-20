@@ -46,7 +46,7 @@ Here is a rough list of what works, and what doesn't:
   * mouse input  (unsupported on Windows Phone)
   * audio, via SDL's WASAPI backend (if you want to record, your app must
     have "Microphone" capabilities enabled in its manifest, and the user must
-    not have blocked access. Otherwise, capture devices will fail to work,
+    not have blocked access. Otherwise, recording devices will fail to work,
     presenting as a device disconnect shortly after opening it.)
   * .DLL file loading.  Libraries *MUST* be packaged inside applications.  Loading
     anything outside of the app is not supported.
@@ -88,9 +88,9 @@ Here is a rough list of what works, and what doesn't:
     UWP itself).
   * turning off VSync when rendering on Windows Phone.  Attempts to turn VSync
     off on Windows Phone result either in Direct3D not drawing anything, or it
-    forcing VSync back on.  As such, SDL_RENDERER_PRESENTVSYNC will always get
-    turned-on on Windows Phone.  This limitation is not present in non-Phone
-    WinRT (such as Windows 8.x), where turning off VSync appears to work.
+    forcing VSync back on.  As such, vsync will always get turned-on on Windows
+    Phone.  This limitation is not present in non-Phone WinRT (such as Windows 8.x),
+    where turning off VSync appears to work.
   * probably anything else that's not listed as supported
 
 

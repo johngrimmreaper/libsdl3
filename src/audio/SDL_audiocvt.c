@@ -49,7 +49,7 @@
  *
  * These are listed in the order they are laid out in
  * memory, so "FL+FR" means "the front left speaker is
- * layed out in memory first, then the front right, then
+ * laid out in memory first, then the front right, then
  * it repeats for the next audio frame".
  *
  * 1 channel (mono) layout: FRONT
@@ -472,7 +472,7 @@ int SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_s
 
     // quietly refuse to change the format of the end currently bound to a device.
     if (stream->bound_device) {
-        if (stream->bound_device->physical_device->iscapture) {
+        if (stream->bound_device->physical_device->recording) {
             src_spec = NULL;
         } else {
             dst_spec = NULL;
@@ -655,7 +655,7 @@ static Uint8 *EnsureAudioStreamWorkBufferSize(SDL_AudioStream *stream, size_t ne
         return stream->work_buffer;
     }
 
-    Uint8 *ptr = (Uint8 *) SDL_aligned_alloc(SDL_SIMDGetAlignment(), newlen);
+    Uint8 *ptr = (Uint8 *) SDL_aligned_alloc(SDL_GetSIMDAlignment(), newlen);
     if (!ptr) {
         return NULL;  // previous work buffer is still valid!
     }
@@ -838,7 +838,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
         work_buffer_capacity = SDL_max(work_buffer_capacity, resample_convert_bytes);
 
         // SIMD-align the buffer
-        int simd_alignment = (int) SDL_SIMDGetAlignment();
+        int simd_alignment = (int) SDL_GetSIMDAlignment();
         work_buffer_capacity += simd_alignment - 1;
         work_buffer_capacity -= work_buffer_capacity % simd_alignment;
 
