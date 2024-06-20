@@ -41,6 +41,10 @@ ifneq ($(filter %-tests,$(built_binaries)),)
   confflags += -DSDL_INSTALL_TESTS=ON
 endif
 
+ifeq ($(filter %-doc,$(built_binaries)),)
+  confflags += -DSDL_DISABLE_INSTALL_DOCS=ON
+endif
+
 ifeq ($(DEB_HOST_ARCH_CPU),powerpc)
   confflags += -DSDL_ALTIVEC=OFF
 endif
