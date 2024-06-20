@@ -955,12 +955,6 @@ static void SDLTest_PrintButtonMask(char *text, size_t maxlen, Uint32 flags)
 static void SDLTest_PrintRendererFlag(char *text, size_t maxlen, Uint32 flag)
 {
     switch (flag) {
-    case SDL_RENDERER_SOFTWARE:
-        SDL_snprintfcat(text, maxlen, "Software");
-        break;
-    case SDL_RENDERER_ACCELERATED:
-        SDL_snprintfcat(text, maxlen, "Accelerated");
-        break;
     case SDL_RENDERER_PRESENTVSYNC:
         SDL_snprintfcat(text, maxlen, "PresentVSync");
         break;
@@ -2300,7 +2294,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 /* Ctrl-G toggle mouse grab */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    SDL_SetWindowGrab(window, !SDL_GetWindowGrab(window));
+                    SDL_SetWindowMouseGrab(window, !SDL_GetWindowMouseGrab(window));
                 }
             }
             break;

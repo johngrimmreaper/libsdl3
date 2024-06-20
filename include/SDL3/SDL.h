@@ -25,7 +25,6 @@
  *  Main include header for the SDL library
  */
 
-
 #ifndef SDL_h_
 #define SDL_h_
 
@@ -49,6 +48,7 @@
 #include <SDL3/SDL_hidapi.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_joystick.h>
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_keycode.h>
@@ -65,10 +65,8 @@
 #include <SDL3/SDL_platform.h>
 #include <SDL3/SDL_power.h>
 #include <SDL3/SDL_properties.h>
-#include <SDL3/SDL_quit.h>
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
-#include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_sensor.h>
 #include <SDL3/SDL_storage.h>

@@ -39,7 +39,7 @@
 #include "xdg-shell-client-protocol.h"
 #include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
 #include "text-input-unstable-v3-client-protocol.h"
-#include "tablet-unstable-v2-client-protocol.h"
+#include "tablet-v2-client-protocol.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
 #include "input-timestamps-unstable-v1-client-protocol.h"
 
@@ -498,6 +498,7 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
          */
         if (!Wayland_VideoReconnect(_this)) {
             d->display_disconnected = 1;
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Wayland display connection closed by server (fatal)");
 
             /* Only send a single quit message, as application shutdown might call
              * SDL_PumpEvents
@@ -1605,7 +1606,9 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     Wayland_UpdateImplicitGrabSerial(input, serial);
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-        has_text = keyboard_input_get_text(text, input, key, SDL_PRESSED, &handled_by_ime);
+        if (SDL_TextInputActive()) {
+            has_text = keyboard_input_get_text(text, input, key, SDL_PRESSED, &handled_by_ime);
+        }
     } else {
         if (keyboard_repeat_key_is_set(&input->keyboard_repeat, key)) {
             /* Send any due key repeat events before stopping the repeat and generating the key up event.
@@ -2162,7 +2165,8 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
                     char **paths = SDL_DBus_DocumentsPortalRetrieveFiles(buffer, &path_count);
                     /* If dropped files contain a directory the list is empty */
                     if (paths && path_count > 0) {
-                        for (int i = 0; i < path_count; i++) {
+                        int i;
+                        for (i = 0; i < path_count; i++) {
                             SDL_SendDropFile(data_device->dnd_window, NULL, paths[i]);
                         }
                         dbus->free_string_array(paths);
@@ -2318,17 +2322,7 @@ static void text_input_commit_string(void *data,
                                      struct zwp_text_input_v3 *zwp_text_input_v3,
                                      const char *text)
 {
-    if (text && *text) {
-        char buf[SDL_TEXTINPUTEVENT_TEXT_SIZE];
-        size_t text_bytes = SDL_strlen(text), i = 0;
-
-        while (i < text_bytes) {
-            size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof(buf));
-            SDL_SendKeyboardText(buf);
-
-            i += sz;
-        }
-    }
+    SDL_SendKeyboardText(text);
 }
 
 static void text_input_delete_surrounding_text(void *data,

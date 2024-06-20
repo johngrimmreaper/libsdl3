@@ -67,6 +67,7 @@ struct SDL_VideoData
     Atom WM_DELETE_WINDOW;
     Atom WM_TAKE_FOCUS;
     Atom WM_NAME;
+    Atom WM_TRANSIENT_FOR;
     Atom _NET_WM_STATE;
     Atom _NET_WM_STATE_HIDDEN;
     Atom _NET_WM_STATE_FOCUSED;
@@ -76,6 +77,7 @@ struct SDL_VideoData
     Atom _NET_WM_STATE_ABOVE;
     Atom _NET_WM_STATE_SKIP_TASKBAR;
     Atom _NET_WM_STATE_SKIP_PAGER;
+    Atom _NET_WM_STATE_MODAL;
     Atom _NET_WM_ALLOWED_ACTIONS;
     Atom _NET_WM_ACTION_FULLSCREEN;
     Atom _NET_WM_NAME;
@@ -111,6 +113,7 @@ struct SDL_VideoData
     Uint32 global_mouse_buttons;
 
     SDL_XInput2DeviceInfo *mouse_device_info;
+    SDL_bool xinput_hierarchy_changed;
 
     int xrandr_event_base;
 
@@ -131,6 +134,8 @@ struct SDL_VideoData
     /* Used to interact with the on-screen keyboard */
     SDL_bool is_steam_deck;
     SDL_bool steam_keyboard_open;
+
+    SDL_bool is_xwayland;
 
 };
 

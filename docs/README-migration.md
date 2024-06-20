@@ -185,8 +185,6 @@ SDL_GetDefaultAudioInfo() is removed; SDL_GetAudioDeviceFormat() with SDL_AUDIO_
 
 SDL_MixAudio() has been removed, as it relied on legacy SDL 1.2 quirks; SDL_MixAudioFormat() remains and offers the same functionality.
 
-SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_AUDIO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_AUDIO_DRIVER hint.
-
 SDL_FreeWAV has been removed and calls can be replaced with SDL_free.
 
 SDL_LoadWAV() is a proper function now and no longer a macro (but offers the same functionality otherwise).
@@ -317,7 +315,7 @@ The timestamp_us member of the sensor events has been renamed sensor_timestamp a
 
 You should set the event.common.timestamp field before passing an event to SDL_PushEvent(). If the timestamp is 0 it will be filled in with SDL_GetTicksNS().
 
-Event memory is now managed by SDL, so you should not free the data in SDL_EVENT_DROP_FILE, and if you want to hold onto the text in SDL_EVENT_TEXT_EDITING and SDL_EVENT_TEXT_INPUT events, you should make a copy of it.
+Event memory is now managed by SDL, so you should not free the data in SDL_EVENT_DROP_FILE, and if you want to hold onto the text in SDL_EVENT_TEXT_EDITING and SDL_EVENT_TEXT_INPUT events, you should make a copy of it. SDL_TEXTINPUTEVENT_TEXT_SIZE is no longer necessary and has been removed.
 
 Mouse events use floating point values for mouse coordinates and relative motion values. You can get sub-pixel motion depending on the platform and display scaling.
 
@@ -334,6 +332,8 @@ The gamepad event structures caxis, cbutton, cdevice, ctouchpad, and csensor hav
 The mouseX and mouseY fields of SDL_MouseWheelEvent have been renamed mouse_x and mouse_y.
 
 The touchId and fingerId fields of SDL_TouchFingerEvent have been renamed touchID and fingerID.
+
+The level field of SDL_JoyBatteryEvent has been split into state and percent.
 
 SDL_QUERY, SDL_IGNORE, SDL_ENABLE, and SDL_DISABLE have been removed. You can use the functions SDL_SetEventEnabled() and SDL_EventEnabled() to set and query event processing state.
 
@@ -392,11 +392,13 @@ The following symbols have been renamed:
 * SDL_RENDER_DEVICE_RESET => SDL_EVENT_RENDER_DEVICE_RESET
 * SDL_RENDER_TARGETS_RESET => SDL_EVENT_RENDER_TARGETS_RESET
 * SDL_SENSORUPDATE => SDL_EVENT_SENSOR_UPDATE
-* SDL_SYSWMEVENT => SDL_EVENT_SYSWM
 * SDL_TEXTEDITING => SDL_EVENT_TEXT_EDITING
 * SDL_TEXTEDITING_EXT => SDL_EVENT_TEXT_EDITING_EXT
 * SDL_TEXTINPUT => SDL_EVENT_TEXT_INPUT
 * SDL_USEREVENT => SDL_EVENT_USER
+
+The following symbols have been removed:
+* SDL_SYSWMEVENT - you can use SDL_SetWindowsMessageHook() and SDL_SetX11EventHook() to watch and modify system events before SDL sees them.
 
 The following structures have been renamed:
 * SDL_ControllerAxisEvent => SDL_GamepadAxisEvent
@@ -408,6 +410,9 @@ The following structures have been renamed:
 The following functions have been removed:
 * SDL_EventState() - replaced with SDL_SetEventEnabled()
 * SDL_GetEventState() - replaced with SDL_EventEnabled()
+
+The following enums have been renamed:
+* SDL_eventaction => SDL_EventAction
 
 ## SDL_gamecontroller.h
 
@@ -709,6 +714,7 @@ Calling SDL_GetHint() with the name of the hint being changed from within a hint
 The following hints have been removed:
 * SDL_HINT_ACCELEROMETER_AS_JOYSTICK
 * SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS - gamepad buttons are always positional
+* SDL_HINT_GRAB_KEYBOARD - use SDL_SetWindowKeyboardGrab() instead
 * SDL_HINT_IDLE_TIMER_DISABLED - use SDL_DisableScreenSaver() instead
 * SDL_HINT_IME_SUPPORT_EXTENDED_TEXT - the normal text editing event has extended text
 * SDL_HINT_MOUSE_RELATIVE_SCALING - mouse coordinates are no longer automatically scaled by the SDL renderer
@@ -788,11 +794,12 @@ The functions SDL_GetJoysticks(), SDL_GetJoystickInstanceName(), SDL_GetJoystick
 
 SDL_AttachVirtualJoystick() and SDL_AttachVirtualJoystickEx() now return the joystick instance ID instead of a device index, and return 0 if there was an error.
 
+SDL_VirtualJoystickDesc no longer takes a struct version; if we need to extend this in the future, we'll make a second struct and a second SDL_AttachVirtualJoystickEx-style function that uses it. Just zero the struct and don't set a version.
+
 The following functions have been renamed:
 * SDL_JoystickAttachVirtual() => SDL_AttachVirtualJoystick()
 * SDL_JoystickAttachVirtualEx() => SDL_AttachVirtualJoystickEx()
 * SDL_JoystickClose() => SDL_CloseJoystick()
-* SDL_JoystickCurrentPowerLevel() => SDL_GetJoystickPowerLevel()
 * SDL_JoystickDetachVirtual() => SDL_DetachVirtualJoystick()
 * SDL_JoystickFromInstanceID() => SDL_GetJoystickFromInstanceID()
 * SDL_JoystickFromPlayerIndex() => SDL_GetJoystickFromPlayerIndex()
@@ -835,6 +842,7 @@ The following symbols have been renamed:
 * SDL_JOYSTICK_TYPE_GAMECONTROLLER => SDL_JOYSTICK_TYPE_GAMEPAD
 
 The following functions have been removed:
+* SDL_JoystickCurrentPowerLevel() - replaced with SDL_GetJoystickConnectionState() and SDL_GetJoystickPowerInfo()
 * SDL_JoystickEventState() - replaced with SDL_SetJoystickEventsEnabled() and SDL_JoystickEventsEnabled()
 * SDL_JoystickGetDeviceGUID() - replaced with SDL_GetJoystickInstanceGUID()
 * SDL_JoystickGetDeviceInstanceID()
@@ -849,6 +857,7 @@ The following functions have been removed:
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickInstanceName()
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
 * SDL_NumJoysticks() - replaced with SDL_GetJoysticks()
+* SDL_VIRTUAL_JOYSTICK_DESC_VERSION - no longer needed, version info has been removed from SDL_VirtualJoystickDesc.
 
 The following symbols have been removed:
 * SDL_JOYBALLMOTION
@@ -860,11 +869,17 @@ Text input is no longer automatically enabled when initializing video, you shoul
 The following functions have been renamed:
 * SDL_IsScreenKeyboardShown() => SDL_ScreenKeyboardShown()
 * SDL_IsTextInputActive() => SDL_TextInputActive()
-* SDL_IsTextInputShown() => SDL_TextInputShown()
+
+The following functions have been removed:
+* SDL_IsTextInputShown()
 
 ## SDL_keycode.h
 
-SDL_Keycode is now an enum instead of Sint32.
+The SDL_KeyCode enum values have been changed to defines to more clearly reflect that they are a subset of the possible values of an SDL_Keycode.
+
+The following symbols have been removed:
+
+* KMOD_RESERVED - No replacement. A bit named "RESERVED" probably shouldn't be used in an app, but if you need it, this was equivalent to KMOD_SCROLL (0x8000) in SDL2.
 
 The following symbols have been renamed:
 * KMOD_ALT => SDL_KMOD_ALT
@@ -880,7 +895,6 @@ The following symbols have been renamed:
 * KMOD_NUM => SDL_KMOD_NUM
 * KMOD_RALT => SDL_KMOD_RALT
 * KMOD_RCTRL => SDL_KMOD_RCTRL
-* KMOD_RESERVED => SDL_KMOD_RESERVED
 * KMOD_RGUI => SDL_KMOD_RGUI
 * KMOD_RSHIFT => SDL_KMOD_RSHIFT
 * KMOD_SCROLL => SDL_KMOD_SCROLL
@@ -891,6 +905,9 @@ The following symbols have been renamed:
 SDL_LoadFunction() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to the appropriate function type. You can define SDL_FUNCTION_POINTER_IS_VOID_POINTER in your project to restore the previous behavior.
 
 ## SDL_log.h
+
+The following macros have been removed:
+* SDL_MAX_LOG_MESSAGE - there's no message length limit anymore. If you need an artificial limit, this used to be 4096 in SDL versions before 2.0.24.
 
 The following functions have been renamed:
 * SDL_LogGetOutputFunction() => SDL_GetLogOutputFunction()
@@ -969,29 +986,8 @@ The following functions have been renamed:
 * SDL_MasksToPixelFormatEnum() => SDL_GetPixelFormatEnumForMasks()
 * SDL_PixelFormatEnumToMasks() => SDL_GetMasksForPixelFormatEnum()
 
-The following symbols have been renamed:
-* SDL_DISPLAYEVENT_DISCONNECTED => SDL_EVENT_DISPLAY_REMOVED
-* SDL_DISPLAYEVENT_MOVED => SDL_EVENT_DISPLAY_MOVED
-* SDL_DISPLAYEVENT_ORIENTATION => SDL_EVENT_DISPLAY_ORIENTATION
-* SDL_WINDOWEVENT_CLOSE => SDL_EVENT_WINDOW_CLOSE_REQUESTED
-* SDL_WINDOWEVENT_DISPLAY_CHANGED => SDL_EVENT_WINDOW_DISPLAY_CHANGED
-* SDL_WINDOWEVENT_ENTER => SDL_EVENT_WINDOW_ENTER
-* SDL_WINDOWEVENT_EXPOSED => SDL_EVENT_WINDOW_EXPOSED
-* SDL_WINDOWEVENT_FOCUS_GAINED => SDL_EVENT_WINDOW_FOCUS_GAINED
-* SDL_WINDOWEVENT_FOCUS_LOST => SDL_EVENT_WINDOW_FOCUS_LOST
-* SDL_WINDOWEVENT_HIDDEN => SDL_EVENT_WINDOW_HIDDEN
-* SDL_WINDOWEVENT_HIT_TEST => SDL_EVENT_WINDOW_HIT_TEST
-* SDL_WINDOWEVENT_ICCPROF_CHANGED => SDL_EVENT_WINDOW_ICCPROF_CHANGED
-* SDL_WINDOWEVENT_LEAVE => SDL_EVENT_WINDOW_LEAVE
-* SDL_WINDOWEVENT_MAXIMIZED => SDL_EVENT_WINDOW_MAXIMIZED
-* SDL_WINDOWEVENT_MINIMIZED => SDL_EVENT_WINDOW_MINIMIZED
-* SDL_WINDOWEVENT_MOVED => SDL_EVENT_WINDOW_MOVED
-* SDL_WINDOWEVENT_RESIZED => SDL_EVENT_WINDOW_RESIZED
-* SDL_WINDOWEVENT_RESTORED => SDL_EVENT_WINDOW_RESTORED
-* SDL_WINDOWEVENT_SHOWN => SDL_EVENT_WINDOW_SHOWN
-* SDL_WINDOWEVENT_SIZE_CHANGED => SDL_EVENT_WINDOW_SIZE_CHANGED
-* SDL_WINDOWEVENT_TAKE_FOCUS => SDL_EVENT_WINDOW_TAKE_FOCUS
-
+The following macros have been removed:
+* SDL_Colour - use SDL_Color instead
 
 ## SDL_platform.h
 
@@ -1043,6 +1039,19 @@ The following platform preprocessor macros have been removed:
 * `__PNACL__`
 * `__WINDOWS__`
 
+## SDL_quit.h
+
+SDL_quit.h has been completely removed. It only had one symbol in it--SDL_QuitRequested--and if you want it, you can just add this to your app...
+
+```c
+#define SDL_QuitRequested() (SDL_PumpEvents(), (SDL_PeepEvents(NULL,0,SDL_PEEKEVENT,SDL_EVENT_QUIT,SDL_EVENT_QUIT) > 0))
+```
+
+...but this macro is sort of messy, calling two functions in sequence in an expression.
+
+The following macros have been removed:
+* SDL_QuitRequested - call SDL_PumpEvents() then SDL_PeepEvents() directly, instead.
+
 ## SDL_rect.h
 
 The following functions have been renamed:
@@ -1083,14 +1092,7 @@ which index is the "opengl" or whatnot driver, you can just pass that string dir
 here, now. Passing NULL is the same as passing -1 here in SDL2, to signify you want SDL
 to decide for you.
 
-The SDL_RENDERER_TARGETTEXTURE flag has been removed, all current renderers support target texture functionality.
-
-When a renderer is created, it will automatically set the logical size to the size of
-the window in points. For high DPI displays, this will set up scaling from points to
-pixels. You can disable this scaling with:
-```c
-    SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_SCALEMODE_NEAREST);
-```
+SDL_CreateWindowAndRenderer() now takes the window title as the first parameter.
 
 Mouse and touch events are no longer filtered to change their coordinates, instead you
 can call SDL_ConvertEventToRenderCoordinates() to explicitly map event coordinates into
@@ -1136,7 +1138,6 @@ The following functions have been renamed:
 * SDL_RenderIsClipEnabled() => SDL_RenderClipEnabled()
 * SDL_RenderLogicalToWindow() => SDL_RenderCoordinatesToWindow()
 * SDL_RenderSetClipRect() => SDL_SetRenderClipRect()
-* SDL_RenderSetIntegerScale() => SDL_SetRenderIntegerScale()
 * SDL_RenderSetLogicalSize() => SDL_SetRenderLogicalPresentation()
 * SDL_RenderSetScale() => SDL_SetRenderScale()
 * SDL_RenderSetVSync() => SDL_SetRenderVSync()
@@ -1152,11 +1153,18 @@ The following functions have been removed:
 * SDL_RenderTargetSupported() - render targets are always supported
 * SDL_SetTextureUserData() - use SDL_GetTextureProperties() instead
 
+The following enums have been renamed:
+* SDL_RendererFlip => SDL_FlipMode - moved to SDL_surface.h
+
 The following symbols have been renamed:
-* SDL_RendererFlip => SDL_FlipMode
 * SDL_ScaleModeBest => SDL_SCALEMODE_BEST
 * SDL_ScaleModeLinear => SDL_SCALEMODE_LINEAR
 * SDL_ScaleModeNearest => SDL_SCALEMODE_NEAREST
+
+The following symbols have been removed:
+* SDL_RENDERER_ACCELERATED - all renderers except `SDL_SOFTWARE_RENDERER` are accelerated
+* SDL_RENDERER_SOFTWARE - you can check whether the name of the renderer is `SDL_SOFTWARE_RENDERER`
+* SDL_RENDERER_TARGETTEXTURE - all renderers support target texture functionality
 
 ## SDL_rwops.h
 
@@ -1185,8 +1193,8 @@ size_t SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size, size_t maxn
 But now they look more like POSIX:
 
 ```c
-size_t SDL_ReadIO(void *userdata, void *ptr, size_t size);
-size_t SDL_WriteIO(void *userdata, const void *ptr, size_t size);
+size_t SDL_ReadIO(SDL_IOStream *context, void *ptr, size_t size);
+size_t SDL_WriteIO(SDL_IOStream *context, const void *ptr, size_t size);
 ```
 
 Code that used to look like this:
@@ -1404,6 +1412,21 @@ This header has been removed and a simplified version of this API has been added
 The standard C headers like stdio.h and stdlib.h are no longer included, you should include them directly in your project if you use non-SDL C runtime functions.
 M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D (double) and SDL_PI_F (float) instead.
 
+SDL3 attempts to apply consistency to case-insensitive string functions. In SDL2, things like SDL_strcasecmp() would usually only work on English letters, and depending on the user's locale, possibly not even those. In SDL3, consistency is applied:
+
+- Many things that don't care about case-insensitivity, like SDL_strcmp(), continue to work with any null-terminated string of bytes, even if it happens to be malformed UTF-8.
+- SDL_strcasecmp() expects valid UTF-8 strings, and will attempt to support _most_ Unicode characters with a technique known as "case-folding," which is to say it can match 'A' and 'a', and also 'Η' and 'η', but ALSO 'ß' and "ss". This is _probably_ how most apps assumed it worked in SDL2 and won't need any changes.
+- SDL_strncasecmp() works the same, but the third parameter takes _bytes_, as before, so SDL_strlen() can continue to be used with it. If a string hits the limit in the middle of a codepoint, the half-processed bytes of the codepoint will be treated as a collection of U+0xFFFD (REPLACEMENT CHARACTER) codepoints, which you probably don't want.
+- SDL_wcscasecmp() and SDL_wcsncasecmp() work the same way but operate on UTF-16 or UTF-32 encoded strings, depending on what the platform considers "wchar_t" to be. SDL_wcsncasecmp's third parameter is number of wchar_t values, not bytes, but UTF-16 has the same concerns as UTF-8 for variable-length codepoints.
+- SDL_strcasestr() expects valid UTF-8 strings, and will compare codepoints using case-folding.
+- SDL_tolower() and SDL_toupper() continue to only work on single bytes (even though the parameter is an `int`) and _only_ converts low-ASCII English A through Z.
+- SDL_strlwr() and SDL_strupr() operates on individual bytes (not UTF-8 codepoints) and only change low-ASCII English 'A' through 'Z'. These functions do not check the string for valid UTF-8 encoding.
+- The ctype.h replacement SDL_is*() functions (SDL_isalpha, SDL_isdigit, etc) only work on low-ASCII characters and ignore user locale, assuming English. This makes these functions consistent in SDL3, but applications need to be careful to understand their limits.
+
+Please note that the case-folding technique used by SDL3 will not produce correct results for the "Turkish 'I'"; this one letter is a surprisingly hard problem in the Unicode world, and since these functions do not specify the human language in use, we have chosen to ignore this problem.
+
+The following macros have been removed:
+* SDL_TABLESIZE() - use SDL_arraysize() instead
 
 The following functions have been renamed:
 * SDL_strtokr() => SDL_strtok_r()
@@ -1493,10 +1516,19 @@ SDL_AndroidGetExternalStorageState() takes the state as an output parameter and 
 
 SDL_AndroidRequestPermission is no longer a blocking call; the caller now provides a callback function that fires when a response is available.
 
+SDL_iPhoneSetAnimationCallback() and SDL_iPhoneSetEventPump() have been renamed to SDL_iOSSetAnimationCallback() and SDL_iOSSetEventPump(), respectively. SDL2 has had macros to provide this new name with the old symbol since the introduction of the iPad, but now the correctly-named symbol is the only option.
+
+
 The following functions have been removed:
 * SDL_RenderGetD3D11Device() - replaced with the "SDL.renderer.d3d11.device" property
 * SDL_RenderGetD3D12Device() - replaced with the "SDL.renderer.d3d12.device" property
 * SDL_RenderGetD3D9Device() - replaced with the "SDL.renderer.d3d9.device" property
+* SDL_WinRTGetFSPathUNICODE() - Use SDL_WinRTGetFSPath() and SDL_iconv_string to convert from UTF-8 to UTF-16.
+
+The following functions have been renamed:
+* SDL_WinRTGetFSPathUTF8() => SDL_WinRTGetFSPath()
+* SDL_iPhoneSetAnimationCallback() => SDL_iOSSetAnimationCallback()
+* SDL_iPhoneSetEventPump() => SDL_iOSSetEventPump()
 
 ## SDL_syswm.h
 
@@ -1610,15 +1642,19 @@ If you were using this macro for other things besides SDL ticks values, you can 
 
 ## SDL_touch.h
 
-SDL_GetNumTouchFingers() returns a negative error code if there was an error.
-
 SDL_GetTouchName is replaced with SDL_GetTouchDeviceName(), which takes an SDL_TouchID instead of an index.
 
 SDL_TouchID and SDL_FingerID are now Uint64 with 0 being an invalid value.
 
+Rather than iterating over touch devices using an index, there is a new function SDL_GetTouchDevices() to get the available devices.
+
+Rather than iterating over touch fingers using an index, there is a new function SDL_GetTouchFingers() to get the current set of active fingers.
+
 The following functions have been removed:
 * SDL_GetNumTouchDevices() - replaced with SDL_GetTouchDevices()
+* SDL_GetNumTouchFingers() - replaced with SDL_GetTouchFingers()
 * SDL_GetTouchDevice() - replaced with SDL_GetTouchDevices()
+* SDL_GetTouchFinger() - replaced with SDL_GetTouchFingers()
 
 
 ## SDL_version.h
@@ -1736,10 +1772,12 @@ The following functions have been renamed:
 
 The following functions have been removed:
 * SDL_GetClosestFullscreenDisplayMode()
-* SDL_GetDisplayDPI() - not reliable across platforms, approximately replaced by multiplying `display_scale` in the structure returned by SDL_GetDesktopDisplayMode() times 160 on iPhone and Android, and 96 on other platforms.
+* SDL_GetDisplayDPI() - not reliable across platforms, approximately replaced by multiplying SDL_GetWindowDisplayScale() times 160 on iPhone and Android, and 96 on other platforms.
 * SDL_GetDisplayMode()
 * SDL_GetNumDisplayModes() - replaced with SDL_GetFullscreenDisplayModes()
 * SDL_GetNumVideoDisplays() - replaced with SDL_GetDisplays()
+* SDL_SetWindowGrab() - use SDL_SetWindowMouseGrab() instead, along with SDL_SetWindowKeyboardGrab() if you also set SDL_HINT_GRAB_KEYBOARD.
+* SDL_GetWindowGrab() - use SDL_GetWindowMouseGrab() instead, along with SDL_GetWindowKeyboardGrab() if you also set SDL_HINT_GRAB_KEYBOARD.
 * SDL_GetWindowData() - use SDL_GetWindowProperties() instead
 * SDL_SetWindowData() - use SDL_GetWindowProperties() instead
 * SDL_CreateWindowFrom() - use SDL_CreateWindowWithProperties() with the properties that allow you to wrap an existing window
@@ -1747,6 +1785,27 @@ The following functions have been removed:
 The SDL_Window id type is named SDL_WindowID
 
 The following symbols have been renamed:
+* SDL_DISPLAYEVENT_DISCONNECTED => SDL_EVENT_DISPLAY_REMOVED
+* SDL_DISPLAYEVENT_MOVED => SDL_EVENT_DISPLAY_MOVED
+* SDL_DISPLAYEVENT_ORIENTATION => SDL_EVENT_DISPLAY_ORIENTATION
+* SDL_WINDOWEVENT_CLOSE => SDL_EVENT_WINDOW_CLOSE_REQUESTED
+* SDL_WINDOWEVENT_DISPLAY_CHANGED => SDL_EVENT_WINDOW_DISPLAY_CHANGED
+* SDL_WINDOWEVENT_ENTER => SDL_EVENT_WINDOW_MOUSE_ENTER
+* SDL_WINDOWEVENT_EXPOSED => SDL_EVENT_WINDOW_EXPOSED
+* SDL_WINDOWEVENT_FOCUS_GAINED => SDL_EVENT_WINDOW_FOCUS_GAINED
+* SDL_WINDOWEVENT_FOCUS_LOST => SDL_EVENT_WINDOW_FOCUS_LOST
+* SDL_WINDOWEVENT_HIDDEN => SDL_EVENT_WINDOW_HIDDEN
+* SDL_WINDOWEVENT_HIT_TEST => SDL_EVENT_WINDOW_HIT_TEST
+* SDL_WINDOWEVENT_ICCPROF_CHANGED => SDL_EVENT_WINDOW_ICCPROF_CHANGED
+* SDL_WINDOWEVENT_LEAVE => SDL_EVENT_WINDOW_MOUSE_LEAVE
+* SDL_WINDOWEVENT_MAXIMIZED => SDL_EVENT_WINDOW_MAXIMIZED
+* SDL_WINDOWEVENT_MINIMIZED => SDL_EVENT_WINDOW_MINIMIZED
+* SDL_WINDOWEVENT_MOVED => SDL_EVENT_WINDOW_MOVED
+* SDL_WINDOWEVENT_RESIZED => SDL_EVENT_WINDOW_RESIZED
+* SDL_WINDOWEVENT_RESTORED => SDL_EVENT_WINDOW_RESTORED
+* SDL_WINDOWEVENT_SHOWN => SDL_EVENT_WINDOW_SHOWN
+* SDL_WINDOWEVENT_SIZE_CHANGED => SDL_EVENT_WINDOW_SIZE_CHANGED
+* SDL_WINDOWEVENT_TAKE_FOCUS => SDL_EVENT_WINDOW_TAKE_FOCUS
 * SDL_WINDOW_ALLOW_HIGHDPI => SDL_WINDOW_HIGH_PIXEL_DENSITY
 * SDL_WINDOW_INPUT_GRABBED => SDL_WINDOW_MOUSE_GRABBED
 
@@ -1760,10 +1819,12 @@ a corresponding event has been received:
 * SDL_SetWindowFullscreen() (SDL_EVENT_WINDOW_ENTER_FULLSCREEN / SDL_EVENT_WINDOW_LEAVE_FULLSCREEN)
 
 If it is required that operations be applied immediately after one of the preceeding calls, the `SDL_SyncWindow()` function
-will attempt to wait until all pending window operations have completed. Be aware that this function can potentially block for
-long periods of time, as it may have to wait for window animations to complete. Also note that windowing systems can deny or
-not precisely obey these requests (e.g. windows may not be allowed to be larger than the usable desktop space or placed
-offscreen), so a corresponding event may never arrive or not contain the expected values.
+will attempt to wait until all pending window operations have completed. The `SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS` hint
+can also be set to automatically synchronize after all calls to an asynchronous window operation, mimicking the behavior
+of SDL 2. Be aware that synchronizing can potentially block for long periods of time, as it may have to wait for window
+animations to complete. Also note that windowing systems can deny or not precisely obey these requests (e.g. windows may
+not be allowed to be larger than the usable desktop space or placed offscreen), so a corresponding event may never arrive
+or not contain the expected values.
 
 ## SDL_vulkan.h
 

@@ -34,6 +34,7 @@
 #include "../SDL_properties_c.h"
 #include "../timer/SDL_timer_c.h"
 #include "../camera/SDL_camera_c.h"
+#include "../render/SDL_sysrender.h"
 
 #ifdef SDL_VIDEO_OPENGL
 #include <SDL3/SDL_opengl.h>
@@ -179,6 +180,11 @@ static SDL_bool SDL_SendsFullscreenDimensions(SDL_VideoDevice *_this)
     return !!(_this->device_caps & VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS);
 }
 
+static SDL_bool IsFullscreenOnly(SDL_VideoDevice *_this)
+{
+    return !!(_this->device_caps & VIDEO_DEVICE_CAPS_FULLSCREEN_ONLY);
+}
+
 /* Hint to treat all window ops as synchronous */
 static SDL_bool syncHint;
 
@@ -191,6 +197,33 @@ static void SDL_SyncIfRequired(SDL_Window *window)
 {
     if (syncHint) {
         SDL_SyncWindow(window);
+    }
+}
+
+static void SDL_SetWindowParent(SDL_Window *window, SDL_Window *parent)
+{
+    /* Unlink the window from the existing parent. */
+    if (window->parent) {
+        if (window->next_sibling) {
+            window->next_sibling->prev_sibling = window->prev_sibling;
+        }
+        if (window->prev_sibling) {
+            window->prev_sibling->next_sibling = window->next_sibling;
+        } else {
+            window->parent->first_child = window->next_sibling;
+        }
+
+        window->parent = NULL;
+    }
+
+    if (parent) {
+        window->parent = parent;
+
+        window->next_sibling = parent->first_child;
+        if (parent->first_child) {
+            parent->first_child->prev_sibling = window;
+        }
+        parent->first_child = window;
     }
 }
 
@@ -253,30 +286,25 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
         const SDL_bool specific_accelerated_renderer = (hint && *hint != '0' && *hint != '1' &&
                                                         SDL_strcasecmp(hint, "true") != 0 &&
                                                         SDL_strcasecmp(hint, "false") != 0 &&
-                                                        SDL_strcasecmp(hint, "software") != 0);
+                                                        SDL_strcasecmp(hint, SDL_SOFTWARE_RENDERER) != 0);
 
         /* Check to see if there's a specific driver requested */
         if (specific_accelerated_renderer) {
             renderer = SDL_CreateRenderer(window, hint, 0);
-            if (!renderer || (SDL_GetRendererInfo(renderer, &info) == -1)) {
+            if (!renderer || (SDL_GetRendererInfo(renderer, &info) < 0)) {
                 if (renderer) {
                     SDL_DestroyRenderer(renderer);
                 }
                 return SDL_SetError("Requested renderer for " SDL_HINT_FRAMEBUFFER_ACCELERATION " is not available");
             }
-            /* if it was specifically requested, even if SDL_RENDERER_ACCELERATED isn't set, we'll accept this renderer. */
         } else {
             const int total = SDL_GetNumRenderDrivers();
             for (i = 0; i < total; ++i) {
                 const char *name = SDL_GetRenderDriver(i);
-                if (name && (SDL_strcmp(name, "software") != 0)) {
+                if (name && (SDL_strcmp(name, SDL_SOFTWARE_RENDERER) != 0)) {
                     renderer = SDL_CreateRenderer(window, name, 0);
-                    if (renderer && (SDL_GetRendererInfo(renderer, &info) == 0) && (info.flags & SDL_RENDERER_ACCELERATED)) {
+                    if (renderer) {
                         break; /* this will work. */
-                    }
-                    if (renderer) { /* wasn't accelerated, etc, skip it. */
-                        SDL_DestroyRenderer(renderer);
-                        renderer = NULL;
                     }
                 }
             }
@@ -296,10 +324,10 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
         SDL_SetPropertyWithCleanup(props, SDL_PROP_WINDOW_TEXTUREDATA_POINTER, data, SDL_CleanupWindowTextureData, NULL);
 
         data->renderer = renderer;
-    } else {
-        if (SDL_GetRendererInfo(data->renderer, &info) == -1) {
-            return -1;
-        }
+    }
+
+    if (SDL_GetRendererInfo(data->renderer, &info) < 0) {
+        return -1;
     }
 
     /* Free any old texture and pixel data */
@@ -314,9 +342,12 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
     *format = info.texture_formats[0];
 
     for (i = 0; i < info.num_texture_formats; ++i) {
-        if (!SDL_ISPIXELFORMAT_FOURCC(info.texture_formats[i]) &&
-            transparent == SDL_ISPIXELFORMAT_ALPHA(info.texture_formats[i])) {
-            *format = info.texture_formats[i];
+        SDL_PixelFormatEnum texture_format = info.texture_formats[i];
+        if (!SDL_ISPIXELFORMAT_FOURCC(texture_format) &&
+            !SDL_ISPIXELFORMAT_10BIT(texture_format) &&
+            !SDL_ISPIXELFORMAT_FLOAT(texture_format) &&
+            transparent == SDL_ISPIXELFORMAT_ALPHA(texture_format)) {
+            *format = texture_format;
             break;
         }
     }
@@ -620,6 +651,28 @@ SDL_SystemTheme SDL_GetSystemTheme(void)
     }
 }
 
+static void SDL_UpdateDesktopBounds()
+{
+    SDL_Rect rect;
+    SDL_zero(rect);
+
+    SDL_DisplayID *displays = SDL_GetDisplays(NULL);
+    if (displays) {
+        for (int i = 0; displays[i]; ++i) {
+            SDL_Rect bounds;
+            if (SDL_GetDisplayBounds(displays[i], &bounds) == 0) {
+                if (i == 0) {
+                    SDL_copyp(&rect, &bounds);
+                } else {
+                    SDL_GetRectUnion(&rect, &bounds, &rect);
+                }
+            }
+        }
+        SDL_free(displays);
+    }
+    SDL_copyp(&_this->desktop_bounds, &rect);
+}
+
 static void SDL_FinalizeDisplayMode(SDL_DisplayMode *mode)
 {
     /* Make sure all the fields are set up correctly */
@@ -701,6 +754,8 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
         SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_HDR_HEADROOM_FLOAT, display->HDR.HDR_headroom);
     }
 
+    SDL_UpdateDesktopBounds();
+
     return id;
 }
 
@@ -712,6 +767,11 @@ void SDL_OnDisplayAdded(SDL_VideoDisplay *display)
     for (window = _this->windows; window; window = window->next) {
         SDL_CheckWindowDisplayChanged(window);
     }
+}
+
+void SDL_OnDisplayMoved(SDL_VideoDisplay *display)
+{
+    SDL_UpdateDesktopBounds();
 }
 
 void SDL_DelVideoDisplay(SDL_DisplayID displayID, SDL_bool send_event)
@@ -741,6 +801,8 @@ void SDL_DelVideoDisplay(SDL_DisplayID displayID, SDL_bool send_event)
         SDL_memmove(&_this->displays[display_index], &_this->displays[display_index + 1], (_this->num_displays - display_index - 1) * sizeof(_this->displays[display_index]));
     }
     --_this->num_displays;
+
+    SDL_UpdateDesktopBounds();
 }
 
 SDL_DisplayID *SDL_GetDisplays(int *count)
@@ -1245,8 +1307,11 @@ const SDL_DisplayMode *SDL_GetCurrentDisplayMode(SDL_DisplayID displayID)
 
 int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
-    /* Mode switching is being emulated per-window; nothing to do and cannot fail. */
-    if (SDL_ModeSwitchingEmulated(_this)) {
+    /* Mode switching is being emulated per-window; nothing to do and cannot fail,
+     * except for XWayland, which still needs the actual mode setting call since
+     * it's emulated via the XRandR interface.
+     */
+    if (SDL_ModeSwitchingEmulated(_this) && SDL_strcmp(_this->name, "x11") != 0) {
         return 0;
     }
 
@@ -1390,7 +1455,7 @@ SDL_DisplayID SDL_GetDisplayForRect(const SDL_Rect *rect)
     return GetDisplayForRect(rect->x, rect->y, rect->w, rect->h);
 }
 
-static SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window)
+SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window)
 {
     int x, y;
     SDL_DisplayID displayID = 0;
@@ -1408,7 +1473,15 @@ static SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window)
     SDL_RelativeToGlobalForWindow(window, window->x, window->y, &x, &y);
 
     if (!displayID) {
-        displayID = GetDisplayForRect(x, y, window->w, window->h);
+        /* Fullscreen windows may be larger than the display if they were moved between differently sized
+         * displays and the new position was received before the new size or vice versa. Using the center
+         * of the window rect in this case can report the wrong display, so use the origin.
+         */
+        if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            displayID = GetDisplayForRect(x, y, 1, 1);
+        } else {
+            displayID = GetDisplayForRect(x, y, window->w, window->h);
+        }
     }
     if (!displayID) {
         /* Use the primary display for a window if we can't find it anywhere else */
@@ -1438,9 +1511,9 @@ SDL_VideoDisplay *SDL_GetVideoDisplayForFullscreenWindow(SDL_Window *window)
     if (!displayID) {
         if (window->flags & SDL_WINDOW_FULLSCREEN && !window->is_repositioning) {
             /* This was a window manager initiated move, use the current position. */
-            displayID = GetDisplayForRect(window->x, window->y, window->w, window->h);
+            displayID = GetDisplayForRect(window->x, window->y, 1, 1);
         } else {
-            displayID = GetDisplayForRect(window->floating.x, window->floating.y, window->w, window->h);
+            displayID = GetDisplayForRect(window->floating.x, window->floating.y, window->floating.w, window->floating.h);
         }
     }
     if (!displayID) {
@@ -1911,12 +1984,7 @@ static void ApplyWindowFlags(SDL_Window *window, SDL_WindowFlags flags)
     }
 
     if (flags & SDL_WINDOW_MOUSE_GRABBED) {
-        /* We must specifically call SDL_SetWindowGrab() and not
-           SDL_SetWindowMouseGrab() here because older applications may use
-           this flag plus SDL_HINT_GRAB_KEYBOARD to indicate that they want
-           the keyboard grabbed too and SDL_SetWindowMouseGrab() won't do that.
-        */
-        SDL_SetWindowGrab(window, SDL_TRUE);
+        SDL_SetWindowMouseGrab(window, SDL_TRUE);
     }
     if (flags & SDL_WINDOW_KEYBOARD_GRABBED) {
         SDL_SetWindowKeyboardGrab(window, SDL_TRUE);
@@ -1961,6 +2029,7 @@ static struct {
     { SDL_PROP_WINDOW_CREATE_MENU_BOOLEAN,               SDL_WINDOW_POPUP_MENU,          SDL_FALSE },
     { SDL_PROP_WINDOW_CREATE_METAL_BOOLEAN,              SDL_WINDOW_METAL,               SDL_FALSE },
     { SDL_PROP_WINDOW_CREATE_MINIMIZED_BOOLEAN,          SDL_WINDOW_MINIMIZED,           SDL_FALSE },
+    { SDL_PROP_WINDOW_CREATE_MODAL_BOOLEAN,              SDL_WINDOW_MODAL,               SDL_FALSE },
     { SDL_PROP_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN,      SDL_WINDOW_MOUSE_GRABBED,       SDL_FALSE },
     { SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN,             SDL_WINDOW_OPENGL,              SDL_FALSE },
     { SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN,          SDL_WINDOW_RESIZABLE,           SDL_FALSE },
@@ -2016,6 +2085,11 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         }
     }
 
+    if ((flags & SDL_WINDOW_MODAL) && (!parent || parent->magic != &_this->window_magic)) {
+        SDL_SetError("Modal windows must specify a parent window");
+        return NULL;
+    }
+
     if ((flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU)) != 0) {
         if (!(_this->device_caps & VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT)) {
             SDL_Unsupported();
@@ -2033,7 +2107,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     }
 
     /* Ensure no more than one of these flags is set */
-    type_flags = flags & (SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU);
+    type_flags = flags & (SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_MODAL);
     if (type_flags & (type_flags - 1)) {
         SDL_SetError("Conflicting window type flags specified: 0x%.8x", (unsigned int)type_flags);
         return NULL;
@@ -2134,7 +2208,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     window->undefined_x = undefined_x;
     window->undefined_y = undefined_y;
 
-    if (flags & SDL_WINDOW_FULLSCREEN) {
+    if (flags & SDL_WINDOW_FULLSCREEN || IsFullscreenOnly(_this)) {
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
         SDL_Rect bounds;
 
@@ -2143,6 +2217,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         window->y = bounds.y;
         window->w = bounds.w;
         window->h = bounds.h;
+        flags |= SDL_WINDOW_FULLSCREEN;
     }
 
     window->flags = ((flags & CREATE_FLAGS) | SDL_WINDOW_HIDDEN);
@@ -2158,14 +2233,9 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     }
     _this->windows = window;
 
-    if (parent) {
-        window->parent = parent;
-
-        window->next_sibling = parent->first_child;
-        if (parent->first_child) {
-            parent->first_child->prev_sibling = window;
-        }
-        parent->first_child = window;
+    /* Set the parent before creation if this is non-modal, otherwise it will be set later. */
+    if (!(flags & SDL_WINDOW_MODAL)) {
+        SDL_SetWindowParent(window, parent);
     }
 
     if (_this->CreateSDLWindow && _this->CreateSDLWindow(_this, window, props) < 0) {
@@ -2194,6 +2264,9 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     flags = window->flags;
 #endif
 
+    if (flags & SDL_WINDOW_MODAL) {
+        SDL_SetWindowModalFor(window, parent);
+    }
     if (title) {
         SDL_SetWindowTitle(window, title);
     }
@@ -2251,6 +2324,7 @@ int SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
     SDL_bool need_vulkan_unload = SDL_FALSE;
     SDL_bool need_vulkan_load = SDL_FALSE;
     SDL_WindowFlags graphics_flags;
+    SDL_Window *parent = window->parent;
 
     /* ensure no more than one of these flags is set */
     graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
@@ -2273,6 +2347,11 @@ int SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
         flags |= SDL_WINDOW_EXTERNAL;
     } else {
         flags &= ~SDL_WINDOW_EXTERNAL;
+    }
+
+    /* If this is a modal dialog, clear the modal status. */
+    if (window->flags & SDL_WINDOW_MODAL) {
+        SDL_SetWindowModalFor(window, NULL);
     }
 
     /* Restore video mode, etc. */
@@ -2366,6 +2445,10 @@ int SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
 
     if (flags & SDL_WINDOW_EXTERNAL) {
         window->flags |= SDL_WINDOW_EXTERNAL;
+    }
+
+    if (flags & SDL_WINDOW_MODAL) {
+        SDL_SetWindowModalFor(window, parent);
     }
 
     if (_this->SetWindowTitle && window->title) {
@@ -3051,7 +3134,7 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
         /* See if the user or application wants to specifically disable the framebuffer */
         const char *hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
         if (hint) {
-            if ((*hint == '0') || (SDL_strcasecmp(hint, "false") == 0) || (SDL_strcasecmp(hint, "software") == 0)) {
+            if ((*hint == '0') || (SDL_strcasecmp(hint, "false") == 0) || (SDL_strcasecmp(hint, SDL_SOFTWARE_RENDERER) == 0)) {
                 attempt_texture_framebuffer = SDL_FALSE;
             }
         }
@@ -3081,7 +3164,7 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
 #endif
 
         if (attempt_texture_framebuffer) {
-            if (SDL_CreateWindowTexture(_this, window, &format, &pixels, &pitch) == -1) {
+            if (SDL_CreateWindowTexture(_this, window, &format, &pixels, &pitch) < 0) {
                 /* !!! FIXME: if this failed halfway (made renderer, failed to make texture, etc),
                    !!! FIXME:  we probably need to clean this up so it doesn't interfere with
                    !!! FIXME:  a software fallback at the system level (can we blit to an
@@ -3217,15 +3300,35 @@ int SDL_GetWindowOpacity(SDL_Window *window, float *out_opacity)
 int SDL_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window)
 {
     CHECK_WINDOW_MAGIC(modal_window, -1);
-    CHECK_WINDOW_MAGIC(parent_window, -1);
     CHECK_WINDOW_NOT_POPUP(modal_window, -1);
-    CHECK_WINDOW_NOT_POPUP(parent_window, -1);
+
+    if (parent_window) {
+        CHECK_WINDOW_MAGIC(parent_window, -1);
+        CHECK_WINDOW_NOT_POPUP(parent_window, -1);
+    }
 
     if (!_this->SetWindowModalFor) {
         return SDL_Unsupported();
     }
 
-    return _this->SetWindowModalFor(_this, modal_window, parent_window);
+    if (parent_window) {
+        modal_window->flags |= SDL_WINDOW_MODAL;
+    } else if (modal_window->flags & SDL_WINDOW_MODAL) {
+        modal_window->flags &= ~SDL_WINDOW_MODAL;
+    } else {
+        return 0; /* Not modal; nothing to do. */
+    }
+
+    const int ret = _this->SetWindowModalFor(_this, modal_window, parent_window);
+
+    /* The existing parent might be needed when changing the modal status,
+     * so don't change the heirarchy until after setting the new modal state.
+     */
+    if (!ret) {
+        SDL_SetWindowParent(modal_window, !ret ? parent_window : NULL);
+    }
+
+    return ret;
 }
 
 int SDL_SetWindowInputFocus(SDL_Window *window)
@@ -3311,23 +3414,6 @@ void SDL_UpdateWindowGrab(SDL_Window *window)
     }
 }
 
-int SDL_SetWindowGrab(SDL_Window *window, SDL_bool grabbed)
-{
-    int ret_mouse_grab = 0;
-    int ret_keyboard_grab = 0;
-
-    CHECK_WINDOW_MAGIC(window, -1);
-    CHECK_WINDOW_NOT_POPUP(window, -1);
-
-    ret_mouse_grab = SDL_SetWindowMouseGrab(window, grabbed);
-
-    if (SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE)) {
-        ret_keyboard_grab = SDL_SetWindowKeyboardGrab(window, grabbed);
-    }
-
-    return (!ret_mouse_grab && !ret_keyboard_grab) ? 0 : -1;
-}
-
 int SDL_SetWindowKeyboardGrab(SDL_Window *window, SDL_bool grabbed)
 {
     CHECK_WINDOW_MAGIC(window, -1);
@@ -3386,11 +3472,6 @@ int SDL_SetWindowMouseGrab(SDL_Window *window, SDL_bool grabbed)
         return -1;
     }
     return 0;
-}
-
-SDL_bool SDL_GetWindowGrab(SDL_Window *window)
-{
-    return SDL_GetWindowKeyboardGrab(window) || SDL_GetWindowMouseGrab(window);
 }
 
 SDL_bool SDL_GetWindowKeyboardGrab(SDL_Window *window)
@@ -3659,18 +3740,19 @@ void SDL_DestroyWindow(SDL_Window *window)
 
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DESTROYED, 0, 0);
 
+    SDL_Renderer *renderer = SDL_GetRenderer(window);
+    if (renderer) {
+        SDL_DestroyRendererWithoutFreeing(renderer);
+    }
+
     SDL_DestroyProperties(window->props);
 
-    /* If this is a child window, unlink it from its siblings */
-    if (window->parent) {
-        if (window->next_sibling) {
-            window->next_sibling->prev_sibling = window->prev_sibling;
-        }
-        if (window->prev_sibling) {
-            window->prev_sibling->next_sibling = window->next_sibling;
-        } else {
-            window->parent->first_child = window->next_sibling;
-        }
+    /* Clear the modal status, but don't unset the parent, as it may be
+     * needed later in the destruction process if a backend needs to
+     * update the input focus.
+     */
+    if (_this->SetWindowModalFor && (window->flags & SDL_WINDOW_MODAL)) {
+        _this->SetWindowModalFor(_this, window, NULL);
     }
 
     /* Restore video mode, etc. */
@@ -3739,6 +3821,9 @@ void SDL_DestroyWindow(SDL_Window *window)
     /* Free memory associated with the window */
     SDL_free(window->title);
     SDL_DestroySurface(window->icon);
+
+    /* Unlink the window from its siblings. */
+    SDL_SetWindowParent(window, NULL);
 
     /* Unlink the window from the list */
     if (window->next) {
@@ -4798,7 +4883,7 @@ void SDL_StartTextInput(void)
 
     /* Show the on-screen keyboard, if desired */
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
-    if (((!hint || SDL_strcasecmp(hint, "auto")) && !SDL_HasKeyboard()) ||
+    if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
         SDL_GetStringBoolean(hint, SDL_FALSE)) {
         SDL_Window *window = SDL_GetKeyboardFocus();
         if (window && _this->ShowScreenKeyboard) {
@@ -4820,15 +4905,6 @@ void SDL_ClearComposition(void)
     }
 }
 
-SDL_bool SDL_TextInputShown(void)
-{
-    if (_this && _this->IsTextInputShown) {
-        return _this->IsTextInputShown(_this);
-    }
-
-    return SDL_FALSE;
-}
-
 SDL_bool SDL_TextInputActive(void)
 {
     return _this && _this->text_input_active;
@@ -4844,10 +4920,11 @@ void SDL_StopTextInput(void)
     if (_this->StopTextInput) {
         _this->StopTextInput(_this);
     }
+    _this->text_input_active = SDL_FALSE;
 
     /* Hide the on-screen keyboard, if desired */
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
-    if (((!hint || SDL_strcasecmp(hint, "auto")) && !SDL_HasKeyboard()) ||
+    if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
         SDL_GetStringBoolean(hint, SDL_FALSE)) {
         SDL_Window *window = SDL_GetKeyboardFocus();
         if (window && _this->HideScreenKeyboard) {

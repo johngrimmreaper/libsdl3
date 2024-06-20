@@ -46,17 +46,17 @@
 #endif
 #endif
 
-#define DRM_FORMAT_MOD_VENDOR_NONE    0
-#define DRM_FORMAT_RESERVED	      ((1ULL << 56) - 1)
+#define DRM_FORMAT_MOD_VENDOR_NONE  0
+#define DRM_FORMAT_RESERVED         ((1ULL << 56) - 1)
 
 #define fourcc_mod_get_vendor(modifier) \
-	(((modifier) >> 56) & 0xff)
+    (((modifier) >> 56) & 0xff)
 
 #define fourcc_mod_is_vendor(modifier, vendor) \
-	(fourcc_mod_get_vendor(modifier) == DRM_FORMAT_MOD_VENDOR_## vendor)
+    (fourcc_mod_get_vendor(modifier) == DRM_FORMAT_MOD_VENDOR_## vendor)
 
 #define fourcc_mod_code(vendor, val) \
-	((((Uint64)DRM_FORMAT_MOD_VENDOR_## vendor) << 56) | ((val) & 0x00ffffffffffffffULL))
+    ((((Uint64)DRM_FORMAT_MOD_VENDOR_## vendor) << 56) | ((val) & 0x00ffffffffffffffULL))
 
 #define DRM_FORMAT_MOD_INVALID  fourcc_mod_code(NONE, DRM_FORMAT_RESERVED)
 #define DRM_FORMAT_MOD_LINEAR   fourcc_mod_code(NONE, 0)
@@ -285,7 +285,7 @@ static void MoveSprite(void)
     }
 }
 
-static Uint32 GetTextureFormat(enum AVPixelFormat format)
+static SDL_PixelFormatEnum GetTextureFormat(enum AVPixelFormat format)
 {
     switch (format) {
     case AV_PIX_FMT_RGB8:
@@ -478,6 +478,14 @@ static AVCodecContext *OpenVideoStream(AVFormatContext *ic, int stream, const AV
     /* Allow supported hardware accelerated pixel formats */
     context->get_format = GetSupportedPixelFormat;
 
+    if (codecpar->codec_id == AV_CODEC_ID_VVC) {
+        context->strict_std_compliance = -2;
+
+        /* Enable threaded decoding, VVC decode is slow */
+        context->thread_count = SDL_GetCPUCount();
+        context->thread_type = (FF_THREAD_FRAME | FF_THREAD_SLICE);
+    }
+
     result = avcodec_open2(context, codec, NULL);
     if (result < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open codec %s: %s", avcodec_get_name(context->codec_id), av_err2str(result));
@@ -509,7 +517,7 @@ static SDL_Colorspace GetFrameColorspace(AVFrame *frame)
     return colorspace;
 }
 
-static SDL_PropertiesID CreateVideoTextureProperties(AVFrame *frame, Uint32 format, int access)
+static SDL_PropertiesID CreateVideoTextureProperties(AVFrame *frame, SDL_PixelFormatEnum format, int access)
 {
     AVFrameSideData *pSideData;
     SDL_PropertiesID props;
@@ -569,8 +577,8 @@ static void SDLCALL FreeSwsContextContainer(void *userdata, void *value)
 static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
 {
     int texture_width = 0, texture_height = 0;
-    Uint32 texture_format = SDL_PIXELFORMAT_UNKNOWN;
-    Uint32 frame_format = GetTextureFormat(frame->format);
+    SDL_PixelFormatEnum texture_format = SDL_PIXELFORMAT_UNKNOWN;
+    SDL_PixelFormatEnum frame_format = GetTextureFormat(frame->format);
 
     if (*texture) {
         SDL_QueryTexture(*texture, &texture_format, NULL, &texture_width, &texture_height);
@@ -778,6 +786,7 @@ static SDL_bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     case SDL_COLOR_PRIMARIES_BT2020:
         attr[k++] = EGL_YUV_COLOR_SPACE_HINT_EXT;
         attr[k++] = EGL_ITU_REC2020_EXT;
+        break;
     default:
         break;
     }

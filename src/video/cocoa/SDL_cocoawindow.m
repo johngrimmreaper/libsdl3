@@ -599,6 +599,17 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
     return ret;
 }
 
+static NSCursor *Cocoa_GetDesiredCursor(void)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+
+    if (mouse->cursor_shown && mouse->cur_cursor && !mouse->relative_mode) {
+        return (__bridge NSCursor *)mouse->cur_cursor->driverdata;
+    }
+
+    return [NSCursor invisibleCursor];
+}
+
 @implementation Cocoa_WindowListener
 
 - (void)listen:(SDL_CocoaWindowData *)data
@@ -1592,12 +1603,24 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     NSPoint point;
     float x, y;
     SDL_Window *window;
+    NSView *contentView;
 
     if (!mouse) {
         return;
     }
 
     window = _data.window;
+    contentView = _data.sdlContentView;
+    point = [theEvent locationInWindow];
+
+    if ([contentView mouse:[contentView convertPoint:point fromView:nil] inRect:[contentView bounds]] &&
+        [NSCursor currentCursor] != Cocoa_GetDesiredCursor()) {
+        // The wrong cursor is on screen, fix it. This fixes an macOS bug that is only known to
+        // occur in fullscreen windows on the built-in displays of newer MacBooks with camera
+        // notches. When the mouse is moved near the top of such a window (within about 44 units)
+        // and then moved back down, the cursor rects aren't respected.
+        [_data.nswindow invalidateCursorRectsForView:contentView];
+    }
 
     if (window->flags & SDL_WINDOW_TRANSPARENT) {
         [self updateIgnoreMouseState:theEvent];
@@ -1612,7 +1635,6 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
         return;
     }
 
-    point = [theEvent locationInWindow];
     x = point.x;
     y = (window->h - point.y);
 
@@ -1694,17 +1716,21 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
         }
     }
     if (existingTouchCount == 0) {
-        int numFingers = SDL_GetNumTouchFingers(touchID);
-        DLog("Reset Lost Fingers: %d", numFingers);
-        for (--numFingers; numFingers >= 0; --numFingers) {
-            SDL_Finger *finger = SDL_GetTouchFinger(touchID, numFingers);
-            /* trackpad touches have no window. If we really wanted one we could
-             * use the window that has mouse or keyboard focus.
-             * Sending a null window currently also prevents synthetic mouse
-             * events from being generated from touch events.
-             */
-            SDL_Window *window = NULL;
-            SDL_SendTouch(Cocoa_GetEventTimestamp([theEvent timestamp]), touchID, finger->id, window, SDL_FALSE, 0, 0, 0);
+        int numFingers;
+        SDL_Finger **fingers = SDL_GetTouchFingers(touchID, &numFingers);
+        if (fingers) {
+            DLog("Reset Lost Fingers: %d", numFingers);
+            for (--numFingers; numFingers >= 0; --numFingers) {
+                SDL_Finger *finger = fingers[numFingers];
+                /* trackpad touches have no window. If we really wanted one we could
+                 * use the window that has mouse or keyboard focus.
+                 * Sending a null window currently also prevents synthetic mouse
+                 * events from being generated from touch events.
+                 */
+                SDL_Window *window = NULL;
+                SDL_SendTouch(Cocoa_GetEventTimestamp([theEvent timestamp]), touchID, finger->id, window, SDL_FALSE, 0, 0, 0);
+            }
+            SDL_free(fingers);
         }
     }
 
@@ -1867,17 +1893,9 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
 
 - (void)resetCursorRects
 {
-    SDL_Mouse *mouse;
     [super resetCursorRects];
-    mouse = SDL_GetMouse();
-
-    if (mouse->cursor_shown && mouse->cur_cursor && !mouse->relative_mode) {
-        [self addCursorRect:[self bounds]
-                     cursor:(__bridge NSCursor *)mouse->cur_cursor->driverdata];
-    } else {
-        [self addCursorRect:[self bounds]
-                     cursor:[NSCursor invisibleCursor]];
-    }
+    [self addCursorRect:[self bounds]
+                 cursor:Cocoa_GetDesiredCursor()];
 }
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
@@ -2351,6 +2369,10 @@ void Cocoa_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 NSWindow *nsparent = ((__bridge SDL_CocoaWindowData *)window->parent->driverdata).nswindow;
                 [nsparent addChildWindow:nswindow ordered:NSWindowAbove];
             } else {
+                if ((window->flags & SDL_WINDOW_MODAL) && window->parent) {
+                    Cocoa_SetWindowModalFor(_this, window, window->parent);
+                }
+
                 if (bActivate) {
                     [nswindow makeKeyAndOrderFront:nil];
                 } else {
@@ -2383,6 +2405,11 @@ void Cocoa_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
         } else {
             [nswindow close];
         }
+
+        /* If this window is the source of a modal session, end it when
+         * hidden, or other windows will be prevented from closing.
+         */
+        Cocoa_SetWindowModalFor(_this, window, NULL);
 
         /* Transfer keyboard focus back to the parent */
         if (window->flags & SDL_WINDOW_POPUP_MENU) {
@@ -2812,7 +2839,8 @@ void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             }
             [data.listener close];
             data.listener = nil;
-            if (data.created) {
+
+            if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
                 /* Release the content view to avoid further updateLayer callbacks */
                 [data.nswindow setContentView:nil];
                 [data.nswindow close];
@@ -2907,6 +2935,24 @@ void Cocoa_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept)
             [data.nswindow unregisterDraggedTypes];
         }
     }
+}
+
+int Cocoa_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window)
+{
+    @autoreleasepool {
+        SDL_CocoaWindowData *modal_data = (__bridge SDL_CocoaWindowData *)modal_window->driverdata;
+
+        if (modal_data.modal_session) {
+            [NSApp endModalSession:modal_data.modal_session];
+            modal_data.modal_session = nil;
+        }
+
+        if (parent_window) {
+            modal_data.modal_session = [NSApp beginModalSessionForWindow:modal_data.nswindow];
+        }
+    }
+
+    return 0;
 }
 
 int Cocoa_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation)

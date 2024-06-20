@@ -907,9 +907,15 @@ int SDL_SetKeyboardFocus(SDL_Window *window)
 
         /* old window must lose an existing mouse capture. */
         if (keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE) {
-            SDL_CaptureMouse(SDL_FALSE); /* drop the capture. */
-            SDL_UpdateMouseCapture(SDL_TRUE);
-            SDL_assert(!(keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE));
+            SDL_Mouse *mouse = SDL_GetMouse();
+
+            if (mouse->CaptureMouse) {
+                SDL_CaptureMouse(SDL_FALSE); /* drop the capture. */
+                SDL_UpdateMouseCapture(SDL_TRUE);
+                SDL_assert(!(keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE));
+            } else {
+                keyboard->focus->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+            }
         }
 
         SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
@@ -944,9 +950,6 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
     Uint32 type;
     Uint8 repeat = SDL_FALSE;
     const Uint8 source = flags & KEYBOARD_SOURCE_MASK;
-
-    /* We currently don't have raw keyboard mode, so all key events are global */
-    keyboardID = SDL_GLOBAL_KEYBOARD_ID;
 
     if (scancode == SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
         return 0;
@@ -1180,6 +1183,14 @@ int SDL_SendKeyboardText(const char *text)
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
 
+    if (!SDL_TextInputActive()) {
+        return 0;
+    }
+
+    if (!text || !*text) {
+        return 0;
+    }
+
     /* Don't post text events for unprintable characters */
     if (SDL_iscntrl((unsigned char)*text)) {
         return 0;
@@ -1209,6 +1220,14 @@ int SDL_SendEditingText(const char *text, int start, int length)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
+
+    if (!SDL_TextInputActive()) {
+        return 0;
+    }
+
+    if (!text) {
+        return 0;
+    }
 
     /* Post the event, if desired */
     posted = 0;

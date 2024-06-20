@@ -2,6 +2,9 @@ Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: SDL
 Upstream-Contact: Sam Lantinga <slouken@libsdl.org>
 Source: https://www.libsdl.org/
+# To the best of my knowledge, everything we exclude is (meant to be)
+# Free Software, we just don't want to review or keep track of the
+# licensing status of files that are irrelevant to Debian.
 Files-Excluded: Android.mk
                 android-project
                 src/hidapi/documentation/*.png
@@ -12,8 +15,6 @@ Files-Excluded: Android.mk
                 src/render/direct3d12/D3D12_*RootSig*.h
                 src/render/direct3d12/D3D12_*Shader*.h
                 src/render/metal/SDL_shaders_metal_*.h
-                src/render/vulkan/VULKAN_PixelShader_*.h
-                src/render/vulkan/VULKAN_VertexShader.h
                 test/android
                 test/emscripten
                 test/gamepad_*.h
@@ -39,6 +40,12 @@ Copyright:
  2019-2023 Collabora Ltd.
  2023 Max Maisel
 License: Zlib and Zlib-like-permissive and Expat and PublicDomain_AlDraw
+
+Files:
+ build-scripts/casefolding.txt
+Copyright:
+ 2023 Unicode, Inc.
+License: Unicode-3.0
 
 Files:
  cmake/FindFFmpeg.cmake
@@ -71,7 +78,7 @@ Files:
  src/video/khronos/GLES2/gl2.h
  src/video/khronos/GLES2/gl2ext.h
  src/video/khronos/KHR/khrplatform.h
-Copyright: 2013-2020 The Khronos Group Inc.
+Copyright: 2013-2024 The Khronos Group Inc.
 License: Expat and Expat-like
 
 Files: include/SDL3/SDL_hidapi.h
@@ -562,6 +569,47 @@ License: Mozilla-permissive
 Comment:
  Same as MIT-open-group but with "Mozilla Corporation" instead of
  "The copyright holders"
+
+License: Unicode-3.0
+ UNICODE LICENSE V3
+ .
+ COPYRIGHT AND PERMISSION NOTICE
+ .
+ Copyright © 1991-2024 Unicode, Inc.
+ .
+ NOTICE TO USER: Carefully read the following legal agreement. BY
+ DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING DATA FILES, AND/OR
+ SOFTWARE, YOU UNEQUIVOCALLY ACCEPT, AND AGREE TO BE BOUND BY, ALL OF THE
+ TERMS AND CONDITIONS OF THIS AGREEMENT. IF YOU DO NOT AGREE, DO NOT
+ DOWNLOAD, INSTALL, COPY, DISTRIBUTE OR USE THE DATA FILES OR SOFTWARE.
+ .
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of data files and any associated documentation (the "Data Files") or
+ software and any associated documentation (the "Software") to deal in the
+ Data Files or Software without restriction, including without limitation
+ the rights to use, copy, modify, merge, publish, distribute, and/or sell
+ copies of the Data Files or Software, and to permit persons to whom the
+ Data Files or Software are furnished to do so, provided that either (a)
+ this copyright and permission notice appear with all copies of the Data
+ Files or Software, or (b) this copyright and permission notice appear in
+ associated Documentation.
+ .
+ THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+ KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ THIRD PARTY RIGHTS.
+ .
+ IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS NOTICE
+ BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL DAMAGES,
+ OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THE DATA
+ FILES OR SOFTWARE.
+ .
+ Except as contained in this notice, the name of a copyright holder shall
+ not be used in advertising or otherwise to promote the sale, use or other
+ dealings in these Data Files or Software without prior written
+ authorization of the copyright holder.
 
 License: hidapi-orig
  This software may be used by anyone for any reason so

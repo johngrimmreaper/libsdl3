@@ -52,7 +52,7 @@ struct SDL_WindowData
     HBITMAP hbm;
     WNDPROC wndproc;
     HHOOK keyboard_hook;
-    Uint64 mouse_button_flags;
+    WPARAM mouse_button_flags;
     LPARAM last_pointer_update;
     WCHAR high_surrogate;
     SDL_bool initializing;
@@ -69,14 +69,6 @@ struct SDL_WindowData
     RECT cursor_clipped_rect;
     UINT windowed_mode_corner_rounding;
     COLORREF dwma_border_color;
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    RAWINPUT *rawinput;
-    UINT rawinput_offset;
-    UINT rawinput_size;
-    UINT rawinput_count;
-    Uint64 last_rawinput_poll;
-#endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
-    SDL_Point last_raw_mouse_position;
     SDL_bool mouse_tracked;
     SDL_bool destroy_parent_with_window;
     SDL_DisplayID last_displayID;
@@ -126,6 +118,7 @@ extern void WIN_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
 extern int WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable);
 extern int WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_WindowRect rect_type);
 extern int WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi);
+extern int WIN_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
