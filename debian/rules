@@ -43,6 +43,8 @@ endif
 
 ifeq ($(filter %-doc,$(built_binaries)),)
   confflags += -DSDL_DISABLE_INSTALL_DOCS=ON
+else
+  confflags += -DSDL_DISABLE_INSTALL_DOCS=OFF
 endif
 
 ifeq ($(DEB_HOST_ARCH_CPU),powerpc)
