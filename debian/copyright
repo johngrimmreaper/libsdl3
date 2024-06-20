@@ -78,7 +78,7 @@ Files:
  src/video/khronos/GLES2/gl2.h
  src/video/khronos/GLES2/gl2ext.h
  src/video/khronos/KHR/khrplatform.h
-Copyright: 2013-2020 The Khronos Group Inc.
+Copyright: 2013-2024 The Khronos Group Inc.
 License: Expat and Expat-like
 
 Files: include/SDL3/SDL_hidapi.h
