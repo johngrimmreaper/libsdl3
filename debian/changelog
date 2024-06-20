@@ -1,18 +1,21 @@
-libsdl3 (3.1.2+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.1.2+ds-1) experimental; urgency=medium
 
   * New upstream prerelease
   * d/copyright: Clarify why some files are excluded
   * d/watch: Operate by fetching releases from git
   * d/rules: Generate VERSION.txt again
   * d/rules: Regenerate src/stdlib/SDL_casefolding.h during build
-  * d/copyright: Update
   * d/libsdl3-0.symbols: Update (including ABI breaks)
   * d/copyright: Stop excluding upstream's Vulkan shaders from source.
     These are regenerated at build-time, but keeping upstream's
     pre-generated versions makes it considerably easier to backport this
     package to older suites.
+  * d/control: Increase pipewire dependency to 0.3.44
+  * d/copyright: Update
+  * d/libsdl3-doc.manpages: Install man pages for types
+  * d/rules: Don't install man pages when building arch-dep only
 
- -- Simon McVittie <smcv@debian.org>  Thu, 20 Jun 2024 13:17:06 +0100
+ -- Simon McVittie <smcv@debian.org>  Thu, 20 Jun 2024 14:36:03 +0100
 
 libsdl3 (3.1.0+ds-1) experimental; urgency=medium
 
