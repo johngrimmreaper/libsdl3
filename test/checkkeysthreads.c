@@ -23,7 +23,6 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include <stdio.h>
 #include <stdlib.h>
 
 static int done;
@@ -172,8 +171,7 @@ static void loop(void)
     /* Check for events */
     /*SDL_WaitEvent(&event); emscripten does not like waiting*/
 
-    (void)fprintf(stderr, "starting loop\n");
-    (void)fflush(stderr);
+    SDL_Log("starting loop\n");
     while (!done && SDL_WaitEvent(&event)) {
         SDL_Log("Got event type: %" SDL_PRIu32 "\n", event.type);
         switch (event.type) {
@@ -189,8 +187,7 @@ static void loop(void)
             break;
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
             /* Left button quits the app, other buttons toggles text input */
-            (void)fprintf(stderr, "mouse button down button: %d (LEFT=%d)\n", event.button.button, SDL_BUTTON_LEFT);
-            (void)fflush(stderr);
+            SDL_Log("mouse button down button: %d (LEFT=%d)\n", event.button.button, SDL_BUTTON_LEFT);
             if (event.button.button == SDL_BUTTON_LEFT) {
                 done = 1;
             } else {
@@ -209,11 +206,9 @@ static void loop(void)
         default:
             break;
         }
-        (void)fprintf(stderr, "waiting new event\n");
-        (void)fflush(stderr);
+        SDL_Log("waiting new event\n");
     }
-    (void)fprintf(stderr, "exiting event loop\n");
-    (void)fflush(stderr);
+    SDL_Log("exiting event loop\n");
 #ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
@@ -228,12 +223,11 @@ static int SDLCALL ping_thread(void *ptr)
     SDL_Event sdlevent;
     SDL_memset(&sdlevent, 0, sizeof(SDL_Event));
     for (cnt = 0; cnt < 10; ++cnt) {
-        (void)fprintf(stderr, "sending event (%d/%d) from thread.\n", cnt + 1, 10);
-        (void)fflush(stderr);
+        SDL_Log("sending event (%d/%d) from thread.\n", cnt + 1, 10);
         sdlevent.type = SDL_EVENT_KEY_DOWN;
         sdlevent.key.keysym.sym = SDLK_1;
         SDL_PushEvent(&sdlevent);
-        SDL_Delay(1000 + rand() % 1000);
+        SDL_Delay(1000 + SDL_rand_n(1000));
     }
     return cnt;
 }
@@ -252,7 +246,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
@@ -276,7 +270,7 @@ int main(int argc, char *argv[])
     /* On wayland, no window will actually show until something has
        actually been displayed.
     */
-    renderer = SDL_CreateRenderer(window, NULL, 0);
+    renderer = SDL_CreateRenderer(window, NULL);
     SDL_RenderPresent(renderer);
 
 #ifdef SDL_PLATFORM_IOS
