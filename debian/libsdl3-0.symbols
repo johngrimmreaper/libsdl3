@@ -331,7 +331,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetNumJoystickButtons@SDL3_0.0.0 3.1.0~
  SDL_GetNumJoystickHats@SDL3_0.0.0 3.1.0~
  SDL_GetNumRenderDrivers@SDL3_0.0.0 3.1.0~
- SDL_GetNumTouchFingers@SDL3_0.0.0 3.1.0~
  SDL_GetNumVideoDrivers@SDL3_0.0.0 3.1.0~
  SDL_GetNumberProperty@SDL3_0.0.0 3.1.0~
  SDL_GetOriginalMemoryFunctions@SDL3_0.0.0 3.1.0~
@@ -433,7 +432,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetTouchDeviceName@SDL3_0.0.0 3.1.0~
  SDL_GetTouchDeviceType@SDL3_0.0.0 3.1.0~
  SDL_GetTouchDevices@SDL3_0.0.0 3.1.0~
- SDL_GetTouchFinger@SDL3_0.0.0 3.1.0~
+ SDL_GetTouchFingers@SDL3_0.0.0 3.1.2~
  SDL_GetUserFolder@SDL3_0.0.0 3.1.0~
  SDL_GetVersion@SDL3_0.0.0 3.1.0~
  SDL_GetVideoDriver@SDL3_0.0.0 3.1.0~
@@ -459,6 +458,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetWindowSizeInPixels@SDL3_0.0.0 3.1.0~
  SDL_GetWindowSurface@SDL3_0.0.0 3.1.0~
  SDL_GetWindowTitle@SDL3_0.0.0 3.1.0~
+ SDL_GlobDirectory@SDL3_0.0.0 3.1.2~
+ SDL_GlobStorageDirectory@SDL3_0.0.0 3.1.2~
  SDL_HapticEffectSupported@SDL3_0.0.0 3.1.0~
  SDL_HapticRumbleSupported@SDL3_0.0.0 3.1.0~
  SDL_HasARMSIMD@SDL3_0.0.0 3.1.0~
@@ -812,6 +813,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_WriteS32LE@SDL3_0.0.0 3.1.0~
  SDL_WriteS64BE@SDL3_0.0.0 3.1.0~
  SDL_WriteS64LE@SDL3_0.0.0 3.1.0~
+ SDL_WriteStorageFile@SDL3_0.0.0 3.1.2~
  SDL_WriteU16BE@SDL3_0.0.0 3.1.0~
  SDL_WriteU16LE@SDL3_0.0.0 3.1.0~
  SDL_WriteU32BE@SDL3_0.0.0 3.1.0~
