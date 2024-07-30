@@ -103,21 +103,6 @@ extern "C" {
 #define SDL_HINT_ANDROID_BLOCK_ON_PAUSE "SDL_ANDROID_BLOCK_ON_PAUSE"
 
 /**
- * A variable to control whether SDL will pause audio in background.
- *
- * The variable can be set to the following values:
- *
- * - "0": Not paused, requires that SDL_HINT_ANDROID_BLOCK_ON_PAUSE be set to
- *   "0"
- * - "1": Paused. (default)
- *
- * This hint should be set before SDL is initialized.
- *
- * \since This hint is available since SDL 3.0.0.
- */
-#define SDL_HINT_ANDROID_BLOCK_ON_PAUSE_PAUSEAUDIO "SDL_ANDROID_BLOCK_ON_PAUSE_PAUSEAUDIO"
-
-/**
  * A variable to control whether we trap the Android back button to handle it
  * manually.
  *
@@ -147,43 +132,8 @@ extern "C" {
  * together, as well as match applications with associated desktop settings
  * and icons.
  *
- * On Wayland this corresponds to the "app ID" window property and on X11 this
- * corresponds to the WM_CLASS property. Windows inherit the value of this
- * hint at creation time. Changing this hint after a window has been created
- * will not change the app ID or class of existing windows.
- *
- * For *nix platforms, this string should be formatted in reverse-DNS notation
- * and follow some basic rules to be valid:
- *
- * - The application ID must be composed of two or more elements separated by
- *   a period (.) character.
- * - Each element must contain one or more of the alphanumeric characters
- *   (A-Z, a-z, 0-9) plus underscore (_) and hyphen (-) and must not start
- *   with a digit. Note that hyphens, while technically allowed, should not be
- *   used if possible, as they are not supported by all components that use
- *   the ID, such as D-Bus. For maximum compatibility, replace hyphens with an
- *   underscore.
- * - The empty string is not a valid element (ie: your application ID may not
- *   start or end with a period and it is not valid to have two periods in a
- *   row).
- * - The entire ID must be less than 255 characters in length.
- *
- * Examples of valid app ID strings:
- *
- * - org.MyOrg.MyApp
- * - com.your_company.your_app
- *
- * Desktops such as GNOME and KDE require that the app ID string matches your
- * application's .desktop file name (e.g. if the app ID string is
- * 'org.MyOrg.MyApp', your application's .desktop file should be named
- * 'org.MyOrg.MyApp.desktop').
- *
- * If you plan to package your application in a container such as Flatpak, the
- * app ID should match the name of your Flatpak container as well.
- *
- * If not set, SDL will attempt to use the application executable name. If the
- * executable name cannot be retrieved, the generic string "SDL_App" will be
- * used.
+ * This will override SDL_PROP_APP_METADATA_IDENTIFIER_STRING, if set by the
+ * application.
  *
  * This hint should be set before SDL is initialized.
  *
@@ -192,7 +142,7 @@ extern "C" {
 #define SDL_HINT_APP_ID      "SDL_APP_ID"
 
 /**
- * Specify an application name.
+ * A variable setting the application name.
  *
  * This hint lets you specify the application name sent to the OS when
  * required. For example, this will often appear in volume control applets for
@@ -200,12 +150,8 @@ extern "C" {
  * screensaver. You should use a string that describes your program ("My Game
  * 2: The Revenge")
  *
- * Setting this to "" or leaving it unset will have SDL use a reasonable
- * default: probably the application's name or "SDL Application" if SDL
- * doesn't have any better information.
- *
- * Note that, for audio streams, this can be overridden with
- * SDL_HINT_AUDIO_DEVICE_APP_NAME.
+ * This will override SDL_PROP_APP_METADATA_NAME_STRING, if set by the
+ * application.
  *
  * This hint should be set before SDL is initialized.
  *
@@ -268,29 +214,6 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_AUDIO_CATEGORY   "SDL_AUDIO_CATEGORY"
-
-/**
- * Specify an application name for an audio device.
- *
- * Some audio backends (such as PulseAudio) allow you to describe your audio
- * stream. Among other things, this description might show up in a system
- * control panel that lets the user adjust the volume on specific audio
- * streams instead of using one giant master volume slider.
- *
- * This hints lets you transmit that information to the OS. The contents of
- * this hint are used while opening an audio device. You should use a string
- * that describes your program ("My Game 2: The Revenge")
- *
- * Setting this to "" or leaving it unset will have SDL use a reasonable
- * default: this will be the name set with SDL_HINT_APP_NAME, if that hint is
- * set. Otherwise, it'll probably the application's name or "SDL Application"
- * if SDL doesn't have any better information.
- *
- * This hint should be set before an audio device is opened.
- *
- * \since This hint is available since SDL 3.0.0.
- */
-#define SDL_HINT_AUDIO_DEVICE_APP_NAME "SDL_AUDIO_DEVICE_APP_NAME"
 
 /**
  * Specify an application icon name for an audio device.
@@ -943,37 +866,27 @@ extern "C" {
 #define SDL_HINT_HIDAPI_IGNORE_DEVICES "SDL_HIDAPI_IGNORE_DEVICES"
 
 /**
- * A variable to control whether certain IMEs should handle text editing
- * internally instead of sending SDL_EVENT_TEXT_EDITING events.
+ * A variable describing what IME UI elements the application can display.
  *
- * The variable can be set to the following values:
+ * By default IME UI is handled using native components by the OS where
+ * possible, however this can interfere with or not be visible when exclusive
+ * fullscreen mode is used.
  *
- * - "0": SDL_EVENT_TEXT_EDITING events are sent, and it is the application's
- *   responsibility to render the text from these events and differentiate it
- *   somehow from committed text. (default)
- * - "1": If supported by the IME then SDL_EVENT_TEXT_EDITING events are not
- *   sent, and text that is being composed will be rendered in its own UI.
+ * The variable can be set to a comma separated list containing the following
+ * items:
  *
- * This hint can be set anytime.
- *
- * \since This hint is available since SDL 3.0.0.
- */
-#define SDL_HINT_IME_INTERNAL_EDITING "SDL_IME_INTERNAL_EDITING"
-
-/**
- * A variable to control whether certain IMEs should show native UI components
- * (such as the Candidate List) instead of suppressing them.
- *
- * The variable can be set to the following values:
- *
- * - "0": Native UI components are not display. (default)
- * - "1": Native UI components are displayed.
+ * - "none" or "0": The application can't render any IME elements, and native
+ *   UI should be used. (default)
+ * - "composition": The application handles SDL_EVENT_TEXT_EDITING events and
+ *   can render the composition text.
+ * - "candidates": The application handles SDL_EVENT_TEXT_EDITING_CANDIDATES
+ *   and can render the candidate list.
  *
  * This hint should be set before SDL is initialized.
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_IME_SHOW_UI "SDL_IME_SHOW_UI"
+#define SDL_HINT_IME_IMPLEMENTED_UI "SDL_IME_IMPLEMENTED_UI"
 
 /**
  * A variable controlling whether the home indicator bar on iPhone X should be
@@ -2004,6 +1917,40 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_ZERO_CENTERED_DEVICES "SDL_JOYSTICK_ZERO_CENTERED_DEVICES"
 
 /**
+ * A variable that controls keycode representation in keyboard events.
+ *
+ * This variable is a comma separated set of options for translating keycodes
+ * in events:
+ *
+ * - "none": Keycode options are cleared, this overrides other options.
+ * - "hide_numpad": The numpad keysyms will be translated into their
+ *   non-numpad versions based on the current NumLock state. For example,
+ *   SDLK_KP_4 would become SDLK_4 if SDL_KMOD_NUM is set in the event
+ *   modifiers, and SDLK_LEFT if it is unset.
+ * - "french_numbers": The number row on French keyboards is inverted, so
+ *   pressing the 1 key would yield the keycode SDLK_1, or '1', instead of
+ *   SDLK_AMPERSAND, or '&'
+ * - "latin_letters": For keyboards using non-Latin letters, such as Russian
+ *   or Thai, the letter keys generate keycodes as though it had an en_US
+ *   layout. e.g. pressing the key associated with SDL_SCANCODE_A on a Russian
+ *   keyboard would yield 'a' instead of 'ф'.
+ *
+ * The default value for this hint is "french_numbers"
+ *
+ * Some platforms like Emscripten only provide modified keycodes and the
+ * options are not used.
+ *
+ * These options do not affect the return value of SDL_GetKeyFromScancode() or
+ * SDL_GetScancodeFromKey(), they just apply to the keycode included in key
+ * events.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_KEYCODE_OPTIONS "SDL_KEYCODE_OPTIONS"
+
+/**
  * A variable that controls what KMSDRM device to use.
  *
  * SDL might open something like "/dev/dri/cardNN" to access KMSDRM
@@ -2182,6 +2129,38 @@ extern "C" {
 #define SDL_HINT_MOUSE_DOUBLE_CLICK_TIME    "SDL_MOUSE_DOUBLE_CLICK_TIME"
 
 /**
+ * A variable controlling whether warping a hidden mouse cursor will activate
+ * relative mouse mode.
+ *
+ * When this hint is set and the mouse cursor is hidden, SDL will emulate
+ * mouse warps using relative mouse mode. This can provide smoother and more
+ * reliable mouse motion for some older games, which continuously calculate
+ * the distance travelled by the mouse pointer and warp it back to the center
+ * of the window, rather than using relative mouse motion.
+ *
+ * Note that relative mouse mode may have different mouse acceleration
+ * behavior than pointer warps.
+ *
+ * If your game or application needs to warp the mouse cursor while hidden for
+ * other purposes, such as drawing a software cursor, it should disable this
+ * hint.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Attempts to warp the mouse will always be made.
+ * - "1": Some mouse warps will be emulated by forcing relative mouse mode.
+ *   (default)
+ *
+ * If not set, this is automatically enabled unless an application uses
+ * relative mouse mode directly.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE "SDL_MOUSE_EMULATE_WARP_WITH_RELATIVE"
+
+/**
  * Allow mouse click events when clicking to focus an SDL window.
  *
  * The variable can be set to the following values:
@@ -2300,8 +2279,29 @@ extern "C" {
  * Note that for systems without raw hardware inputs, relative mode is
  * implemented using warping, so the hardware cursor will visibly warp between
  * frames if this is enabled on those systems.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE  "SDL_MOUSE_RELATIVE_CURSOR_VISIBLE"
+
+/**
+ * Controls how often SDL issues cursor confinement commands to the operating
+ * system while relative mode is active, in case the desired confinement state
+ * became out-of-sync due to interference from other running programs.
+ *
+ * The variable can be integers representing miliseconds between each refresh.
+ * A value of zero means SDL will not automatically refresh the confinement.
+ * The default value varies depending on the operating system, this variable
+ * might not have any effects on inapplicable platforms such as those without
+ * a cursor.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_MOUSE_RELATIVE_CLIP_INTERVAL  "SDL_MOUSE_RELATIVE_CLIP_INTERVAL"
 
 /**
  * A variable controlling whether mouse events should generate synthetic touch
@@ -2709,7 +2709,7 @@ extern "C" {
  *
  * This is useful as a debug tool to validate memory leaks, but shouldn't ever
  * be set in production applications, as other libraries used by the
- * application might use dbus under the hood and this cause cause crashes if
+ * application might use dbus under the hood and this can cause crashes if
  * they continue after SDL_Quit().
  *
  * The variable can be set to the following values:
@@ -2903,6 +2903,7 @@ extern "C" {
  * This hint is currently supported on the following drivers:
  *
  * - Raspberry Pi (raspberrypi)
+ * - Wayland (wayland)
  *
  * This hint should be set before SDL is initialized.
  *
@@ -3031,34 +3032,6 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR "SDL_VIDEO_WAYLAND_ALLOW_LIBDECOR"
-
-/**
- * Enable or disable hidden mouse pointer warp emulation, needed by some older
- * games.
- *
- * Wayland requires the pointer confinement protocol to warp the mouse, but
- * that is just a hint that the compositor is free to ignore, and warping the
- * the pointer to or from regions outside of the focused window is prohibited.
- * When this hint is set and the pointer is hidden, SDL will emulate mouse
- * warps using relative mouse mode. This is required for some older games
- * (such as Source engine games), which warp the mouse to the centre of the
- * screen rather than using relative mouse motion. Note that relative mouse
- * mode may have different mouse acceleration behaviour than pointer warps.
- *
- * The variable can be set to the following values:
- *
- * - "0": Attempts to warp the mouse will be made, if the appropriate protocol
- *   is available.
- * - "1": Some mouse warps will be emulated by forcing relative mouse mode.
- *
- * If not set, this is automatically enabled unless an application uses
- * relative mouse mode directly.
- *
- * This hint can be set anytime.
- *
- * \since This hint is available since SDL 3.0.0.
- */
-#define SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP "SDL_VIDEO_WAYLAND_EMULATE_MOUSE_WARP"
 
 /**
  * A variable controlling whether video mode emulation is enabled under
@@ -3669,7 +3642,7 @@ extern "C" {
  * A variable specifying the URL to a WinRT app's privacy policy.
  *
  * All network-enabled WinRT apps must make a privacy policy available to its
- * users. On Windows 8, 8.1, and RT, Microsoft mandates that this policy be be
+ * users. On Windows 8, 8.1, and RT, Microsoft mandates that this policy be
  * available in the Windows Settings charm, as accessed from within the app.
  * SDL provides code to add a URL-based link there, which can point to the
  * app's privacy policy.
@@ -3836,8 +3809,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
 
 /**
  * Get the value of a hint.
- *
- * The returned string follows the SDL_GetStringRule.
  *
  * \param name the hint to query.
  * \returns the string value of a hint or NULL if the hint isn't set.

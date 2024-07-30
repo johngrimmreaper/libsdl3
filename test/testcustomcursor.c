@@ -115,15 +115,15 @@ init_color_cursor(const char *file)
     SDL_Cursor *cursor = NULL;
     SDL_Surface *surface = SDL_LoadBMP(file);
     if (surface) {
-        if (surface->format->palette) {
-            const Uint8 bpp = surface->format->bits_per_pixel;
+        if (SDL_GetSurfacePalette(surface)) {
+            const Uint8 bpp = SDL_BITSPERPIXEL(surface->format);
             const Uint8 mask = (1 << bpp) - 1;
-            if (SDL_PIXELORDER(surface->format->format) == SDL_BITMAPORDER_4321)
+            if (SDL_PIXELORDER(surface->format) == SDL_BITMAPORDER_4321)
                 SDL_SetSurfaceColorKey(surface, 1, (*(Uint8 *)surface->pixels) & mask);
             else
                 SDL_SetSurfaceColorKey(surface, 1, ((*(Uint8 *)surface->pixels) >> (8 - bpp)) & mask);
         } else {
-            switch (surface->format->bits_per_pixel) {
+            switch (SDL_BITSPERPIXEL(surface->format)) {
             case 15:
                 SDL_SetSurfaceColorKey(surface, 1, (*(Uint16 *)surface->pixels) & 0x00007FFF);
                 break;
@@ -342,14 +342,15 @@ int main(int argc, char *argv[])
     const char *color_cursor = NULL;
     SDL_Cursor *cursor;
 
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (!state) {
         return 1;
     }
+
+    /* Enable standard application logging */
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     for (i = 1; i < argc;) {
         int consumed;
 
