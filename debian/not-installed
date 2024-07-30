@@ -1,1 +1,9 @@
 usr/share/licenses/SDL3/LICENSE.txt
+usr/share/man/man3/Sint16.3type
+usr/share/man/man3/Sint32.3type
+usr/share/man/man3/Sint64.3type
+usr/share/man/man3/Sint8.3type
+usr/share/man/man3/Uint16.3type
+usr/share/man/man3/Uint32.3type
+usr/share/man/man3/Uint64.3type
+usr/share/man/man3/Uint8.3type
