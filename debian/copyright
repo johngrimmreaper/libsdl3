@@ -31,7 +31,7 @@ Files-Excluded: Android.mk
 Files: *
 Copyright:
  1997-2024 Sam Lantinga <slouken@libsdl.org>
- 2007 Red Hat, Inc.
+ 2001-2007 Red Hat, Inc.
  2012 Raspberry Pi Foundation
  2012-2018 RISC OS Open Ltd
  2017 BlackBerry Limited
@@ -39,6 +39,8 @@ Copyright:
  2020-2023 Valve Corporation
  2019-2023 Collabora Ltd.
  2023 Max Maisel
+ 2024 Wim Taymans
+ 2024 Igalia S.L.
 License: Zlib and Zlib-like-permissive and Expat and PublicDomain_AlDraw
 
 Files:
@@ -65,6 +67,11 @@ Copyright:
  2011-2020, Contributors
 License: BSL-1.0
 
+Files:
+ examples/*
+Copyright: none
+License: PublicDomain_examples
+
 Files: include/SDL3/SDL_egl.h
 Copyright: 1997-2022 Sam Lantinga
            2008-2018 The Khronos Group Inc.
@@ -81,8 +88,14 @@ Files:
 Copyright: 2013-2024 The Khronos Group Inc.
 License: Expat and Expat-like
 
-Files: include/SDL3/SDL_hidapi.h
-       src/hidapi/*
+Files:
+ include/SDL3/SDL_hidapi.h
+Copyright: 2009-2010 Alan Ott, Signal 11 Software
+           1997-2024 Sam Lantinga
+License: hidapi-orig and Zlib
+
+Files:
+ src/hidapi/*
 Copyright: 2009-2010 Alan Ott, Signal 11 Software
            1997-2021 Sam Lantinga
            2009-2023 libusb/hidapi Team
@@ -92,6 +105,12 @@ License: BSD-3-clause or GPL-3 or hidapi-orig, and Zlib
 Files: src/libm/*
 Copyright: 1993 by Sun Microsystems, Inc. All rights reserved.
 License: SunPro
+
+Files:
+ src/libm/s_isinf.c
+ src/libm/s_isinff.c
+Copyright: none
+License: PublicDomain
 
 Files: test/main.cpp
 Copyright: none
@@ -104,21 +123,13 @@ Copyright: 1995 Erik Corry
 License: BrownUn_UnCalifornia_ErikCorry
 
 Files: src/stdlib/SDL_qsort.c
-Copyright: 1998 Gareth McCaughan
+Copyright: 1998-2021 Gareth McCaughan
 License: Gareth_McCaughan
 
 Files: src/test/SDL_test_md5.c include/SDL3/SDL_test_md5.h
 Copyright: 1997-2012 Sam Lantinga <slouken@libsdl.org>
            1990-1991 RSA Data Security, Inc.
 License: Zlib and RSA_Data_Security
-
-Files:
- src/video/arm/pixman-arm-asm.h
- src/video/arm/pixman-arm-neon-asm.S
- src/video/arm/pixman-arm-neon-asm.h
-Copyright:
- 2009-2010 Nokia Corporation
-License: Mozilla-permissive and Expat and Zlib
 
 Files:
  src/video/khronos/EGL/*.h
@@ -144,7 +155,7 @@ Files: test/testautomation_*
 Copyright: Edgar Simo "bobbens"
 License: PublicDomain_Edgar_Simo
 
-Files: test/testautomation_rwops.c
+Files: test/testautomation_iostream.c
        include/SDL3/SDL_test_fuzzer.h
        include/SDL3/SDL_test_harness.h
 Copyright: 2011 Markus Kauppila <markus.kauppila@gmail.com>
@@ -178,6 +189,8 @@ Copyright:
  2020 Aleix Pol Gonzalez
  2020 Carlos Garnacho
  2022 Kenny Levinsen
+ 2023 Joshua Ashton for Valve Software
+ 2023-2024 Xaver Hugl
 License: Expat and MIT-open-group
 
 Files:
@@ -458,6 +471,9 @@ License: SunPro
   software is freely granted, provided that this notice
   is preserved.
 
+License: PublicDomain
+ Public domain
+
 License: PublicDomain_AlDraw
  The .bmp files used by testaudio.c were made by AlDraw:
  .
@@ -472,6 +488,9 @@ License: PublicDomain_Edgar_Simo
  Written by Edgar Simo "bobbens"
  .
  Released under Public Domain.
+
+License: PublicDomain_examples
+ This code is public domain. Feel free to use it for any purpose!
 
 License: RSA_Data_Security
  ***********************************************************************
@@ -546,29 +565,6 @@ License: MIT-open-group
  ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  THIS SOFTWARE.
 Comment: SPDX: MIT-open-group
-
-License: Mozilla-permissive
- Permission to use, copy, modify, distribute, and sell this software and its
- documentation for any purpose is hereby granted without fee, provided that
- the above copyright notice appear in all copies and that both that
- copyright notice and this permission notice appear in supporting
- documentation, and that the name of Mozilla Corporation not be used in
- advertising or publicity pertaining to distribution of the software without
- specific, written prior permission.  Mozilla Corporation makes no
- representations about the suitability of this software for any purpose.  It
- is provided "as is" without express or implied warranty.
- .
- THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
- SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
- FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
- SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
- AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
- OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
- SOFTWARE.
-Comment:
- Same as MIT-open-group but with "Mozilla Corporation" instead of
- "The copyright holders"
 
 License: Unicode-3.0
  UNICODE LICENSE V3
