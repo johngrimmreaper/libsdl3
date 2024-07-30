@@ -286,7 +286,7 @@ static int SDL_StartJoystickThread(void)
     }
 
     s_bJoystickThreadQuit = SDL_FALSE;
-    s_joystickThread = SDL_CreateThreadInternal(SDL_JoystickThread, "SDL_joystick", 64 * 1024, NULL);
+    s_joystickThread = SDL_CreateThreadWithStackSize(SDL_JoystickThread, "SDL_joystick", 64 * 1024, NULL);
     if (!s_joystickThread) {
         return -1;
     }
@@ -522,7 +522,7 @@ static void WINDOWS_JoystickSetDevicePlayerIndex(int device_index, int player_in
 }
 
 /* return the stable device guid for this device index */
-static SDL_JoystickGUID WINDOWS_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID WINDOWS_JoystickGetDeviceGUID(int device_index)
 {
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;

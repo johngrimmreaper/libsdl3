@@ -15,6 +15,7 @@ export SDL_VIDEO_DRIVER=dummy
 
 confflags = \
 	-DSDL_ALSA_SHARED=OFF \
+	-DSDL_EXAMPLES=ON \
 	-DSDL_HIDAPI_LIBUSB_SHARED=OFF \
 	-DSDL_JACK=OFF \
 	-DSDL_JACK_SHARED=OFF \
@@ -38,11 +39,14 @@ confflags = \
 	$(NULL)
 
 ifneq ($(filter %-tests,$(built_binaries)),)
+  confflags += -DSDL_INSTALL_EXAMPLES=ON
   confflags += -DSDL_INSTALL_TESTS=ON
 endif
 
 ifeq ($(filter %-doc,$(built_binaries)),)
   confflags += -DSDL_DISABLE_INSTALL_DOCS=ON
+else
+  confflags += -DSDL_DISABLE_INSTALL_DOCS=OFF
 endif
 
 ifeq ($(DEB_HOST_ARCH_CPU),powerpc)
@@ -92,8 +96,9 @@ execute_after_dh_auto_clean-indep:
 # debhelper >= 13.4 makes all of /usr/libexec executable, which is not
 # quite right for installed-tests
 override_dh_fixperms:
-	dh_fixperms -Xusr/libexec/installed-tests
+	dh_fixperms -Xusr/libexec/installed-examples -Xusr/libexec/installed-tests
 ifneq ($(filter %-tests,$(built_binaries)),)
+	chmod --recursive --changes a+rX,u+w,og-w debian/libsdl3-tests/usr/libexec/installed-examples
 	chmod --recursive --changes a+rX,u+w,og-w debian/libsdl3-tests/usr/libexec/installed-tests
 endif
 

@@ -33,6 +33,14 @@
 #include <gbm.h>
 #include <EGL/egl.h>
 
+#ifndef DRM_FORMAT_MOD_INVALID
+#define DRM_FORMAT_MOD_INVALID 0x00ffffffffffffffULL
+#endif
+
+#ifndef DRM_MODE_FB_MODIFIERS
+#define DRM_MODE_FB_MODIFIERS	2
+#endif
+
 #ifndef DRM_MODE_PAGE_FLIP_ASYNC
 #define DRM_MODE_PAGE_FLIP_ASYNC    2
 #endif
@@ -102,9 +110,9 @@ struct SDL_DisplayData
     drmModeCrtc *saved_crtc; /* CRTC to restore on quit */
     SDL_bool saved_vrr;
 
-    /* DRM & GBM cursor stuff lives here, not in an SDL_Cursor's driverdata struct,
+    /* DRM & GBM cursor stuff lives here, not in an SDL_Cursor's internal struct,
        because setting/unsetting up these is done on window creation/destruction,
-       where we may not have an SDL_Cursor at all (so no SDL_Cursor driverdata).
+       where we may not have an SDL_Cursor at all (so no SDL_Cursor internal).
        There's only one cursor GBM BO because we only support one cursor. */
     struct gbm_bo *cursor_bo;
     int cursor_bo_drm_fd;
@@ -118,7 +126,7 @@ struct SDL_WindowData
     SDL_VideoData *viddata;
     /* SDL internals expect EGL surface to be here, and in KMSDRM the GBM surface is
        what supports the EGL surface on the driver side, so all these surfaces and buffers
-       are expected to be here, in the struct pointed by SDL_Window driverdata pointer:
+       are expected to be here, in the struct pointed by SDL_Window internal pointer:
        this one. So don't try to move these to dispdata!  */
     struct gbm_surface *gs;
     struct gbm_bo *bo;
@@ -156,7 +164,7 @@ int KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
 void KMSDRM_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 int KMSDRM_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
 void KMSDRM_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
-int KMSDRM_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, SDL_bool fullscreen);
+int KMSDRM_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, SDL_FullscreenOp fullscreen);
 void KMSDRM_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 void KMSDRM_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
 void KMSDRM_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);

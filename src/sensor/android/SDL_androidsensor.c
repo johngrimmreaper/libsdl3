@@ -65,12 +65,12 @@ static int SDLCALL SDL_ANDROID_SensorThread(void *data)
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
 
     SDL_sensor_looper = ALooper_prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS);
-    SDL_PostSemaphore(ctx->sem);
+    SDL_SignalSemaphore(ctx->sem);
 
     while (SDL_AtomicGet(&ctx->running)) {
         Uint64 timestamp = SDL_GetTicksNS();
 
-        if (ALooper_pollAll(-1, NULL, &events, (void **)&source) == LOOPER_ID_USER) {
+        if (ALooper_pollOnce(-1, NULL, &events, (void **)&source) == LOOPER_ID_USER) {
             SDL_LockSensors();
             for (i = 0; i < SDL_sensors_count; ++i) {
                 if (!SDL_sensors[i].event_queue) {
@@ -120,7 +120,7 @@ static int SDL_ANDROID_StartSensorThread(SDL_AndroidSensorThreadContext *ctx)
     }
 
     SDL_AtomicSet(&ctx->running, SDL_TRUE);
-    ctx->thread = SDL_CreateThreadInternal(SDL_ANDROID_SensorThread, "Sensors", 0, ctx);
+    ctx->thread = SDL_CreateThread(SDL_ANDROID_SensorThread, "Sensors", ctx);
     if (!ctx->thread) {
         SDL_ANDROID_StopSensorThread(ctx);
         return -1;

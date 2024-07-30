@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     SDL_AtomicSet(&doterminate, 0);
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
     /* Parse commandline */
     for (i = 1; i < argc;) {
         int consumed;
@@ -171,8 +171,8 @@ int main(int argc, char *argv[])
 
     SDL_Log("Reader threads have terminated, quitting!");
     SDL_DestroyRWLock(rwlock);
-    SDLTest_CommonDestroyState(state);
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
 
     return 0;
 }

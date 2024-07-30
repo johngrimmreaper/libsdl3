@@ -41,7 +41,7 @@ typedef enum
     PENDING_OPERATION_MINIMIZE = 0x04
 } PendingWindowOperation;
 
-@interface Cocoa_WindowListener : NSResponder <NSWindowDelegate>
+@interface SDL3Cocoa_WindowListener : NSResponder <NSWindowDelegate>
 {
     /* SDL_CocoaWindowData owns this Listener and has a strong reference to it.
      * To avoid reference cycles, we could have either a weak or an
@@ -124,7 +124,7 @@ typedef enum
 @end
 /* *INDENT-ON* */
 
-@class SDLOpenGLContext;
+@class SDL3OpenGLContext;
 @class SDL_CocoaVideoData;
 
 @interface SDL_CocoaWindowData : NSObject
@@ -137,7 +137,7 @@ typedef enum
 @property(nonatomic) NSInteger window_number;
 @property(nonatomic) NSInteger flash_request;
 @property(nonatomic) SDL_Window *keyboard_focus;
-@property(nonatomic) Cocoa_WindowListener *listener;
+@property(nonatomic) SDL3Cocoa_WindowListener *listener;
 @property(nonatomic) NSModalSession modal_session;
 @property(nonatomic) SDL_CocoaVideoData *videodata;
 @property(nonatomic) SDL_bool send_floating_size;
@@ -169,7 +169,7 @@ extern void Cocoa_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Cocoa_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered);
 extern void Cocoa_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable);
 extern void Cocoa_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool on_top);
-extern int Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
+extern int Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 extern void *Cocoa_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size);
 extern SDL_DisplayID Cocoa_GetDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Cocoa_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window);

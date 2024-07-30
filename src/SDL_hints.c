@@ -74,9 +74,7 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
                     entry->callback(entry->userdata, name, old_value, value);
                     entry = next;
                 }
-                if (old_value) {
-                    SDL_free(old_value);
-                }
+                SDL_free(old_value);
             }
             hint->priority = priority;
             return SDL_TRUE;
@@ -163,11 +161,15 @@ const char *SDL_GetHint(const char *name)
     const char *env;
     SDL_Hint *hint;
 
+    if (!name) {
+        return NULL;
+    }
+
     env = SDL_getenv(name);
     for (hint = SDL_hints; hint; hint = hint->next) {
         if (SDL_strcmp(name, hint->name) == 0) {
             if (!env || hint->priority == SDL_HINT_OVERRIDE) {
-                return hint->value;
+                return SDL_GetPersistentString(hint->value);
             }
             break;
         }

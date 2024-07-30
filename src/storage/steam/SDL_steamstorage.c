@@ -140,6 +140,7 @@ static const SDL_StorageInterface STEAM_user_iface = {
     NULL,   /* mkdir */
     NULL,   /* remove */
     NULL,   /* rename */
+    NULL,   /* copy */
     STEAM_GetStorageSpaceRemaining
 };
 
@@ -151,7 +152,6 @@ static SDL_Storage *STEAM_User_Create(const char *org, const char *app, SDL_Prop
 
     steam = (STEAM_RemoteStorage*) SDL_malloc(sizeof(STEAM_RemoteStorage));
     if (steam == NULL) {
-        SDL_OutOfMemory();
         return NULL;
     }
 

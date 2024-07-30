@@ -41,19 +41,22 @@
 #include "SDL_log_c.h"
 #include "SDL_properties_c.h"
 #include "audio/SDL_sysaudio.h"
+#include "camera/SDL_camera_c.h"
 #include "cpuinfo/SDL_cpuinfo_c.h"
-#include "video/SDL_video_c.h"
 #include "events/SDL_events_c.h"
 #include "haptic/SDL_haptic_c.h"
 #include "joystick/SDL_gamepad_c.h"
 #include "joystick/SDL_joystick_c.h"
+#include "render/SDL_sysrender.h"
 #include "sensor/SDL_sensor_c.h"
-#include "camera/SDL_camera_c.h"
+#include "thread/SDL_thread_c.h"
+#include "video/SDL_pixels_c.h"
+#include "video/SDL_video_c.h"
+#include "filesystem/SDL_filesystem_c.h"
 
 #define SDL_INIT_EVERYTHING ~0U
 
 /* Initialization/Cleanup routines */
-#include "time/SDL_time_c.h"
 #include "timer/SDL_timer_c.h"
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
 extern int SDL_HelperWindowCreate(void);
@@ -66,20 +69,16 @@ SDL_COMPILE_TIME_ASSERT(SDL_BUILD_MAJOR_VERSION,
 SDL_COMPILE_TIME_ASSERT(SDL_BUILD_MINOR_VERSION,
                         SDL_MINOR_VERSION == SDL_BUILD_MINOR_VERSION);
 SDL_COMPILE_TIME_ASSERT(SDL_BUILD_MICRO_VERSION,
-                        SDL_PATCHLEVEL == SDL_BUILD_MICRO_VERSION);
+                        SDL_MICRO_VERSION == SDL_BUILD_MICRO_VERSION);
 #endif
 
+/* Limited by its encoding in SDL_VERSIONNUM */
 SDL_COMPILE_TIME_ASSERT(SDL_MAJOR_VERSION_min, SDL_MAJOR_VERSION >= 0);
-/* Limited only by the need to fit in SDL_Version */
-SDL_COMPILE_TIME_ASSERT(SDL_MAJOR_VERSION_max, SDL_MAJOR_VERSION <= 255);
-
+SDL_COMPILE_TIME_ASSERT(SDL_MAJOR_VERSION_max, SDL_MAJOR_VERSION <= 10);
 SDL_COMPILE_TIME_ASSERT(SDL_MINOR_VERSION_min, SDL_MINOR_VERSION >= 0);
-/* Limited only by the need to fit in SDL_Version */
-SDL_COMPILE_TIME_ASSERT(SDL_MINOR_VERSION_max, SDL_MINOR_VERSION <= 255);
-
-SDL_COMPILE_TIME_ASSERT(SDL_PATCHLEVEL_min, SDL_PATCHLEVEL >= 0);
-/* Limited by its encoding in SDL_VERSIONNUM and in the ABI versions */
-SDL_COMPILE_TIME_ASSERT(SDL_PATCHLEVEL_max, SDL_PATCHLEVEL <= 99);
+SDL_COMPILE_TIME_ASSERT(SDL_MINOR_VERSION_max, SDL_MINOR_VERSION <= 999);
+SDL_COMPILE_TIME_ASSERT(SDL_MICRO_VERSION_min, SDL_MICRO_VERSION >= 0);
+SDL_COMPILE_TIME_ASSERT(SDL_MICRO_VERSION_max, SDL_MICRO_VERSION <= 999);
 
 /* This is not declared in any header, although it is shared between some
     parts of SDL, because we don't want anything calling it without an
@@ -107,6 +106,70 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode)
     _exit(exitcode);
 #endif
 }
+
+/* App metadata */
+
+int SDL_SetAppMetadata(const char *appname, const char *appversion, const char *appidentifier)
+{
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, appname);
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, appversion);
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, appidentifier);
+    return 0;
+}
+
+static SDL_bool SDL_ValidMetadataProperty(const char *name)
+{
+    if (!name || !*name) {
+        return SDL_FALSE;
+    }
+
+    if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_VERSION_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_IDENTIFIER_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_CREATOR_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_COPYRIGHT_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_URL_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_TYPE_STRING) == 0) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
+int SDL_SetAppMetadataProperty(const char *name, const char *value)
+{
+    if (!SDL_ValidMetadataProperty(name)) {
+        return SDL_InvalidParamError("name");
+    }
+
+    return SDL_SetStringProperty(SDL_GetGlobalProperties(), name, value);
+}
+
+const char *SDL_GetAppMetadataProperty(const char *name)
+{
+    if (!SDL_ValidMetadataProperty(name)) {
+        SDL_InvalidParamError("name");
+        return NULL;
+    }
+
+    const char *value = NULL;
+    if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0) {
+        value = SDL_GetHint(SDL_HINT_APP_NAME);
+    } else if (SDL_strcmp(name, SDL_PROP_APP_METADATA_IDENTIFIER_STRING) == 0) {
+        value = SDL_GetHint(SDL_HINT_APP_ID);
+    }
+    if (!value || !*value) {
+        value = SDL_GetStringProperty(SDL_GetGlobalProperties(), name, NULL);
+    }
+    if (!value || !*value) {
+        if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0) {
+            value = "SDL Application";
+        } else if (SDL_strcmp(name, SDL_PROP_APP_METADATA_TYPE_STRING) == 0) {
+            value = "application";
+        }
+    }
+    return value;
+}
+
 
 /* The initialized subsystems */
 #ifdef SDL_MAIN_NEEDED
@@ -183,7 +246,27 @@ void SDL_SetMainReady(void)
     SDL_MainIsReady = SDL_TRUE;
 }
 
-int SDL_InitSubSystem(Uint32 flags)
+/* Initialize all the subsystems that require initialization before threads start */
+void SDL_InitMainThread(void)
+{
+    SDL_InitTLSData();
+    SDL_InitTicks();
+    SDL_InitFilesystem();
+    SDL_InitLog();
+    SDL_InitProperties();
+    SDL_GetGlobalProperties();
+}
+
+static void SDL_QuitMainThread(void)
+{
+    SDL_QuitProperties();
+    SDL_QuitLog();
+    SDL_QuitFilesystem();
+    SDL_QuitTicks();
+    SDL_QuitTLSData();
+}
+
+int SDL_InitSubSystem(SDL_InitFlags flags)
 {
     Uint32 flags_initialized = 0;
 
@@ -191,12 +274,7 @@ int SDL_InitSubSystem(Uint32 flags)
         return SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
     }
 
-    SDL_InitLog();
-    SDL_InitProperties();
-    SDL_GetGlobalProperties();
-
-    /* Clear the error message */
-    SDL_ClearError();
+    SDL_InitMainThread();
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Init();
@@ -209,9 +287,6 @@ int SDL_InitSubSystem(Uint32 flags)
         }
     }
 #endif
-
-    SDL_InitTime();
-    SDL_InitTicks();
 
     /* Initialize the event subsystem */
     if (flags & SDL_INIT_EVENTS) {
@@ -400,19 +475,19 @@ int SDL_InitSubSystem(Uint32 flags)
 
     (void)flags_initialized; /* make static analysis happy, since this only gets used in error cases. */
 
-    return 0;
+    return SDL_ClearError();
 
 quit_and_error:
     SDL_QuitSubSystem(flags_initialized);
     return -1;
 }
 
-int SDL_Init(Uint32 flags)
+int SDL_Init(SDL_InitFlags flags)
 {
     return SDL_InitSubSystem(flags);
 }
 
-void SDL_QuitSubSystem(Uint32 flags)
+void SDL_QuitSubSystem(SDL_InitFlags flags)
 {
     /* Shut down requested initialized subsystems */
 
@@ -479,6 +554,7 @@ void SDL_QuitSubSystem(Uint32 flags)
 #ifndef SDL_VIDEO_DISABLED
     if (flags & SDL_INIT_VIDEO) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_VIDEO)) {
+            SDL_QuitRender();
             SDL_VideoQuit();
             /* video implies events */
             SDL_QuitSubSystem(SDL_INIT_EVENTS);
@@ -502,7 +578,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 }
 
-Uint32 SDL_WasInit(Uint32 flags)
+Uint32 SDL_WasInit(SDL_InitFlags flags)
 {
     int i;
     int num_subsystems = SDL_arraysize(SDL_SubsystemRefCount);
@@ -542,68 +618,32 @@ void SDL_Quit(void)
 #endif
     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
 
-    SDL_QuitTicks();
-    SDL_QuitTime();
-
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
 #endif
 
+    SDL_SetObjectsInvalid();
     SDL_ClearHints();
     SDL_AssertionsQuit();
 
-    SDL_QuitCPUInfo();
+    SDL_QuitPixelFormatDetails();
 
-    SDL_QuitProperties();
-    SDL_QuitLog();
+    SDL_QuitCPUInfo();
 
     /* Now that every subsystem has been quit, we reset the subsystem refcount
      * and the list of initialized subsystems.
      */
     SDL_memset(SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount));
 
-    SDL_CleanupTLS();
+    SDL_QuitMainThread();
 
     SDL_bInMainQuit = SDL_FALSE;
 }
 
-/* Assume we can wrap SDL_AtomicInt values and cast to Uint32 */
-SDL_COMPILE_TIME_ASSERT(sizeof_object_id, sizeof(int) == sizeof(Uint32));
-
-Uint32 SDL_GetNextObjectID(void)
-{
-    static SDL_AtomicInt last_id;
-
-    Uint32 id = (Uint32)SDL_AtomicIncRef(&last_id) + 1;
-    if (id == 0) {
-        id = (Uint32)SDL_AtomicIncRef(&last_id) + 1;
-    }
-    return id;
-}
-
 /* Get the library version number */
-int SDL_GetVersion(SDL_Version *ver)
+int SDL_GetVersion(void)
 {
-    static SDL_bool check_hint = SDL_TRUE;
-    static SDL_bool legacy_version = SDL_FALSE;
-
-    if (!ver) {
-        return SDL_InvalidParamError("ver");
-    }
-
-    SDL_VERSION(ver);
-
-    if (check_hint) {
-        check_hint = SDL_FALSE;
-        legacy_version = SDL_GetHintBoolean("SDL_LEGACY_VERSION", SDL_FALSE);
-    }
-
-    if (legacy_version) {
-        /* Prior to SDL 2.24.0, the patch version was incremented with every release */
-        ver->patch = ver->minor;
-        ver->minor = 0;
-    }
-    return 0;
+    return SDL_VERSION;
 }
 
 /* Get the library source revision */
@@ -612,7 +652,7 @@ const char *SDL_GetRevision(void)
     return SDL_REVISION;
 }
 
-/* Get the name of the platform */
+// Get the name of the platform
 const char *SDL_GetPlatform(void)
 {
 #if defined(SDL_PLATFORM_AIX)

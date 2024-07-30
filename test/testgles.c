@@ -35,7 +35,7 @@ quit(int rc)
     if (context) {
         for (i = 0; i < state->num_windows; i++) {
             if (context[i]) {
-                SDL_GL_DeleteContext(context[i]);
+                SDL_GL_DestroyContext(context[i]);
             }
         }
 
@@ -50,7 +50,7 @@ quit(int rc)
 }
 
 static void
-Render()
+Render(void)
 {
     static GLubyte color[8][4] = { { 255, 0, 0, 0 },
                                    { 255, 0, 0, 255 },
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     for (i = 1; i < argc;) {
         int consumed;
@@ -190,11 +190,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (state->render_flags & SDL_RENDERER_PRESENTVSYNC) {
-        SDL_GL_SetSwapInterval(1);
-    } else {
-        SDL_GL_SetSwapInterval(0);
-    }
+    SDL_GL_SetSwapInterval(state->render_vsync);
 
     mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
     if (mode) {

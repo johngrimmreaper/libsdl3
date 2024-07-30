@@ -211,8 +211,22 @@ static void loop(void *arg)
             break;
 
         case SDL_EVENT_KEY_DOWN:
+            if (event.key.key == SDLK_C) {
+                int x, y, w, h;
+                SDL_GetWindowPosition(window, &x, &y);
+                SDL_GetWindowSize(window, &w, &h);
+                w /= 2;
+                h /= 2;
+
+                if (event.key.mod & SDL_KMOD_ALT) {
+                    SDL_WarpMouseGlobal((float)(x + w), (float)(y + h));
+                } else {
+                    SDL_WarpMouseInWindow(window, (float)w, (float)h);
+                }
+            }
+            SDL_FALLTHROUGH;
         case SDL_EVENT_KEY_UP:
-            switch (event.key.keysym.sym) {
+            switch (event.key.key) {
             case SDLK_LSHIFT:
                 isRect = (event.key.state == SDL_PRESSED);
                 if (active) {
@@ -275,7 +289,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
@@ -308,7 +322,7 @@ int main(int argc, char *argv[])
 
     loop_data.done = SDL_FALSE;
 
-    loop_data.renderer = SDL_CreateRenderer(window, NULL, 0);
+    loop_data.renderer = SDL_CreateRenderer(window, NULL);
     if (!loop_data.renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);

@@ -107,7 +107,7 @@ static void SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
     if (ctx->thread) {
         int result;
 
-        SDL_PostSemaphore(ctx->request_sem);
+        SDL_SignalSemaphore(ctx->request_sem);
         SDL_WaitThread(ctx->thread, &result);
         ctx->thread = NULL;
     }
@@ -156,7 +156,7 @@ static int SDL_HIDAPI_StartRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
     }
 
     SDL_AtomicSet(&ctx->running, SDL_TRUE);
-    ctx->thread = SDL_CreateThreadInternal(SDL_HIDAPI_RumbleThread, "HIDAPI Rumble", 0, ctx);
+    ctx->thread = SDL_CreateThread(SDL_HIDAPI_RumbleThread, "HIDAPI Rumble", ctx);
     if (!ctx->thread) {
         SDL_HIDAPI_StopRumbleThread(ctx);
         return -1;
@@ -236,7 +236,7 @@ int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const 
     /* Make sure we unlock before posting the semaphore so the rumble thread can run immediately */
     SDL_HIDAPI_UnlockRumble();
 
-    SDL_PostSemaphore(ctx->request_sem);
+    SDL_SignalSemaphore(ctx->request_sem);
 
     return size;
 }

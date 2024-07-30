@@ -107,7 +107,7 @@ static int StartBeApp(void *unused)
 static int StartBeLooper()
 {
     if (!be_app) {
-        SDL_AppThread = SDL_CreateThreadInternal(StartBeApp, "SDLApplication", 0, NULL);
+        SDL_AppThread = SDL_CreateThread(StartBeApp, "SDLApplication", NULL);
         if (!SDL_AppThread) {
             return SDL_SetError("Couldn't create BApplication thread");
         }
@@ -115,21 +115,6 @@ static int StartBeLooper()
         do {
             SDL_Delay(10);
         } while ((!be_app) || be_app->IsLaunching());
-    }
-
-     /* Change working directory to that of executable */
-    app_info info;
-    if (B_OK == be_app->GetAppInfo(&info)) {
-        entry_ref ref = info.ref;
-        BEntry entry;
-        if (B_OK == entry.SetTo(&ref)) {
-            BPath path;
-            if (B_OK == path.SetTo(&entry)) {
-                if (B_OK == path.GetParent(&path)) {
-                    chdir(path.Path());
-                }
-            }
-        }
     }
 
     SDL_Looper = new SDL_BLooper("SDLLooper");

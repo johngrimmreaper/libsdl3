@@ -238,7 +238,7 @@ typedef struct
     WORD numbuttons;
 } WIN_DialogData;
 
-static SDL_bool GetButtonIndex(const SDL_MessageBoxData *messageboxdata, Uint32 flags, size_t *i)
+static SDL_bool GetButtonIndex(const SDL_MessageBoxData *messageboxdata, SDL_MessageBoxButtonFlags flags, size_t *i)
 {
     for (*i = 0; *i < (size_t)messageboxdata->numbuttons; ++*i) {
         if (messageboxdata->buttons[*i].flags & flags) {
@@ -701,7 +701,7 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
         return SDL_SetError("Number of buttons exceeds limit of %d", MAX_BUTTONS);
     }
 
-    switch (messageboxdata->flags) {
+    switch (messageboxdata->flags & (SDL_MESSAGEBOX_ERROR | SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_INFORMATION)) {
     case SDL_MESSAGEBOX_ERROR:
         icon = (Uint16)(size_t)IDI_ERROR;
         break;
@@ -870,7 +870,7 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
     /* If we have a parent window, get the Instance and HWND for them
      * so that our little dialog gets exclusive focus at all times. */
     if (messageboxdata->window) {
-        ParentWindow = messageboxdata->window->driverdata->hwnd;
+        ParentWindow = messageboxdata->window->internal->hwnd;
     }
 
     result = DialogBoxIndirectParam(NULL, (DLGTEMPLATE *)dialog->lpDialog, ParentWindow, MessageBoxDialogProc, (LPARAM)messageboxdata);
@@ -951,7 +951,7 @@ int WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     /* If we have a parent window, get the Instance and HWND for them
        so that our little dialog gets exclusive focus at all times. */
     if (messageboxdata->window) {
-        ParentWindow = messageboxdata->window->driverdata->hwnd;
+        ParentWindow = messageboxdata->window->internal->hwnd;
     }
 
     wmessage = WIN_UTF8ToStringW(messageboxdata->message);

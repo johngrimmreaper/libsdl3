@@ -2,9 +2,26 @@
 
 cmake_minimum_required(VERSION 3.12)
 project(sdl_test LANGUAGES C)
+
+include(CheckLanguage)
+
+if(APPLE)
+    # multiple values for CMAKE_OSX_ARCHITECTURES not supported with Swift
+    list(LENGTH CMAKE_OSX_ARCHITECTURES count_osx_archs)
+    if(count_osx_archs LESS_EQUAL 1)
+        check_language(Swift)
+        if(CMAKE_Swift_COMPILER)
+            enable_language(Swift)
+        endif()
+    endif()
+endif()
+
+message(STATUS "CMAKE_SYSTEM_NAME=      ${CMAKE_SYSTEM_NAME}")
+message(STATUS "CMAKE_SYSTEM_PROCESSOR= ${CMAKE_SYSTEM_PROCESSOR}")
+
 if(WINDOWS_STORE)
     enable_language(CXX)
-    add_compile_options(/ZW)
+    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/ZW>")
     set_source_files_properties(ain_cli.c main_gui.c PROPERTIES LANGUAGE CXX)
 endif()
 
@@ -41,8 +58,6 @@ add_feature_info("TEST_FULL" TEST_FULL "Build full SDL testsuite")
 find_package(SDL3 REQUIRED CONFIG COMPONENTS Headers)
 add_library(headers_test_slash OBJECT inc_sdl_slash.c)
 target_link_libraries(headers_test_slash PRIVATE SDL3::Headers)
-add_library(headers_test_noslash OBJECT inc_sdl_noslash.c)
-target_link_libraries(headers_test_noslash PRIVATE SDL3::Headers)
 
 if(TEST_SHARED)
     find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3-shared)
@@ -72,6 +87,12 @@ if(TEST_SHARED)
         add_executable(sdltest-shared sdltest.c)
         target_link_libraries(sdltest-shared PRIVATE SDL3::SDL3_test SDL3::SDL3-shared)
     endif()
+
+    if(CMAKE_Swift_COMPILER)
+        add_executable(swift-shared main.swift)
+        target_include_directories(swift-shared PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/swift")
+        target_link_libraries(swift-shared PRIVATE SDL3::SDL3-shared)
+    endif()
 endif()
 
 if(TEST_STATIC)
@@ -79,18 +100,22 @@ if(TEST_STATIC)
     add_executable(gui-static WIN32 main_gui.c)
     target_link_libraries(gui-static PRIVATE SDL3::SDL3-static)
 
-    option(SDL_STATIC_PIC "SDL static library has been built with PIC")
-    if(SDL_STATIC_PIC OR WIN32)
-        add_library(sharedlib-static SHARED main_lib.c)
-        target_link_libraries(sharedlib-static PRIVATE SDL3::SDL3-static)
-        generate_export_header(sharedlib-static EXPORT_MACRO_NAME MYLIBRARY_EXPORT)
-        target_compile_definitions(sharedlib-static PRIVATE "EXPORT_HEADER=\"${CMAKE_CURRENT_BINARY_DIR}/sharedlib-static_export.h\"")
-        set_target_properties(sharedlib-static PROPERTIES C_VISIBILITY_PRESET "hidden")
-    endif()
+    # Assume SDL library has been built with `set(CMAKE_POSITION_INDEPENDENT_CODE ON)`
+    add_library(sharedlib-static SHARED main_lib.c)
+    target_link_libraries(sharedlib-static PRIVATE SDL3::SDL3-static)
+    generate_export_header(sharedlib-static EXPORT_MACRO_NAME MYLIBRARY_EXPORT)
+    target_compile_definitions(sharedlib-static PRIVATE "EXPORT_HEADER=\"${CMAKE_CURRENT_BINARY_DIR}/sharedlib-static_export.h\"")
+    set_target_properties(sharedlib-static PROPERTIES C_VISIBILITY_PRESET "hidden")
 
     if(TEST_TEST)
         add_executable(sdltest-static sdltest.c)
         target_link_libraries(sdltest-static PRIVATE SDL3::SDL3_test SDL3::SDL3-static)
+    endif()
+
+    if(CMAKE_Swift_COMPILER)
+        add_executable(swift-static main.swift)
+        target_include_directories(swift-static PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/swift")
+        target_link_libraries(swift-static PRIVATE SDL3::SDL3-static)
     endif()
 endif()
 

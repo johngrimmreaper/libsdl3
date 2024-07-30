@@ -110,6 +110,7 @@ struct SDL_WaylandInput
     struct zwp_input_timestamps_v1 *touch_timestamps;
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
+    struct Wayland_CursorData *current_cursor;
     Uint32 keyboard_id;
     Uint32 pointer_id;
     uint32_t pointer_enter_serial;
@@ -170,10 +171,6 @@ struct SDL_WaylandInput
 
     struct SDL_WaylandTabletInput *tablet;
 
-    /* are we forcing relative mouse mode? */
-    SDL_bool cursor_visible;
-    SDL_bool relative_mode_override;
-    SDL_bool warp_emulation_prohibited;
     SDL_bool keyboard_is_virtual;
 
     /* Current SDL modifier flags */
@@ -200,8 +197,11 @@ extern void Wayland_create_text_input(SDL_VideoData *d);
 extern void Wayland_input_initialize_seat(SDL_VideoData *d);
 extern void Wayland_display_destroy_input(SDL_VideoData *d);
 
-extern int Wayland_input_lock_pointer(struct SDL_WaylandInput *input);
-extern int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input);
+extern int Wayland_input_enable_relative_pointer(struct SDL_WaylandInput *input);
+extern int Wayland_input_disable_relative_pointer(struct SDL_WaylandInput *input);
+
+extern int Wayland_input_lock_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
+extern int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
 
 extern int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
 extern int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input, SDL_Window *window);

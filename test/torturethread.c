@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {
@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
     }
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        SDL_Quit();
         SDLTest_CommonDestroyState(state);
         return 1;
     }

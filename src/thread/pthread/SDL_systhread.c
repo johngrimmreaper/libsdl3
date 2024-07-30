@@ -77,7 +77,9 @@ static int (*ppthread_setname_np)(const char *) = NULL;
 static SDL_bool checked_setname = SDL_FALSE;
 static int (*ppthread_setname_np)(pthread_t, const char *) = NULL;
 #endif
-int SDL_SYS_CreateThread(SDL_Thread *thread)
+int SDL_SYS_CreateThread(SDL_Thread *thread,
+                         SDL_FunctionPointer pfnBeginThread,
+                         SDL_FunctionPointer pfnEndThread)
 {
     pthread_attr_t type;
 
@@ -236,7 +238,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 #ifdef SDL_PLATFORM_LINUX
     {
         pid_t linuxTid = syscall(SYS_gettid);
-        return SDL_LinuxSetThreadPriorityAndPolicy(linuxTid, priority, policy);
+        return SDL_SetLinuxThreadPriorityAndPolicy(linuxTid, priority, policy);
     }
 #else
     if (priority == SDL_THREAD_PRIORITY_LOW) {
