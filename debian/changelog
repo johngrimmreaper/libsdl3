@@ -1,10 +1,15 @@
-libsdl3 (3.1.2+git20240730~fbed34a+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.1.2+git20240730~fbed34a+ds-1) experimental; urgency=medium
 
   * New upstream snapshot
   * d/rules: Explicitly enable API documentation if required
   * d/watch.git: Add a parallel watch file for git snapshots
+  * d/copyright: Update
+  * Install examples into libsdl3-tests
+  * d/not-installed: Don't install man pages for Sint32, etc.
+  * d/libsdl3-0.symbols: Update
+  * Remove an unused lintian override
 
- -- Simon McVittie <smcv@debian.org>  Thu, 20 Jun 2024 18:31:03 +0100
+ -- Simon McVittie <smcv@debian.org>  Tue, 30 Jul 2024 16:25:07 +0100
 
 libsdl3 (3.1.2+ds-1) experimental; urgency=medium
 
