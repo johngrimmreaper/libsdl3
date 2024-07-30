@@ -1,6 +1,8 @@
-libsdl3 (3.1.2+git20240620~3b5f351+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.1.2+git20240730~fbed34a+ds-1) UNRELEASED; urgency=medium
 
   * New upstream snapshot
+  * d/rules: Explicitly enable API documentation if required
+  * d/watch.git: Add a parallel watch file for git snapshots
 
  -- Simon McVittie <smcv@debian.org>  Thu, 20 Jun 2024 18:31:03 +0100
 
