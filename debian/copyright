@@ -5,8 +5,17 @@ Source: https://www.libsdl.org/
 # To the best of my knowledge, everything we exclude is (meant to be)
 # Free Software, we just don't want to review or keep track of the
 # licensing status of files that are irrelevant to Debian.
-Files-Excluded: Android.mk
+Files-Excluded: .github
+                Android.mk
                 android-project
+                build-scripts/pkg-support/android
+                build-scripts/pkg-support/mingw
+                src/video/directx/SDL_d3d12_xbox_cmacros.h
+                src/video/directx/d3d12.h
+                src/video/directx/d3d12sdklayers.h
+                src/gpu/d3d11/D3D11_Blit.h
+                src/gpu/d3d12/D3D12_Blit.h
+                src/gpu/metal/Metal_Blit.h
                 src/hidapi/documentation/*.png
                 src/hidapi/*/*.sln
                 src/hidapi/*/*.vcproj
@@ -15,12 +24,21 @@ Files-Excluded: Android.mk
                 src/render/direct3d12/D3D12_*RootSig*.h
                 src/render/direct3d12/D3D12_*Shader*.h
                 src/render/metal/SDL_shaders_metal_*.h
+                src/render/sdlgpu/shaders/dxbc50.h
+                src/render/sdlgpu/shaders/dxil60.h
+                src/render/sdlgpu/shaders/metal.h
+                src/render/sdlgpu/shaders/*.dxbc.h
+                src/render/sdlgpu/shaders/*.dxil.h
+                src/render/sdlgpu/shaders/*.metal.h
                 test/android
                 test/emscripten
                 test/gamepad_*.h
                 test/glass.h
                 test/icon.h
                 test/n3ds
+                test/testgpu/testgpu_dxbc.h
+                test/testgpu/testgpu_dxil.h
+                test/testgpu/testgpu_metallib.h
                 test/unifont-*
                 test/uwp
                 VisualC
