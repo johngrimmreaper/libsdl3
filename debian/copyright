@@ -140,6 +140,13 @@ Copyright: 1995 Erik Corry
            1995 Brown University
 License: BrownUn_UnCalifornia_ErikCorry
 
+Files:
+ src/stdlib/SDL_malloc.c
+Copyright:
+ 1997-2024 Sam Lantinga <slouken@libsdl.org>
+ 2005-2012 Doug Lea
+License: Zlib and CC0-1.0
+
 Files: src/stdlib/SDL_qsort.c
 Copyright: 1998-2021 Gareth McCaughan
 License: Gareth_McCaughan
@@ -211,6 +218,12 @@ Copyright:
  2023-2024 Xaver Hugl
 License: Expat and MIT-open-group
 
+Files: wayland-protocols/xdg-toplevel-icon-v1.xml
+Copyright:
+ 2023-2024 Matthias Klumpp
+ 2024 David Edmundson
+License: Expat
+
 Files:
  wayland-protocols/kde-output-order-v1.xml
 Copyright:
@@ -259,6 +272,13 @@ License: BSL-1.0
  WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
+
+License: CC0-1.0
+ Released to the public domain, as explained at
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+ .
+ On Debian systems, a copy of the Creative Commons Zero 1.0 Universal deed
+ can be found in <file:///usr/share/common-licenses/CC0-1.0>.
 
 License: Expat
  Permission is hereby granted, free of charge, to any person obtaining a
