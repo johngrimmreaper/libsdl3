@@ -23,7 +23,7 @@
 #include "SDL_blit.h"
 
 #ifdef SDL_SSE_INTRINSICS
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #define SSE_BEGIN \
@@ -119,12 +119,12 @@ static void SDL_TARGETING("sse") SDL_FillSurfaceRect1SSE(Uint8 *pixels, int pitc
 
     SSE_END;
 }
-/* DEFINE_SSE_FILLRECT(1, Uint8) */
+// DEFINE_SSE_FILLRECT(1, Uint8)
 DEFINE_SSE_FILLRECT(2, Uint16)
 DEFINE_SSE_FILLRECT(4, Uint32)
 
-/* *INDENT-ON* */ /* clang-format on */
-#endif            /* __SSE__ */
+/* *INDENT-ON* */ // clang-format on
+#endif            // __SSE__
 
 static void SDL_FillSurfaceRect1(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 {
@@ -229,26 +229,25 @@ static void SDL_FillSurfaceRect4(Uint8 *pixels, int pitch, Uint32 color, int w, 
 /*
  * This function performs a fast fill of the given rectangle with 'color'
  */
-int SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
+SDL_bool SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
 {
     if (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_FillSurfaceRect(): dst");
     }
 
-    /* If 'rect' == NULL, then fill the whole surface */
+    // If 'rect' == NULL, then fill the whole surface
     if (!rect) {
         rect = &dst->internal->clip_rect;
-        /* Don't attempt to fill if the surface's clip_rect is empty */
+        // Don't attempt to fill if the surface's clip_rect is empty
         if (SDL_RectEmpty(rect)) {
-            return 0;
+            return true;
         }
     }
 
     return SDL_FillSurfaceRects(dst, rect, 1, color);
 }
 
-int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
-                  Uint32 color)
+SDL_bool SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, Uint32 color)
 {
     SDL_Rect clipped;
     Uint8 *pixels;
@@ -260,12 +259,12 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         return SDL_InvalidParamError("SDL_FillSurfaceRects(): dst");
     }
 
-    /* Nothing to do */
+    // Nothing to do
     if (dst->w == 0 || dst->h == 0) {
-        return 0;
+        return true;
     }
 
-    /* Perform software fill */
+    // Perform software fill
     if (!dst->pixels) {
         return SDL_SetError("SDL_FillSurfaceRects(): You must lock the surface");
     }
@@ -284,7 +283,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
                 if (SDL_BITSPERPIXEL(dst->format) == 4) {
                     Uint8 b = (((Uint8)color << 4) | (Uint8)color);
                     SDL_memset(dst->pixels, b, (size_t)dst->h * dst->pitch);
-                    return 1;
+                    return true;
                 }
             }
         }
@@ -321,7 +320,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         }
 
         case 3:
-            /* 24-bit RGB is a slow path, at least for now. */
+            // 24-bit RGB is a slow path, at least for now.
             {
                 fill_function = SDL_FillSurfaceRect3;
                 break;
@@ -346,7 +345,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
 
     for (i = 0; i < count; ++i) {
         rect = &rects[i];
-        /* Perform clipping */
+        // Perform clipping
         if (!SDL_GetRectIntersection(rect, &dst->internal->clip_rect, &clipped)) {
             continue;
         }
@@ -358,6 +357,6 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         fill_function(pixels, dst->pitch, color, rect->w, rect->h);
     }
 
-    /* We're done! */
-    return 0;
+    // We're done!
+    return true;
 }

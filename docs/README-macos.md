@@ -30,7 +30,7 @@ cmake --build .
 sudo cmake --install .
 ```
 
-Please note that building SDL requires at least Xcode 6 and the 10.9 SDK.
+Please note that building SDL requires at least Xcode 12.2 and the 11.0 SDK.
 PowerPC support for macOS has been officially dropped as of SDL 2.0.2.
 32-bit Intel and macOS 10.8 runtime support has been officially dropped as
 of SDL 2.24.0.
@@ -54,6 +54,7 @@ NSApplicationDelegate implementation:
 {
     if (SDL_GetEventState(SDL_EVENT_QUIT) == SDL_ENABLE) {
         SDL_Event event;
+        SDL_zero(event);
         event.type = SDL_EVENT_QUIT;
         SDL_PushEvent(&event);
     }
@@ -65,9 +66,10 @@ NSApplicationDelegate implementation:
 {
     if (SDL_GetEventState(SDL_EVENT_DROP_FILE) == SDL_ENABLE) {
         SDL_Event event;
+        SDL_zero(event);
         event.type = SDL_EVENT_DROP_FILE;
         event.drop.file = SDL_strdup([filename UTF8String]);
-        return (SDL_PushEvent(&event) > 0);
+        return SDL_PushEvent(&event);
     }
 
     return NO;

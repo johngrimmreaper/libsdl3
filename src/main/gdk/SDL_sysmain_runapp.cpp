@@ -27,10 +27,10 @@ extern "C" {
 }
 #include <XGameRuntime.h>
 #include <xsapi-c/services_c.h>
-#include <shellapi.h> /* CommandLineToArgvW() */
+#include <shellapi.h> // CommandLineToArgvW()
 #include <appnotify.h>
 
-/* Pop up an out of memory message, returns to Windows */
+// Pop up an out of memory message, returns to Windows
 static BOOL OutOfMemory(void)
 {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Out of memory - aborting", NULL);
@@ -58,7 +58,7 @@ int SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
      * SDL_free() to use the same allocator after SDL_main() returns.
      */
 
-    /* Parse it into argv and argc */
+    // Parse it into argv and argc
     argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
     if (argv == NULL) {
         return OutOfMemory();
@@ -85,14 +85,14 @@ int SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
 
     hr = XGameRuntimeInitialize();
 
-    if (SUCCEEDED(hr) && SDL_GetGDKTaskQueue(&taskQueue) == 0) {
+    if (SUCCEEDED(hr) && SDL_GetGDKTaskQueue(&taskQueue)) {
         Uint32 titleid = 0;
         char scidBuffer[64];
         XblInitArgs xblArgs;
 
         XTaskQueueSetCurrentProcessTaskQueue(taskQueue);
 
-        /* Try to get the title ID and initialize Xbox Live */
+        // Try to get the title ID and initialize Xbox Live
         hr = XGameGetXboxTitleId(&titleid);
         if (SUCCEEDED(hr)) {
             SDL_zero(xblArgs);
@@ -106,17 +106,17 @@ int SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
 
         SDL_SetMainReady();
 
-        if (GDK_RegisterChangeNotifications() != 0) {
+        if (!GDK_RegisterChangeNotifications()) {
             return -1;
         }
 
-        /* Run the application main() code */
+        // Run the application main() code
         result = mainFunction(argc, argv);
 
         GDK_UnregisterChangeNotifications();
 
-        /* !!! FIXME: This follows the docs exactly, but for some reason still leaks handles on exit? */
-        /* Terminate the task queue and dispatch any pending tasks */
+        // !!! FIXME: This follows the docs exactly, but for some reason still leaks handles on exit?
+        // Terminate the task queue and dispatch any pending tasks
         XTaskQueueTerminate(taskQueue, false, nullptr, nullptr);
         while (XTaskQueueDispatch(taskQueue, XTaskQueuePort::Completion, 0))
             ;
@@ -126,14 +126,18 @@ int SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
         XGameRuntimeUninitialize();
     } else {
 #ifdef SDL_PLATFORM_WINGDK
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Could not initialize - aborting", NULL);
+        if (hr == E_GAMERUNTIME_DLL_NOT_FOUND) {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Gaming Runtime library not found (xgameruntime.dll)", NULL);
+        } else {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Could not initialize - aborting", NULL);
+        }
 #else
         SDL_assert_always(0 && "[GDK] Could not initialize - aborting");
 #endif
         result = -1;
     }
 
-    /* Free argv, to avoid memory leak */
+    // Free argv, to avoid memory leak
     for (i = 0; i < argc; ++i) {
         HeapFree(GetProcessHeap(), 0, argv[i]);
     }

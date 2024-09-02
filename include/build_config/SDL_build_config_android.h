@@ -42,6 +42,7 @@
 #define HAVE_MATH_H 1
 #define HAVE_SIGNAL_H 1
 #define HAVE_STDARG_H 1
+#define HAVE_STDBOOL_H 1
 #define HAVE_STDDEF_H 1
 #define HAVE_STDINT_H 1
 #define HAVE_STDIO_H 1
@@ -195,6 +196,8 @@
 #define SDL_VIDEO_RENDER_VULKAN    1
 #endif
 #endif
+
+#define SDL_GPU_VULKAN SDL_VIDEO_VULKAN
 
 /* Enable system power support */
 #define SDL_POWER_ANDROID 1
