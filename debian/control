@@ -6,7 +6,7 @@ Uploaders:
  Manuel A. Fernandez Montecelo <mafm@debian.org>,
  Felix Geyer <fgeyer@debian.org>,
  Simon McVittie <smcv@debian.org>
-Standards-Version: 4.6.2
+Standards-Version: 4.7.0
 Build-Depends:
  cmake,
  debhelper-compat (= 13),
