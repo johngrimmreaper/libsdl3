@@ -29,7 +29,7 @@
 
 #include "../../core/android/SDL_android.h"
 
-/* See Android's MotionEvent class for constants */
+// See Android's MotionEvent class for constants
 #define ACTION_DOWN       0
 #define ACTION_UP         1
 #define ACTION_MOVE       2
@@ -41,17 +41,16 @@
 #define BUTTON_BACK       8
 #define BUTTON_FORWARD    16
 
-typedef struct
+struct SDL_CursorData
 {
     int custom_cursor;
     int system_cursor;
+};
 
-} SDL_AndroidCursorData;
-
-/* Last known Android mouse button state (includes all buttons) */
+// Last known Android mouse button state (includes all buttons)
 static int last_state;
 
-/* Blank cursor */
+// Blank cursor
 static SDL_Cursor *empty_cursor;
 
 static SDL_Cursor *Android_WrapCursor(int custom_cursor, int system_cursor)
@@ -60,7 +59,7 @@ static SDL_Cursor *Android_WrapCursor(int custom_cursor, int system_cursor)
 
     cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
-        SDL_AndroidCursorData *data = (SDL_AndroidCursorData *)SDL_calloc(1, sizeof(*data));
+        SDL_CursorData *data = (SDL_CursorData *)SDL_calloc(1, sizeof(*data));
         if (data) {
             data->custom_cursor = custom_cursor;
             data->system_cursor = system_cursor;
@@ -104,7 +103,7 @@ static SDL_Cursor *Android_CreateSystemCursor(SDL_SystemCursor id)
 
 static void Android_FreeCursor(SDL_Cursor *cursor)
 {
-    SDL_AndroidCursorData *data = (SDL_AndroidCursorData *)cursor->internal;
+    SDL_CursorData *data = cursor->internal;
     if (data->custom_cursor != 0) {
         Android_JNI_DestroyCustomCursor(data->custom_cursor);
     }
@@ -133,13 +132,13 @@ static void Android_DestroyEmptyCursor(void)
     }
 }
 
-static int Android_ShowCursor(SDL_Cursor *cursor)
+static bool Android_ShowCursor(SDL_Cursor *cursor)
 {
     if (!cursor) {
         cursor = Android_CreateEmptyCursor();
     }
     if (cursor) {
-        SDL_AndroidCursorData *data = (SDL_AndroidCursorData *)cursor->internal;
+        SDL_CursorData *data = cursor->internal;
         if (data->custom_cursor) {
             if (!Android_JNI_SetCustomCursor(data->custom_cursor)) {
                 return SDL_Unsupported();
@@ -149,14 +148,14 @@ static int Android_ShowCursor(SDL_Cursor *cursor)
                 return SDL_Unsupported();
             }
         }
-        return 0;
+        return true;
     } else {
-        /* SDL error set inside Android_CreateEmptyCursor() */
-        return -1;
+        // SDL error set inside Android_CreateEmptyCursor()
+        return false;
     }
 }
 
-static int Android_SetRelativeMouseMode(SDL_bool enabled)
+static bool Android_SetRelativeMouseMode(bool enabled)
 {
     if (!Android_JNI_SupportsRelativeMouse()) {
         return SDL_Unsupported();
@@ -166,7 +165,7 @@ static int Android_SetRelativeMouseMode(SDL_bool enabled)
         return SDL_Unsupported();
     }
 
-    return 0;
+    return true;
 }
 
 void Android_InitMouse(void)
@@ -189,7 +188,7 @@ void Android_QuitMouse(void)
     Android_DestroyEmptyCursor();
 }
 
-/* Translate Android mouse button state to SDL mouse button */
+// Translate Android mouse button state to SDL mouse button
 static Uint8 TranslateButton(int state)
 {
     if (state & BUTTON_PRIMARY) {
@@ -207,7 +206,7 @@ static Uint8 TranslateButton(int state)
     }
 }
 
-void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y, SDL_bool relative)
+void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y, bool relative)
 {
     int changes;
     Uint8 button;
@@ -247,4 +246,4 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_ANDROID */
+#endif // SDL_VIDEO_DRIVER_ANDROID

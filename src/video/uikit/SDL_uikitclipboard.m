@@ -27,14 +27,14 @@
 
 #import <UIKit/UIPasteboard.h>
 
-int UIKit_SetClipboardText(SDL_VideoDevice *_this, const char *text)
+bool UIKit_SetClipboardText(SDL_VideoDevice *_this, const char *text)
 {
 #ifdef SDL_PLATFORM_TVOS
     return SDL_SetError("The clipboard is not available on tvOS");
 #else
     @autoreleasepool {
         [UIPasteboard generalPasteboard].string = @(text);
-        return 0;
+        return true;
     }
 #endif
 }
@@ -57,15 +57,15 @@ char *UIKit_GetClipboardText(SDL_VideoDevice *_this)
 #endif
 }
 
-SDL_bool UIKit_HasClipboardText(SDL_VideoDevice *_this)
+bool UIKit_HasClipboardText(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
 #ifndef SDL_PLATFORM_TVOS
         if ([UIPasteboard generalPasteboard].string != nil) {
-            return SDL_TRUE;
+            return true;
         }
 #endif
-        return SDL_FALSE;
+        return false;
     }
 }
 
@@ -101,4 +101,4 @@ void UIKit_QuitClipboard(SDL_VideoDevice *_this)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_UIKIT */
+#endif // SDL_VIDEO_DRIVER_UIKIT

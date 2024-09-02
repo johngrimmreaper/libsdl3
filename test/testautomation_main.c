@@ -9,6 +9,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
 #include "testautomation_suites.h"
+#include "SDL_build_config.h"
 
 /**
  * Tests SDL_InitSubSystem() and SDL_QuitSubSystem()
@@ -25,7 +26,7 @@ static int main_testInitQuitSubSystem(void *arg)
         int subsystem = subsystems[i];
 
         SDLTest_AssertCheck((SDL_WasInit(subsystem) & subsystem) == 0, "SDL_WasInit(%x) before init should be false", subsystem);
-        SDLTest_AssertCheck(SDL_InitSubSystem(subsystem) == 0, "SDL_InitSubSystem(%x)", subsystem);
+        SDLTest_AssertCheck(SDL_InitSubSystem(subsystem), "SDL_InitSubSystem(%x)", subsystem);
 
         initialized_system = SDL_WasInit(subsystem);
         SDLTest_AssertCheck((initialized_system & subsystem) != 0, "SDL_WasInit(%x) should be true (%x)", subsystem, initialized_system);
@@ -45,7 +46,7 @@ static int main_testImpliedJoystickInit(void *arg)
 
     /* First initialize the controller */
     SDLTest_AssertCheck((SDL_WasInit(joy_and_controller) & joy_and_controller) == 0, "SDL_WasInit() before init should be false for joystick & controller");
-    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMEPAD) == 0, "SDL_InitSubSystem(SDL_INIT_GAMEPAD)");
+    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMEPAD), "SDL_InitSubSystem(SDL_INIT_GAMEPAD)");
 
     /* Then make sure this implicitly initialized the joystick subsystem */
     initialized_system = SDL_WasInit(joy_and_controller);
@@ -66,8 +67,8 @@ static int main_testImpliedJoystickQuit(void *arg)
 
     /* First initialize the controller and the joystick (explicitly) */
     SDLTest_AssertCheck((SDL_WasInit(joy_and_controller) & joy_and_controller) == 0, "SDL_WasInit() before init should be false for joystick & controller");
-    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_JOYSTICK) == 0, "SDL_InitSubSystem(SDL_INIT_JOYSTICK)");
-    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMEPAD) == 0, "SDL_InitSubSystem(SDL_INIT_GAMEPAD)");
+    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_JOYSTICK), "SDL_InitSubSystem(SDL_INIT_JOYSTICK)");
+    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMEPAD), "SDL_InitSubSystem(SDL_INIT_GAMEPAD)");
 
     /* Then make sure they're both initialized properly */
     initialized_system = SDL_WasInit(joy_and_controller);
@@ -93,18 +94,40 @@ static int
 main_testSetError(void *arg)
 {
     size_t i;
-    char error[1024];
+    char error_input[1024];
+    int result;
+    const char *error;
+    size_t expected_len;
 
-    error[0] = '\0';
-    SDL_SetError("");
-    SDLTest_AssertCheck(SDL_strcmp(error, SDL_GetError()) == 0, "SDL_SetError(\"\")");
+    SDLTest_AssertPass("SDL_SetError(NULL)");
+    result = SDL_SetError(NULL);
+    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError(NULL) -> %d (expected %d)", result, SDL_FALSE);
+    error = SDL_GetError();
+    SDLTest_AssertCheck(SDL_strcmp(error, "") == 0, "SDL_GetError() -> \"%s\" (expected \"%s\")", error, "");
 
-    for (i = 0; i < (sizeof(error) - 1); ++i) {
-        error[i] = 'a' + (i % 26);
+    SDLTest_AssertPass("SDL_SetError(\"\")");
+    result = SDL_SetError("");
+    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError(\"\") -> %d (expected %d)", result, SDL_FALSE);
+    error = SDL_GetError();
+    SDLTest_AssertCheck(SDL_strcmp(error, "") == 0, "SDL_GetError() -> \"%s\" (expected \"%s\")", error, "");
+
+    error_input[0] = '\0';
+    for (i = 0; i < (sizeof(error_input) - 1); ++i) {
+        error_input[i] = 'a' + (i % 26);
     }
-    error[i] = '\0';
-    SDL_SetError("%s", error);
-    SDLTest_AssertCheck(SDL_strcmp(error, SDL_GetError()) == 0, "SDL_SetError(\"abc...1023\")");
+    error_input[i] = '\0';
+    SDLTest_AssertPass("SDL_SetError(\"abc...\")");
+    result = SDL_SetError("%s", error_input);
+    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError(\"abc...\") -> %d (expected %d)", result, SDL_FALSE);
+    error = SDL_GetError();
+
+#ifdef SDL_THREADS_DISABLED
+    expected_len = 128 - 1;
+#else
+    expected_len = sizeof(error_input) - 1;
+#endif
+    SDLTest_AssertPass("Verify SDL error is identical to the input error");
+    SDLTest_CompareMemory(error, SDL_strlen(error), error_input, expected_len);
 
     return TEST_COMPLETED;
 }

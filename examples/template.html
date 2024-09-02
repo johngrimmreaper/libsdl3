@@ -133,12 +133,21 @@
         height: 100%;
         overflow: scroll;
       }
+
+      #example-description {
+        color: white;
+        text-align: center;
+        position: relative; /* required for proper positioning */
+      }
     </style>
     <link rel="stylesheet" type="text/css" href="highlight.css">
   </head>
   <body>
     <div class="canvas-container">
       <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+    </div>
+    <div id="example-description">
+      @description@
     </div>
     <div id="output-container">
       <textarea id="output" rows="8" spellcheck="false" readonly></textarea>
@@ -156,6 +165,12 @@
           var element = document.getElementById('output');
           if (element) element.value = ''; // clear browser cache
           return function(text) {
+            var elem = document.getElementById('output-container');
+            if (elem.style['top'] == '') {
+                elem.style['top'] = '50%';
+                setTimeout(function() { elem.style['top'] = ''; }, 3000);
+            }
+
             if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
             // These replacements are necessary if you render to raw HTML
             //text = text.replace(/&/g, "&amp;");
@@ -169,6 +184,7 @@
             }
           };
         })(),
+        printErr: function(text) { Module.print(text) },
         canvas: (() => {
           var canvas = document.getElementById('canvas');
 
