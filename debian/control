@@ -42,7 +42,8 @@ Build-Depends:
  libxv-dev,
  libxxf86vm-dev,
  pkgconf,
- wayland-protocols
+ wayland-protocols,
+ xxd,
 Build-Depends-Indep:
  graphviz <!nodoc>,
  doxygen <!nodoc>,

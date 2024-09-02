@@ -1,0 +1,37 @@
+From: Simon McVittie <smcv@debian.org>
+Date: Mon, 2 Sep 2024 19:58:31 +0100
+Subject: src/render/sdlgpu/shaders: Only regenerate shaders needed on Debian
+
+We don't currently have spirv-cross in Debian, but we also don't need
+the shaders that it produces.
+
+Forwarded: not-needed, Debian-specific
+---
+ src/render/sdlgpu/shaders/build-shaders.sh | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/src/render/sdlgpu/shaders/build-shaders.sh b/src/render/sdlgpu/shaders/build-shaders.sh
+index 7778fe0..1350ca2 100755
+--- a/src/render/sdlgpu/shaders/build-shaders.sh
++++ b/src/render/sdlgpu/shaders/build-shaders.sh
+@@ -4,8 +4,8 @@ set -e
+ 
+ # NOTE: fxc is tested on Linux with https://github.com/mozilla/fxc2
+ 
+-which fxc &>/dev/null && HAVE_FXC=1 || HAVE_FXC=0
+-which dxc &>/dev/null && HAVE_DXC=1 || HAVE_DXC=0
++HAVE_FXC=0
++HAVE_DXC=0
+ 
+ [ "$HAVE_FXC" != 0 ] || echo "fxc not in PATH; D3D11 shaders will not be rebuilt"
+ [ "$HAVE_DXC" != 0 ] || echo "dxc not in PATH; D3D12 shaders will not be rebuilt"
+@@ -60,6 +60,9 @@ for i in *.vert *.frag; do
+     make-header "$spv"
+     echo "#include \"$spv.h\"" >> "$spirv_bundle"
+ 
++    # Debian-specific: We don't rebuild DirectX or Metal shaders, only SPIR-V
++    continue
++
+     spirv-cross "$spv" --hlsl --shader-model 50 --hlsl-enable-compat --output "$hlsl50"
+     spirv-cross "$spv" --hlsl --shader-model 60 --hlsl-enable-compat --output "$hlsl60"
+ 
