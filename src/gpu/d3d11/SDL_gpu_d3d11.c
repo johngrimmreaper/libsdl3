@@ -169,36 +169,55 @@ static DXGI_COLOR_SPACE_TYPE SwapchainCompositionToColorSpace[] = {
 };
 
 static DXGI_FORMAT SDLToD3D11_TextureFormat[] = {
+    DXGI_FORMAT_A8_UNORM,             // A8_UNORM
+    DXGI_FORMAT_R8_UNORM,             // R8_UNORM
+    DXGI_FORMAT_R8G8_UNORM,           // R8G8_UNORM
     DXGI_FORMAT_R8G8B8A8_UNORM,       // R8G8B8A8_UNORM
-    DXGI_FORMAT_B8G8R8A8_UNORM,       // B8G8R8A8_UNORM
+    DXGI_FORMAT_R16_UNORM,            // R16_UNORM
+    DXGI_FORMAT_R16G16_UNORM,         // R16G16_UNORM
+    DXGI_FORMAT_R16G16B16A16_UNORM,   // R16G16B16A16_UNORM
+    DXGI_FORMAT_R10G10B10A2_UNORM,    // R10G10B10A2_UNORM
     DXGI_FORMAT_B5G6R5_UNORM,         // B5G6R5_UNORM
     DXGI_FORMAT_B5G5R5A1_UNORM,       // B5G5R5A1_UNORM
     DXGI_FORMAT_B4G4R4A4_UNORM,       // B4G4R4A4_UNORM
-    DXGI_FORMAT_R10G10B10A2_UNORM,    // R10G10B10A2_UNORM
-    DXGI_FORMAT_R16G16_UNORM,         // R16G16_UNORM
-    DXGI_FORMAT_R16G16B16A16_UNORM,   // R16G16B16A16_UNORM
-    DXGI_FORMAT_R8_UNORM,             // R8_UNORM
-    DXGI_FORMAT_A8_UNORM,             // A8_UNORM
+    DXGI_FORMAT_B8G8R8A8_UNORM,       // B8G8R8A8_UNORM
     DXGI_FORMAT_BC1_UNORM,            // BC1_UNORM
     DXGI_FORMAT_BC2_UNORM,            // BC2_UNORM
     DXGI_FORMAT_BC3_UNORM,            // BC3_UNORM
+    DXGI_FORMAT_BC4_UNORM,            // BC4_UNORM
+    DXGI_FORMAT_BC5_UNORM,            // BC5_UNORM
     DXGI_FORMAT_BC7_UNORM,            // BC7_UNORM
+    DXGI_FORMAT_BC6H_SF16,            // BC6H_FLOAT
+    DXGI_FORMAT_BC6H_UF16,            // BC6H_UFLOAT
+    DXGI_FORMAT_R8_SNORM,             // R8_SNORM
     DXGI_FORMAT_R8G8_SNORM,           // R8G8_SNORM
     DXGI_FORMAT_R8G8B8A8_SNORM,       // R8G8B8A8_SNORM
+    DXGI_FORMAT_R16_SNORM,            // R16_SNORM
+    DXGI_FORMAT_R16G16_SNORM,         // R16G16_SNORM
+    DXGI_FORMAT_R16G16B16A16_SNORM,   // R16G16B16A16_SNORM
     DXGI_FORMAT_R16_FLOAT,            // R16_FLOAT
     DXGI_FORMAT_R16G16_FLOAT,         // R16G16_FLOAT
     DXGI_FORMAT_R16G16B16A16_FLOAT,   // R16G16B16A16_FLOAT
     DXGI_FORMAT_R32_FLOAT,            // R32_FLOAT
     DXGI_FORMAT_R32G32_FLOAT,         // R32G32_FLOAT
     DXGI_FORMAT_R32G32B32A32_FLOAT,   // R32G32B32A32_FLOAT
+    DXGI_FORMAT_R11G11B10_FLOAT,      // R11G11B10_UFLOAT
     DXGI_FORMAT_R8_UINT,              // R8_UINT
     DXGI_FORMAT_R8G8_UINT,            // R8G8_UINT
     DXGI_FORMAT_R8G8B8A8_UINT,        // R8G8B8A8_UINT
     DXGI_FORMAT_R16_UINT,             // R16_UINT
     DXGI_FORMAT_R16G16_UINT,          // R16G16_UINT
     DXGI_FORMAT_R16G16B16A16_UINT,    // R16G16B16A16_UINT
+    DXGI_FORMAT_R8_SINT,              // R8_INT
+    DXGI_FORMAT_R8G8_SINT,            // R8G8_INT
+    DXGI_FORMAT_R8G8B8A8_SINT,        // R8G8B8A8_INT
+    DXGI_FORMAT_R16_SINT,             // R16_INT
+    DXGI_FORMAT_R16G16_SINT,          // R16G16_INT
+    DXGI_FORMAT_R16G16B16A16_SINT,    // R16G16B16A16_INT
     DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,  // R8G8B8A8_UNORM_SRGB
     DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,  // B8G8R8A8_UNORM_SRGB
+    DXGI_FORMAT_BC1_UNORM_SRGB,       // BC1_UNORM_SRGB
+    DXGI_FORMAT_BC2_UNORM_SRGB,       // BC2_UNORM_SRGB
     DXGI_FORMAT_BC3_UNORM_SRGB,       // BC3_UNORM_SRGB
     DXGI_FORMAT_BC7_UNORM_SRGB,       // BC7_UNORM_SRGB
     DXGI_FORMAT_D16_UNORM,            // D16_UNORM
@@ -1848,20 +1867,20 @@ static D3D11Texture *D3D11_INTERNAL_CreateTexture(
     D3D11Texture *d3d11Texture;
     HRESULT res;
 
-    isColorTarget = createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
-    isDepthStencil = createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT;
+    isColorTarget = createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    isDepthStencil = createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
     needsSRV =
-        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) ||
-        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT) ||
-        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT);
+        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER) ||
+        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) ||
+        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ);
     needSubresourceUAV =
-        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT);
+        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE);
     isMultisample = createInfo->sampleCount > SDL_GPU_SAMPLECOUNT_1;
     isStaging = createInfo->usageFlags == 0;
     isMippable =
         createInfo->levelCount > 1 &&
-        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) &&
-        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT);
+        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER) &&
+        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET);
     format = SDLToD3D11_TextureFormat[createInfo->format];
     if (isDepthStencil) {
         format = D3D11_INTERNAL_GetTypelessFormat(format);
@@ -2042,7 +2061,7 @@ static D3D11Texture *D3D11_INTERNAL_CreateTexture(
                 desc2D.MipLevels = 1;
                 desc2D.MiscFlags = 0;
                 desc2D.SampleDesc.Count = SDLToD3D11_SampleCount[createInfo->sampleCount];
-                desc2D.SampleDesc.Quality = D3D11_STANDARD_MULTISAMPLE_PATTERN;
+                desc2D.SampleDesc.Quality = (UINT)D3D11_STANDARD_MULTISAMPLE_PATTERN;
                 desc2D.Usage = D3D11_USAGE_DEFAULT;
 
                 res = ID3D11Device_CreateTexture2D(
@@ -2370,19 +2389,19 @@ static SDL_GPUBuffer *D3D11_CreateBuffer(
     D3D11_BUFFER_DESC bufferDesc;
 
     bufferDesc.BindFlags = 0;
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX_BIT) {
+    if (usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX) {
         bufferDesc.BindFlags |= D3D11_BIND_VERTEX_BUFFER;
     }
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDEX_BIT) {
+    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDEX) {
         bufferDesc.BindFlags |= D3D11_BIND_INDEX_BUFFER;
     }
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT_BIT) {
+    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         bufferDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
     }
 
-    if (usageFlags & (SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT |
-                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ_BIT |
-                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE_BIT)) {
+    if (usageFlags & (SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ |
+                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ |
+                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE)) {
         bufferDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
     }
 
@@ -2392,12 +2411,12 @@ static SDL_GPUBuffer *D3D11_CreateBuffer(
     bufferDesc.StructureByteStride = 0;
     bufferDesc.MiscFlags = 0;
 
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT_BIT) {
+    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         bufferDesc.MiscFlags |= D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS;
     }
-    if (usageFlags & (SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT |
-                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ_BIT |
-                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE_BIT)) {
+    if (usageFlags & (SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ |
+                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ |
+                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE)) {
         bufferDesc.MiscFlags |= D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
     }
 
@@ -4151,7 +4170,7 @@ static void D3D11_BeginComputePass(
 
     for (i = 0; i < storageTextureBindingCount; i += 1) {
         textureContainer = (D3D11TextureContainer *)storageTextureBindings[i].texture;
-        if (!(textureContainer->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT)) {
+        if (!(textureContainer->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempted to bind read-only texture as compute write texture");
         }
 
@@ -4977,7 +4996,7 @@ static bool D3D11_INTERNAL_CreateSwapchain(
     windowData->textureContainer.header.info.type = SDL_GPU_TEXTURETYPE_2D;
     windowData->textureContainer.header.info.levelCount = 1;
     windowData->textureContainer.header.info.sampleCount = SDL_GPU_SAMPLECOUNT_1;
-    windowData->textureContainer.header.info.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
+    windowData->textureContainer.header.info.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
 
     windowData->texture.container = &windowData->textureContainer;
     windowData->texture.containerIndex = 0;
@@ -5213,7 +5232,7 @@ static SDL_GPUTexture *D3D11_AcquireSwapchainTexture(
     IDXGISwapChain_GetDesc(windowData->swapchain, &swapchainDesc);
     SDL_GetWindowSize(window, &w, &h);
 
-    if (w != swapchainDesc.BufferDesc.Width || h != swapchainDesc.BufferDesc.Height) {
+    if ((UINT)w != swapchainDesc.BufferDesc.Width || (UINT)h != swapchainDesc.BufferDesc.Height) {
         res = D3D11_INTERNAL_ResizeSwapchain(
             renderer,
             windowData,
@@ -5547,20 +5566,20 @@ static bool D3D11_SupportsTextureFormat(
     }
 
     // Are the usage flags supported?
-    if ((usage & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) && !(formatSupport & D3D11_FORMAT_SUPPORT_SHADER_SAMPLE)) {
+    if ((usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) && !(formatSupport & D3D11_FORMAT_SUPPORT_SHADER_SAMPLE)) {
         return false;
     }
-    if ((usage & (SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT)) && !(formatSupport & D3D11_FORMAT_SUPPORT_SHADER_LOAD)) {
+    if ((usage & (SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)) && !(formatSupport & D3D11_FORMAT_SUPPORT_SHADER_LOAD)) {
         return false;
     }
-    if ((usage & (SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT) && !(formatSupport & D3D11_FORMAT_SUPPORT_TYPED_UNORDERED_ACCESS_VIEW))) {
+    if ((usage & (SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) && !(formatSupport & D3D11_FORMAT_SUPPORT_TYPED_UNORDERED_ACCESS_VIEW))) {
         // TYPED_UNORDERED_ACCESS_VIEW implies support for typed UAV stores
         return false;
     }
-    if ((usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT) && !(formatSupport & D3D11_FORMAT_SUPPORT_RENDER_TARGET)) {
+    if ((usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) && !(formatSupport & D3D11_FORMAT_SUPPORT_RENDER_TARGET)) {
         return false;
     }
-    if ((usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT) && !(formatSupport & D3D11_FORMAT_SUPPORT_DEPTH_STENCIL)) {
+    if ((usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) && !(formatSupport & D3D11_FORMAT_SUPPORT_DEPTH_STENCIL)) {
         return false;
     }
 

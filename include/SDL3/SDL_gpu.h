@@ -94,6 +94,8 @@ typedef enum SDL_GPUIndexElementSize
  *  - R8G8B8A8_UNORM
  *  - B8G8R8A8_UNORM
  *  - R8_UNORM
+ *  - R8_SNORM
+ *  - R8G8_UNORM
  *  - R8G8_SNORM
  *  - R8G8B8A8_SNORM
  *  - R16_FLOAT
@@ -102,6 +104,7 @@ typedef enum SDL_GPUIndexElementSize
  *  - R32_FLOAT
  *  - R32G32_FLOAT
  *  - R32G32B32A32_FLOAT
+ *  - R11G11B10_UFLOAT
  *  - R8G8B8A8_UNORM_SRGB
  *  - B8G8R8A8_UNORM_SRGB
  *  - D16_UNORM
@@ -122,6 +125,12 @@ typedef enum SDL_GPUIndexElementSize
  *  - R16_UINT
  *  - R16G16_UINT
  *  - R16G16B16A16_UINT
+ *  - R8_INT
+ *  - R8G8_INT
+ *  - R8G8B8A8_INT
+ *  - R16_INT
+ *  - R16G16_INT
+ *  - R16G16B16A16_INT
  *  - R8G8B8A8_UNORM_SRGB
  *  - B8G8R8A8_UNORM_SRGB
  *
@@ -132,12 +141,10 @@ typedef enum SDL_GPUIndexElementSize
  *  - R32_FLOAT
  *  - R32G32_FLOAT
  *  - R32G32B32A32_FLOAT
- *  - R8_UINT
- *  - R8G8_UINT
  *  - R8G8B8A8_UINT
- *  - R16_UINT
- *  - R16G16_UINT
  *  - R16G16B16A16_UINT
+ *  - R8G8B8A8_INT
+ *  - R16G16B16A16_INT
  *
  * For DEPTH_STENCIL_TARGET usage, the following formats are universally supported:
  *  - D16_UNORM
@@ -152,24 +159,36 @@ typedef enum SDL_GPUTextureFormat
     SDL_GPU_TEXTUREFORMAT_INVALID = -1,
 
     /* Unsigned Normalized Float Color Formats */
+    SDL_GPU_TEXTUREFORMAT_A8_UNORM,
+    SDL_GPU_TEXTUREFORMAT_R8_UNORM,
+    SDL_GPU_TEXTUREFORMAT_R8G8_UNORM,
     SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
-    SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM,
+    SDL_GPU_TEXTUREFORMAT_R16_UNORM,
+    SDL_GPU_TEXTUREFORMAT_R16G16_UNORM,
+    SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM,
+    SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM,
     SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM,
     SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM,
     SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM,
-    SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM,
-    SDL_GPU_TEXTUREFORMAT_R16G16_UNORM,
-    SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM,
-    SDL_GPU_TEXTUREFORMAT_R8_UNORM,
-    SDL_GPU_TEXTUREFORMAT_A8_UNORM,
+    SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM,
     /* Compressed Unsigned Normalized Float Color Formats */
-    SDL_GPU_TEXTUREFORMAT_BC1_UNORM,
-    SDL_GPU_TEXTUREFORMAT_BC2_UNORM,
-    SDL_GPU_TEXTUREFORMAT_BC3_UNORM,
-    SDL_GPU_TEXTUREFORMAT_BC7_UNORM,
+    SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM,
+    SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM,
+    SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM,
+    SDL_GPU_TEXTUREFORMAT_BC4_R_UNORM,
+    SDL_GPU_TEXTUREFORMAT_BC5_RG_UNORM,
+    SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM,
+    /* Compressed Signed Float Color Formats */
+    SDL_GPU_TEXTUREFORMAT_BC6H_RGB_FLOAT,
+    /* Compressed Unsigned Float Color Formats */
+    SDL_GPU_TEXTUREFORMAT_BC6H_RGB_UFLOAT,
     /* Signed Normalized Float Color Formats  */
+    SDL_GPU_TEXTUREFORMAT_R8_SNORM,
     SDL_GPU_TEXTUREFORMAT_R8G8_SNORM,
     SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM,
+    SDL_GPU_TEXTUREFORMAT_R16_SNORM,
+    SDL_GPU_TEXTUREFORMAT_R16G16_SNORM,
+    SDL_GPU_TEXTUREFORMAT_R16G16B16A16_SNORM,
     /* Signed Float Color Formats */
     SDL_GPU_TEXTUREFORMAT_R16_FLOAT,
     SDL_GPU_TEXTUREFORMAT_R16G16_FLOAT,
@@ -177,6 +196,8 @@ typedef enum SDL_GPUTextureFormat
     SDL_GPU_TEXTUREFORMAT_R32_FLOAT,
     SDL_GPU_TEXTUREFORMAT_R32G32_FLOAT,
     SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT,
+    /* Unsigned Float Color Formats */
+    SDL_GPU_TEXTUREFORMAT_R11G11B10_UFLOAT,
     /* Unsigned Integer Color Formats */
     SDL_GPU_TEXTUREFORMAT_R8_UINT,
     SDL_GPU_TEXTUREFORMAT_R8G8_UINT,
@@ -184,12 +205,21 @@ typedef enum SDL_GPUTextureFormat
     SDL_GPU_TEXTUREFORMAT_R16_UINT,
     SDL_GPU_TEXTUREFORMAT_R16G16_UINT,
     SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT,
+    /* Signed Integer Color Formats */
+    SDL_GPU_TEXTUREFORMAT_R8_INT,
+    SDL_GPU_TEXTUREFORMAT_R8G8_INT,
+    SDL_GPU_TEXTUREFORMAT_R8G8B8A8_INT,
+    SDL_GPU_TEXTUREFORMAT_R16_INT,
+    SDL_GPU_TEXTUREFORMAT_R16G16_INT,
+    SDL_GPU_TEXTUREFORMAT_R16G16B16A16_INT,
     /* SRGB Unsigned Normalized Color Formats */
     SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB,
     SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB,
     /* Compressed SRGB Unsigned Normalized Color Formats */
-    SDL_GPU_TEXTUREFORMAT_BC3_UNORM_SRGB,
-    SDL_GPU_TEXTUREFORMAT_BC7_UNORM_SRGB,
+    SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB,
+    SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB,
+    SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB,
+    SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB,
     /* Depth Formats */
     SDL_GPU_TEXTUREFORMAT_D16_UNORM,
     SDL_GPU_TEXTUREFORMAT_D24_UNORM,
@@ -198,17 +228,14 @@ typedef enum SDL_GPUTextureFormat
     SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT
 } SDL_GPUTextureFormat;
 
-typedef enum SDL_GPUTextureUsageFlagBits
-{
-    SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT = 0x00000001,
-    SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT = 0x00000002,
-    SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT = 0x00000004,
-    SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT = 0x00000008,
-    SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT = 0x00000020,
-    SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT = 0x00000040
-} SDL_GPUTextureUsageFlagBits;
-
 typedef Uint32 SDL_GPUTextureUsageFlags;
+
+#define SDL_GPU_TEXTUREUSAGE_SAMPLER               (1u << 0) /**< texture supports sampling */
+#define SDL_GPU_TEXTUREUSAGE_COLOR_TARGET          (1u << 1) /**< texture is a color render target */
+#define SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET  (1u << 2) /**< texture is a depth stencil target */
+#define SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ (1u << 3) /**< texture supports storage reads in graphics stages */
+#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ  (1u << 4) /**< texture supports storage reads in the compute stage */
+#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE (1u << 5) /**< texture supports storage writes in the compute stage */
 
 typedef enum SDL_GPUTextureType
 {
@@ -236,17 +263,14 @@ typedef enum SDL_GPUCubeMapFace
     SDL_GPU_CUBEMAPFACE_NEGATIVEZ
 } SDL_GPUCubeMapFace;
 
-typedef enum SDL_GPUBufferUsageFlagBits
-{
-    SDL_GPU_BUFFERUSAGE_VERTEX_BIT = 0x00000001,
-    SDL_GPU_BUFFERUSAGE_INDEX_BIT = 0x00000002,
-    SDL_GPU_BUFFERUSAGE_INDIRECT_BIT = 0x00000004,
-    SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT = 0x00000008,
-    SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ_BIT = 0x00000020,
-    SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE_BIT = 0x00000040
-} SDL_GPUBufferUsageFlagBits;
-
 typedef Uint32 SDL_GPUBufferUsageFlags;
+
+#define SDL_GPU_BUFFERUSAGE_VERTEX                (1u << 0) /**< buffer is a vertex buffer */
+#define SDL_GPU_BUFFERUSAGE_INDEX                 (1u << 1) /**< buffer is an index buffer */
+#define SDL_GPU_BUFFERUSAGE_INDIRECT              (1u << 2) /**< buffer is an indirect buffer */
+#define SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ (1u << 3) /**< buffer supports storage reads in graphics stages */
+#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ  (1u << 4) /**< buffer supports storage reads in the compute stage */
+#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE (1u << 5) /**< buffer supports storage writes in the compute stage */
 
 typedef enum SDL_GPUTransferBufferUsage
 {
@@ -260,18 +284,14 @@ typedef enum SDL_GPUShaderStage
     SDL_GPU_SHADERSTAGE_FRAGMENT
 } SDL_GPUShaderStage;
 
-typedef enum SDL_GPUShaderFormatFlagBits
-{
-    SDL_GPU_SHADERFORMAT_INVALID = 0x00000000,
-    SDL_GPU_SHADERFORMAT_SECRET = 0x00000001,   /* NDA'd platforms */
-    SDL_GPU_SHADERFORMAT_SPIRV = 0x00000002,    /* Vulkan */
-    SDL_GPU_SHADERFORMAT_DXBC = 0x00000004,     /* D3D11 (Shader Model 5_0) */
-    SDL_GPU_SHADERFORMAT_DXIL = 0x00000008,     /* D3D12 */
-    SDL_GPU_SHADERFORMAT_MSL = 0x00000010,      /* Metal */
-    SDL_GPU_SHADERFORMAT_METALLIB = 0x00000020  /* Metal */
-} SDL_GPUShaderFormatFlagBits;
-
 typedef Uint32 SDL_GPUShaderFormat;
+
+#define SDL_GPU_SHADERFORMAT_PRIVATE  (1u << 0) /**< shaders for NDA'd platforms */
+#define SDL_GPU_SHADERFORMAT_SPIRV    (1u << 1) /**< SPIR-V shaders for Vulkan */
+#define SDL_GPU_SHADERFORMAT_DXBC     (1u << 2) /**< DXBC SM5_0 shaders for D3D11 */
+#define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< DXIL shaders for D3D12 */
+#define SDL_GPU_SHADERFORMAT_MSL      (1u << 4) /**< MSL shaders for Metal */
+#define SDL_GPU_SHADERFORMAT_METALLIB (1u << 5) /**< precompiled metallib shaders for Metal */
 
 typedef enum SDL_GPUVertexElementFormat
 {
@@ -405,15 +425,12 @@ typedef enum SDL_GPUBlendFactor
     SDL_GPU_BLENDFACTOR_SRC_ALPHA_SATURATE
 } SDL_GPUBlendFactor;
 
-typedef enum SDL_GPUColorComponentFlagBits
-{
-    SDL_GPU_COLORCOMPONENT_R_BIT = 0x00000001,
-    SDL_GPU_COLORCOMPONENT_G_BIT = 0x00000002,
-    SDL_GPU_COLORCOMPONENT_B_BIT = 0x00000004,
-    SDL_GPU_COLORCOMPONENT_A_BIT = 0x00000008
-} SDL_GPUColorComponentFlagBits;
-
 typedef Uint8 SDL_GPUColorComponentFlags;
+
+#define SDL_GPU_COLORCOMPONENT_R (1u << 0) /**< the red component */
+#define SDL_GPU_COLORCOMPONENT_G (1u << 1) /**< the green component */
+#define SDL_GPU_COLORCOMPONENT_B (1u << 2) /**< the blue component */
+#define SDL_GPU_COLORCOMPONENT_A (1u << 3) /**< the alpha component */
 
 typedef enum SDL_GPUFilter
 {
@@ -478,7 +495,7 @@ typedef enum SDL_GPUSwapchainComposition
 typedef enum SDL_GPUDriver
 {
     SDL_GPU_DRIVER_INVALID = -1,
-    SDL_GPU_DRIVER_SECRET, /* NDA'd platforms */
+    SDL_GPU_DRIVER_PRIVATE, /* NDA'd platforms */
     SDL_GPU_DRIVER_VULKAN,
     SDL_GPU_DRIVER_D3D11,
     SDL_GPU_DRIVER_D3D12,
@@ -960,7 +977,7 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  *
  * These are the current shader format properties:
  *
- * - `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SECRET_BOOL`: The app is able to
+ * - `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL`: The app is able to
  *   provide shaders for an NDA platform.
  * - `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL`: The app is able to
  *   provide SPIR-V shaders if applicable.
@@ -992,7 +1009,7 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL             "SDL.gpu.device.create.debugmode"
 #define SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL        "SDL.gpu.device.create.preferlowpower"
 #define SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING                "SDL.gpu.device.create.name"
-#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SECRET_BOOL        "SDL.gpu.device.create.shaders.secret"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL       "SDL.gpu.device.create.shaders.private"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL         "SDL.gpu.device.create.shaders.spirv"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL          "SDL.gpu.device.create.shaders.dxbc"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL          "SDL.gpu.device.create.shaders.dxil"
@@ -1670,7 +1687,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUIndexBuffer(
 /**
  * Binds texture-sampler pairs for use on the vertex shader.
  *
- * The textures must have been created with SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT.
+ * The textures must have been created with SDL_GPU_TEXTUREUSAGE_SAMPLER.
  *
  * \param renderPass a render pass handle.
  * \param firstSlot the vertex sampler slot to begin binding from.
@@ -1690,7 +1707,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexSamplers(
  * Binds storage textures for use on the vertex shader.
  *
  * These textures must have been created with
- * SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT.
+ * SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ.
  *
  * \param renderPass a render pass handle.
  * \param firstSlot the vertex storage texture slot to begin binding from.
@@ -1709,7 +1726,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageTextures(
  * Binds storage buffers for use on the vertex shader.
  *
  * These buffers must have been created with
- * SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT.
+ * SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ.
  *
  * \param renderPass a render pass handle.
  * \param firstSlot the vertex storage buffer slot to begin binding from.
@@ -1727,7 +1744,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageBuffers(
 /**
  * Binds texture-sampler pairs for use on the fragment shader.
  *
- * The textures must have been created with SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT.
+ * The textures must have been created with SDL_GPU_TEXTUREUSAGE_SAMPLER.
  *
  * \param renderPass a render pass handle.
  * \param firstSlot the fragment sampler slot to begin binding from.
@@ -1747,7 +1764,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentSamplers(
  * Binds storage textures for use on the fragment shader.
  *
  * These textures must have been created with
- * SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT.
+ * SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ.
  *
  * \param renderPass a render pass handle.
  * \param firstSlot the fragment storage texture slot to begin binding from.
@@ -1766,7 +1783,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentStorageTextures(
  * Binds storage buffers for use on the fragment shader.
  *
  * These buffers must have been created with
- * SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT.
+ * SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ.
  *
  * \param renderPass a render pass handle.
  * \param firstSlot the fragment storage buffer slot to begin binding from.
@@ -1953,7 +1970,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputePipeline(
  * Binds storage textures as readonly for use on the compute pipeline.
  *
  * These textures must have been created with
- * SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT.
+ * SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ.
  *
  * \param computePass a compute pass handle.
  * \param firstSlot the compute storage texture slot to begin binding from.
@@ -1972,7 +1989,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageTextures(
  * Binds storage buffers as readonly for use on the compute pipeline.
  *
  * These buffers must have been created with
- * SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ_BIT.
+ * SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ.
  *
  * \param computePass a compute pass handle.
  * \param firstSlot the compute storage buffer slot to begin binding from.
