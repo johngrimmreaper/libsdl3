@@ -1,4 +1,4 @@
-libsdl3 (3.1.2+git20240903~b1b4a9c+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.1.2+git20240903~b1b4a9c+ds-1) experimental; urgency=medium
 
   * New upstream snapshot
   * d/copyright: Exclude more generated files
@@ -8,7 +8,7 @@ libsdl3 (3.1.2+git20240903~b1b4a9c+ds-1) UNRELEASED; urgency=medium
   * d/tests: Adapt to current upstream API
   * Standards-Version: 4.7.0 (no changes required)
 
- -- Simon McVittie <smcv@debian.org>  Mon, 02 Sep 2024 22:13:48 +0100
+ -- Simon McVittie <smcv@debian.org>  Tue, 03 Sep 2024 15:10:37 +0100
 
 libsdl3 (3.1.2+git20240730~fbed34a+ds-1) experimental; urgency=medium
 
