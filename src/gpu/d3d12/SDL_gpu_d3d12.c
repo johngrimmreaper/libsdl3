@@ -225,36 +225,55 @@ static D3D12_BLEND_OP SDLToD3D12_BlendOp[] = {
 };
 
 static DXGI_FORMAT SDLToD3D12_TextureFormat[] = {
+    DXGI_FORMAT_A8_UNORM,             // A8_UNORM
+    DXGI_FORMAT_R8_UNORM,             // R8_UNORM
+    DXGI_FORMAT_R8G8_UNORM,           // R8G8_UNORM
     DXGI_FORMAT_R8G8B8A8_UNORM,       // R8G8B8A8_UNORM
-    DXGI_FORMAT_B8G8R8A8_UNORM,       // B8G8R8A8_UNORM
+    DXGI_FORMAT_R16_UNORM,            // R16_UNORM
+    DXGI_FORMAT_R16G16_UNORM,         // R16G16_UNORM
+    DXGI_FORMAT_R16G16B16A16_UNORM,   // R16G16B16A16_UNORM
+    DXGI_FORMAT_R10G10B10A2_UNORM,    // R10G10B10A2_UNORM
     DXGI_FORMAT_B5G6R5_UNORM,         // B5G6R5_UNORM
     DXGI_FORMAT_B5G5R5A1_UNORM,       // B5G5R5A1_UNORM
     DXGI_FORMAT_B4G4R4A4_UNORM,       // B4G4R4A4_UNORM
-    DXGI_FORMAT_R10G10B10A2_UNORM,    // R10G10B10A2_UNORM
-    DXGI_FORMAT_R16G16_UNORM,         // R16G16_UNORM
-    DXGI_FORMAT_R16G16B16A16_UNORM,   // R16G16B16A16_UNORM
-    DXGI_FORMAT_R8_UNORM,             // R8_UNORM
-    DXGI_FORMAT_A8_UNORM,             // A8_UNORM
+    DXGI_FORMAT_B8G8R8A8_UNORM,       // B8G8R8A8_UNORM
     DXGI_FORMAT_BC1_UNORM,            // BC1_UNORM
     DXGI_FORMAT_BC2_UNORM,            // BC2_UNORM
     DXGI_FORMAT_BC3_UNORM,            // BC3_UNORM
+    DXGI_FORMAT_BC4_UNORM,            // BC4_UNORM
+    DXGI_FORMAT_BC5_UNORM,            // BC5_UNORM
     DXGI_FORMAT_BC7_UNORM,            // BC7_UNORM
+    DXGI_FORMAT_BC6H_SF16,            // BC6H_FLOAT
+    DXGI_FORMAT_BC6H_UF16,            // BC6H_UFLOAT
+    DXGI_FORMAT_R8_SNORM,             // R8_SNORM
     DXGI_FORMAT_R8G8_SNORM,           // R8G8_SNORM
     DXGI_FORMAT_R8G8B8A8_SNORM,       // R8G8B8A8_SNORM
+    DXGI_FORMAT_R16_SNORM,            // R16_SNORM
+    DXGI_FORMAT_R16G16_SNORM,         // R16G16_SNORM
+    DXGI_FORMAT_R16G16B16A16_SNORM,   // R16G16B16A16_SNORM
     DXGI_FORMAT_R16_FLOAT,            // R16_FLOAT
     DXGI_FORMAT_R16G16_FLOAT,         // R16G16_FLOAT
     DXGI_FORMAT_R16G16B16A16_FLOAT,   // R16G16B16A16_FLOAT
     DXGI_FORMAT_R32_FLOAT,            // R32_FLOAT
     DXGI_FORMAT_R32G32_FLOAT,         // R32G32_FLOAT
     DXGI_FORMAT_R32G32B32A32_FLOAT,   // R32G32B32A32_FLOAT
+    DXGI_FORMAT_R11G11B10_FLOAT,      // R11G11B10_UFLOAT
     DXGI_FORMAT_R8_UINT,              // R8_UINT
     DXGI_FORMAT_R8G8_UINT,            // R8G8_UINT
     DXGI_FORMAT_R8G8B8A8_UINT,        // R8G8B8A8_UINT
     DXGI_FORMAT_R16_UINT,             // R16_UINT
     DXGI_FORMAT_R16G16_UINT,          // R16G16_UINT
     DXGI_FORMAT_R16G16B16A16_UINT,    // R16G16B16A16_UINT
+    DXGI_FORMAT_R8_SINT,              // R8_INT
+    DXGI_FORMAT_R8G8_SINT,            // R8G8_INT
+    DXGI_FORMAT_R8G8B8A8_SINT,        // R8G8B8A8_INT
+    DXGI_FORMAT_R16_SINT,             // R16_INT
+    DXGI_FORMAT_R16G16_SINT,          // R16G16_INT
+    DXGI_FORMAT_R16G16B16A16_SINT,    // R16G16B16A16_INT
     DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,  // R8G8B8A8_UNORM_SRGB
     DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,  // B8G8R8A8_UNORM_SRGB
+    DXGI_FORMAT_BC1_UNORM_SRGB,       // BC1_UNORM_SRGB
+    DXGI_FORMAT_BC2_UNORM_SRGB,       // BC2_UNORM_SRGB
     DXGI_FORMAT_BC3_UNORM_SRGB,       // BC3_UNORM_SRGB
     DXGI_FORMAT_BC7_UNORM_SRGB,       // BC7_UNORM_SRGB
     DXGI_FORMAT_D16_UNORM,            // D16_UNORM
@@ -767,11 +786,11 @@ typedef struct D3D12ComputeRootSignature
 {
     ID3D12RootSignature *handle;
 
-    Uint32 readOnlyStorageTextureRootIndex;
-    Uint32 readOnlyStorageBufferRootIndex;
-    Uint32 writeOnlyStorageTextureRootIndex;
-    Uint32 writeOnlyStorageBufferRootIndex;
-    Uint32 uniformBufferRootIndex[MAX_UNIFORM_BUFFERS_PER_STAGE];
+    Sint32 readOnlyStorageTextureRootIndex;
+    Sint32 readOnlyStorageBufferRootIndex;
+    Sint32 writeOnlyStorageTextureRootIndex;
+    Sint32 writeOnlyStorageBufferRootIndex;
+    Sint32 uniformBufferRootIndex[MAX_UNIFORM_BUFFERS_PER_STAGE];
 } D3D12ComputeRootSignature;
 
 struct D3D12ComputePipeline
@@ -861,6 +880,11 @@ static Uint32 D3D12_INTERNAL_Align(Uint32 location, Uint32 alignment)
 // FIXME: This is purely to work around a presentation bug when recreating the device/command queue.
 static ID3D12Device *s_Device;
 static ID3D12CommandQueue *s_CommandQueue;
+#endif
+
+#if defined(SDL_PLATFORM_XBOXONE)
+// This is not defined in d3d12_x.h.
+typedef HRESULT (D3DAPI* PFN_D3D12_XBOX_CREATE_DEVICE)(_In_opt_ IGraphicsUnknown*, _In_ const D3D12XBOX_CREATE_DEVICE_PARAMETERS*, _In_ REFIID, _Outptr_opt_ void**);
 #endif
 
 // Logging
@@ -1459,7 +1483,7 @@ static void D3D12_INTERNAL_TextureSubresourceBarrier(
         destinationState,
         textureSubresource->parent->resource,
         textureSubresource->index,
-        textureSubresource->parent->container->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT);
+        textureSubresource->parent->container->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE);
 }
 
 static D3D12_RESOURCE_STATES D3D12_INTERNAL_DefaultTextureResourceState(
@@ -1467,17 +1491,17 @@ static D3D12_RESOURCE_STATES D3D12_INTERNAL_DefaultTextureResourceState(
 {
     // NOTE: order matters here!
 
-    if (usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) {
+    if (usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER) {
         return D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
-    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT) {
+    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) {
         return D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
-    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT) {
+    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
         return D3D12_RESOURCE_STATE_RENDER_TARGET;
-    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT) {
+    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
         return D3D12_RESOURCE_STATE_DEPTH_WRITE;
-    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT) {
+    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ) {
         return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT) {
+    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
         return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Texture has no default usage mode!");
@@ -1538,17 +1562,17 @@ static void D3D12_INTERNAL_TextureTransitionToDefaultUsage(
 static D3D12_RESOURCE_STATES D3D12_INTERNAL_DefaultBufferResourceState(
     D3D12Buffer *buffer)
 {
-    if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX_BIT) {
+    if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX) {
         return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_INDEX_BIT) {
+    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_INDEX) {
         return D3D12_RESOURCE_STATE_INDEX_BUFFER;
-    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT_BIT) {
+    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         return D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
-    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT) {
+    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) {
         return D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
-    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ_BIT) {
+    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ) {
         return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE_BIT) {
+    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
         return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Buffer has no default usage mode!");
@@ -1568,7 +1592,7 @@ static void D3D12_INTERNAL_BufferBarrier(
         destinationState,
         buffer->handle,
         0,
-        buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE_BIT);
+        buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE);
 
     buffer->transitioned = true;
 }
@@ -2693,7 +2717,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     Uint32 layerCount = textureCreateInfo->type == SDL_GPU_TEXTURETYPE_3D ? 1 : textureCreateInfo->layerCountOrDepth;
     Uint32 depth = textureCreateInfo->type == SDL_GPU_TEXTURETYPE_3D ? textureCreateInfo->layerCountOrDepth : 1;
 
-    if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT) {
+    if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
         useClearValue = true;
         clearValue.Color[0] = SDL_GetFloatProperty(textureCreateInfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_R_FLOAT, 0);
@@ -2702,14 +2726,14 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
         clearValue.Color[3] = SDL_GetFloatProperty(textureCreateInfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_A_FLOAT, 0);
     }
 
-    if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT) {
+    if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
         useClearValue = true;
         clearValue.DepthStencil.Depth = SDL_GetFloatProperty(textureCreateInfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_DEPTH_FLOAT, 0);
         clearValue.DepthStencil.Stencil = (UINT8)SDL_GetNumberProperty(textureCreateInfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_STENCIL_UINT8, 0);
     }
 
-    if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT) {
+    if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     }
 
@@ -2726,8 +2750,8 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
         desc.Alignment = isSwapchainTexture ? 0 : D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
         desc.Width = textureCreateInfo->width;
         desc.Height = textureCreateInfo->height;
-        desc.DepthOrArraySize = textureCreateInfo->layerCountOrDepth;
-        desc.MipLevels = textureCreateInfo->levelCount;
+        desc.DepthOrArraySize = (UINT16)textureCreateInfo->layerCountOrDepth;
+        desc.MipLevels = (UINT16)textureCreateInfo->levelCount;
         desc.Format = SDLToD3D12_TextureFormat[textureCreateInfo->format];
         desc.SampleDesc.Count = 1;
         desc.SampleDesc.Quality = 0;
@@ -2738,8 +2762,8 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
         desc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
         desc.Width = textureCreateInfo->width;
         desc.Height = textureCreateInfo->height;
-        desc.DepthOrArraySize = textureCreateInfo->layerCountOrDepth;
-        desc.MipLevels = textureCreateInfo->levelCount;
+        desc.DepthOrArraySize = (UINT16)textureCreateInfo->layerCountOrDepth;
+        desc.MipLevels = (UINT16)textureCreateInfo->levelCount;
         desc.Format = SDLToD3D12_TextureFormat[textureCreateInfo->format];
         desc.SampleDesc.Count = 1;
         desc.SampleDesc.Quality = 0;
@@ -2768,9 +2792,9 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     texture->resource = handle;
 
     // Create the SRV if applicable
-    if ((textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) ||
-        (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT) ||
-        (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT)) {
+    if ((textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER) ||
+        (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) ||
+        (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)) {
         D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
 
         D3D12_INTERNAL_AssignCpuDescriptorHandle(
@@ -2841,7 +2865,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
             texture->subresources[subresourceIndex].dsvHandle.heap = NULL;
 
             // Create RTV if needed
-            if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT) {
+            if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
                 texture->subresources[subresourceIndex].rtvHandles = (D3D12CPUDescriptor *)SDL_calloc(depth, sizeof(D3D12CPUDescriptor));
 
                 for (Uint32 depthIndex = 0; depthIndex < depth; depthIndex += 1) {
@@ -2880,7 +2904,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
             }
 
             // Create DSV if needed
-            if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT) {
+            if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
                 D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 
                 D3D12_INTERNAL_AssignCpuDescriptorHandle(
@@ -2901,7 +2925,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
             }
 
             // Create subresource UAV if necessary
-            if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT) {
+            if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
                 D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 
                 D3D12_INTERNAL_AssignCpuDescriptorHandle(
@@ -3007,11 +3031,11 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
         return NULL;
     }
 
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE_BIT) {
+    if (usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     }
 #if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT_BIT) {
+    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         resourceFlags |= D3D12XBOX_RESOURCE_FLAG_ALLOW_INDIRECT_BUFFER;
     }
 #endif
@@ -3088,7 +3112,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
     buffer->srvDescriptor.heap = NULL;
     buffer->cbvDescriptor.heap = NULL;
 
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE_BIT) {
+    if (usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
         D3D12_INTERNAL_AssignCpuDescriptorHandle(
             renderer,
             D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
@@ -3112,8 +3136,8 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
     }
 
     if (
-        (usageFlags & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT) ||
-        (usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ_BIT)) {
+        (usageFlags & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) ||
+        (usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ)) {
         D3D12_INTERNAL_AssignCpuDescriptorHandle(
             renderer,
             D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
@@ -3768,7 +3792,7 @@ static void D3D12_BeginRenderPass(
             framebufferHeight = h;
         }
 
-        if (!(container->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT)) {
+        if (!(container->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Color attachment texture was not designated as a color target!");
             return;
         }
@@ -3791,7 +3815,7 @@ static void D3D12_BeginRenderPass(
         }
 
         // Fixme:
-        if (!(container->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT)) {
+        if (!(container->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Depth stencil attachment texture was not designated as a depth target!");
             return;
         }
@@ -4765,7 +4789,7 @@ static void D3D12_BeginComputePass(
     if (storageTextureBindingCount > 0) {
         for (Uint32 i = 0; i < storageTextureBindingCount; i += 1) {
             D3D12TextureContainer *container = (D3D12TextureContainer *)storageTextureBindings[i].texture;
-            if (!(container->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT)) {
+            if (!(container->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE)) {
                 SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempted to bind read-only texture as compute write texture");
             }
 
@@ -4788,7 +4812,7 @@ static void D3D12_BeginComputePass(
     if (storageBufferBindingCount > 0) {
         for (Uint32 i = 0; i < storageBufferBindingCount; i += 1) {
             D3D12BufferContainer *container = (D3D12BufferContainer *)storageBufferBindings[i].buffer;
-            if (!(container->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE_BIT)) {
+            if (!(container->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE)) {
                 SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempted to bind read-only texture as compute write texture");
             }
             D3D12Buffer *buffer = D3D12_INTERNAL_PrepareBufferForWrite(
@@ -5875,7 +5899,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     createInfo.width = width;
     createInfo.height = height;
     createInfo.format = SwapchainCompositionToSDLTextureFormat[swapchainComposition];
-    createInfo.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
+    createInfo.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
     createInfo.layerCountOrDepth = 1;
     createInfo.levelCount = 1;
 
@@ -6012,7 +6036,7 @@ static bool D3D12_INTERNAL_InitializeSwapchainTexture(
     pTextureContainer->header.info.layerCountOrDepth = 1;
     pTextureContainer->header.info.levelCount = 1;
     pTextureContainer->header.info.type = SDL_GPU_TEXTURETYPE_2D;
-    pTextureContainer->header.info.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
+    pTextureContainer->header.info.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
     pTextureContainer->header.info.sampleCount = SDL_GPU_SAMPLECOUNT_1;
     pTextureContainer->header.info.format = SwapchainCompositionToSDLTextureFormat[composition];
 
@@ -6086,7 +6110,7 @@ static bool D3D12_INTERNAL_ResizeSwapchainIfNeeded(
     IDXGISwapChain_GetDesc(windowData->swapchain, &swapchainDesc);
     SDL_GetWindowSize(windowData->window, &w, &h);
 
-    if (w != swapchainDesc.BufferDesc.Width || h != swapchainDesc.BufferDesc.Height) {
+    if ((UINT)w != swapchainDesc.BufferDesc.Width || (UINT)h != swapchainDesc.BufferDesc.Height) {
         // Wait so we don't release in-flight views
         D3D12_Wait((SDL_GPURenderer *)renderer);
 
@@ -7324,19 +7348,19 @@ static bool D3D12_SupportsTextureFormat(
     }
 
     // Are the usage flags supported?
-    if ((usage & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) && !(formatSupport.Support1 & D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE)) {
+    if ((usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) && !(formatSupport.Support1 & D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE)) {
         return false;
     }
-    if ((usage & (SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT)) && !(formatSupport.Support1 & D3D12_FORMAT_SUPPORT1_SHADER_LOAD)) {
+    if ((usage & (SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)) && !(formatSupport.Support1 & D3D12_FORMAT_SUPPORT1_SHADER_LOAD)) {
         return false;
     }
-    if ((usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT) && !(formatSupport.Support2 & D3D12_FORMAT_SUPPORT2_UAV_TYPED_STORE)) {
+    if ((usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) && !(formatSupport.Support2 & D3D12_FORMAT_SUPPORT2_UAV_TYPED_STORE)) {
         return false;
     }
-    if ((usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT) && !(formatSupport.Support1 & D3D12_FORMAT_SUPPORT1_RENDER_TARGET)) {
+    if ((usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) && !(formatSupport.Support1 & D3D12_FORMAT_SUPPORT1_RENDER_TARGET)) {
         return false;
     }
-    if ((usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT) && !(formatSupport.Support1 & D3D12_FORMAT_SUPPORT1_DEPTH_STENCIL)) {
+    if ((usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) && !(formatSupport.Support1 & D3D12_FORMAT_SUPPORT1_DEPTH_STENCIL)) {
         return false;
     }
 

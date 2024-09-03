@@ -173,7 +173,7 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     GPU_RenderData *renderdata = (GPU_RenderData *)renderer->internal;
     GPU_TextureData *data;
     SDL_GPUTextureFormat format;
-    SDL_GPUTextureUsageFlags usage = SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT;
+    SDL_GPUTextureUsageFlags usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
 
     format = PixFormatToTexFormat(texture->format);
 
@@ -211,7 +211,7 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     }
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-        usage |= SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
+        usage |= SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
     }
 
     texture->internal = data;
@@ -248,12 +248,16 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     GPU_TextureData *data = (GPU_TextureData *)texture->internal;
     const Uint32 texturebpp = SDL_BYTESPERPIXEL(texture->format);
 
-    Uint32 row_size = texturebpp * rect->w;
-    Uint32 data_size = row_size * rect->h;
+    size_t row_size, data_size;
+
+    if (!SDL_size_mul_check_overflow(rect->w, texturebpp, &row_size) ||
+        !SDL_size_mul_check_overflow(rect->h, row_size, &data_size)) {
+        return SDL_SetError("update size overflow"); 
+    }
 
     SDL_GPUTransferBufferCreateInfo tbci;
     SDL_zero(tbci);
-    tbci.sizeInBytes = data_size;
+    tbci.sizeInBytes = (Uint32)data_size;
     tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
 
     SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(renderdata->device, &tbci);
@@ -264,7 +268,7 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     Uint8 *output = SDL_MapGPUTransferBuffer(renderdata->device, tbuf, false);
 
-    if (pitch == row_size) {
+    if ((size_t)pitch == row_size) {
         memcpy(output, pixels, data_size);
     } else {
         // FIXME is negative pitch supposed to work?
@@ -603,7 +607,7 @@ static bool InitVertexBuffer(GPU_RenderData *data, Uint32 size)
     SDL_GPUBufferCreateInfo bci;
     SDL_zero(bci);
     bci.sizeInBytes = size;
-    bci.usageFlags = SDL_GPU_BUFFERUSAGE_VERTEX_BIT;
+    bci.usageFlags = SDL_GPU_BUFFERUSAGE_VERTEX;
 
     data->vertices.buffer = SDL_CreateGPUBuffer(data->device, &bci);
 
@@ -923,7 +927,7 @@ static bool CreateBackbuffer(GPU_RenderData *data, Uint32 w, Uint32 h, SDL_GPUTe
     tci.layerCountOrDepth = 1;
     tci.levelCount = 1;
     tci.sampleCount = SDL_GPU_SAMPLECOUNT_1;
-    tci.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT | SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT;
+    tci.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
 
     data->backbuffer.texture = SDL_CreateGPUTexture(data->device, &tci);
     data->backbuffer.width = w;

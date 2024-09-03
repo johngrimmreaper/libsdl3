@@ -136,36 +136,55 @@ static VkPresentModeKHR SDLToVK_PresentMode[] = {
 };
 
 static VkFormat SDLToVK_SurfaceFormat[] = {
+    VK_FORMAT_R8_UNORM,                 // A8_UNORM
+    VK_FORMAT_R8_UNORM,                 // R8_UNORM
+    VK_FORMAT_R8G8_UNORM,               // R8G8_UNORM
     VK_FORMAT_R8G8B8A8_UNORM,           // R8G8B8A8_UNORM
-    VK_FORMAT_B8G8R8A8_UNORM,           // B8G8R8A8_UNORM
+    VK_FORMAT_R16_UNORM,                // R16_UNORM
+    VK_FORMAT_R16G16_UNORM,             // R16G16_UNORM
+    VK_FORMAT_R16G16B16A16_UNORM,       // R16G16B16A16_UNORM
+    VK_FORMAT_A2B10G10R10_UNORM_PACK32, // R10G10B10A2_UNORM
     VK_FORMAT_R5G6B5_UNORM_PACK16,      // B5G6R5_UNORM
     VK_FORMAT_A1R5G5B5_UNORM_PACK16,    // B5G5R5A1_UNORM
     VK_FORMAT_B4G4R4A4_UNORM_PACK16,    // B4G4R4A4_UNORM
-    VK_FORMAT_A2B10G10R10_UNORM_PACK32, // R10G10B10A2_UNORM
-    VK_FORMAT_R16G16_UNORM,             // R16G16_UNORM
-    VK_FORMAT_R16G16B16A16_UNORM,       // R16G16B16A16_UNORM
-    VK_FORMAT_R8_UNORM,                 // R8_UNORM
-    VK_FORMAT_R8_UNORM,                 // A8_UNORM
+    VK_FORMAT_B8G8R8A8_UNORM,           // B8G8R8A8_UNORM
     VK_FORMAT_BC1_RGBA_UNORM_BLOCK,     // BC1_UNORM
     VK_FORMAT_BC2_UNORM_BLOCK,          // BC2_UNORM
     VK_FORMAT_BC3_UNORM_BLOCK,          // BC3_UNORM
+    VK_FORMAT_BC4_UNORM_BLOCK,          // BC4_UNORM
+    VK_FORMAT_BC5_UNORM_BLOCK,          // BC5_UNORM
     VK_FORMAT_BC7_UNORM_BLOCK,          // BC7_UNORM
+    VK_FORMAT_BC6H_SFLOAT_BLOCK,        // BC6H_FLOAT
+    VK_FORMAT_BC6H_UFLOAT_BLOCK,        // BC6H_UFLOAT
+    VK_FORMAT_R8_SNORM,                 // R8_SNORM
     VK_FORMAT_R8G8_SNORM,               // R8G8_SNORM
     VK_FORMAT_R8G8B8A8_SNORM,           // R8G8B8A8_SNORM
+    VK_FORMAT_R16_SNORM,                // R16_SNORM
+    VK_FORMAT_R16G16_SNORM,             // R16G16_SNORM
+    VK_FORMAT_R16G16B16A16_SNORM,       // R16G16B16A16_SNORM
     VK_FORMAT_R16_SFLOAT,               // R16_FLOAT
     VK_FORMAT_R16G16_SFLOAT,            // R16G16_FLOAT
     VK_FORMAT_R16G16B16A16_SFLOAT,      // R16G16B16A16_FLOAT
     VK_FORMAT_R32_SFLOAT,               // R32_FLOAT
     VK_FORMAT_R32G32_SFLOAT,            // R32G32_FLOAT
     VK_FORMAT_R32G32B32A32_SFLOAT,      // R32G32B32A32_FLOAT
+    VK_FORMAT_B10G11R11_UFLOAT_PACK32,  // R11G11B10_UFLOAT
     VK_FORMAT_R8_UINT,                  // R8_UINT
     VK_FORMAT_R8G8_UINT,                // R8G8_UINT
     VK_FORMAT_R8G8B8A8_UINT,            // R8G8B8A8_UINT
     VK_FORMAT_R16_UINT,                 // R16_UINT
     VK_FORMAT_R16G16_UINT,              // R16G16_UINT
     VK_FORMAT_R16G16B16A16_UINT,        // R16G16B16A16_UINT
+    VK_FORMAT_R8_SINT,                  // R8_INT
+    VK_FORMAT_R8G8_SINT,                // R8G8_INT
+    VK_FORMAT_R8G8B8A8_SINT,            // R8G8B8A8_INT
+    VK_FORMAT_R16_SINT,                 // R16_INT
+    VK_FORMAT_R16G16_SINT,              // R16G16_INT
+    VK_FORMAT_R16G16B16A16_SINT,        // R16G16B16A16_INT
     VK_FORMAT_R8G8B8A8_SRGB,            // R8G8B8A8_UNORM_SRGB
     VK_FORMAT_B8G8R8A8_SRGB,            // B8G8R8A8_UNORM_SRGB
+    VK_FORMAT_BC1_RGBA_SRGB_BLOCK,      // BC1_UNORM_SRGB
+    VK_FORMAT_BC2_SRGB_BLOCK,           // BC3_UNORM_SRGB
     VK_FORMAT_BC3_SRGB_BLOCK,           // BC3_UNORM_SRGB
     VK_FORMAT_BC7_SRGB_BLOCK,           // BC7_UNORM_SRGB
     VK_FORMAT_D16_UNORM,                // D16_UNORM
@@ -177,8 +196,26 @@ static VkFormat SDLToVK_SurfaceFormat[] = {
 SDL_COMPILE_TIME_ASSERT(SDLToVK_SurfaceFormat, SDL_arraysize(SDLToVK_SurfaceFormat) == SDL_GPU_TEXTUREFORMAT_MAX);
 
 static VkComponentMapping SDLToVK_SurfaceSwizzle[] = {
+    {
+        // A8
+        VK_COMPONENT_SWIZZLE_ZERO,
+        VK_COMPONENT_SWIZZLE_ZERO,
+        VK_COMPONENT_SWIZZLE_ZERO,
+        VK_COMPONENT_SWIZZLE_R,
+    },
+    IDENTITY_SWIZZLE, // R8
+    IDENTITY_SWIZZLE, // R8G8
     IDENTITY_SWIZZLE, // R8G8B8A8
-    IDENTITY_SWIZZLE, // B8G8R8A8
+    IDENTITY_SWIZZLE, // R16
+    IDENTITY_SWIZZLE, // R16G16
+    IDENTITY_SWIZZLE, // R16G16B16A16
+    {
+        // R10G10B10A2
+        VK_COMPONENT_SWIZZLE_R,
+        VK_COMPONENT_SWIZZLE_G,
+        VK_COMPONENT_SWIZZLE_B,
+        VK_COMPONENT_SWIZZLE_A,
+    },
     {
         // B5G6R5
         VK_COMPONENT_SWIZZLE_B,
@@ -194,43 +231,50 @@ static VkComponentMapping SDLToVK_SurfaceSwizzle[] = {
         VK_COMPONENT_SWIZZLE_A,
     },
     IDENTITY_SWIZZLE, // B4G4R4A4
-    {
-        // R10G10B10A2
-        VK_COMPONENT_SWIZZLE_R,
-        VK_COMPONENT_SWIZZLE_G,
-        VK_COMPONENT_SWIZZLE_B,
-        VK_COMPONENT_SWIZZLE_A,
-    },
-    IDENTITY_SWIZZLE, // R16G16
-    IDENTITY_SWIZZLE, // R16G16B16A16
-    IDENTITY_SWIZZLE, // R8
-    {
-        // A8
-        VK_COMPONENT_SWIZZLE_ZERO,
-        VK_COMPONENT_SWIZZLE_ZERO,
-        VK_COMPONENT_SWIZZLE_ZERO,
-        VK_COMPONENT_SWIZZLE_R,
-    },
+    IDENTITY_SWIZZLE, // B8G8R8A8
     IDENTITY_SWIZZLE, // BC1
     IDENTITY_SWIZZLE, // BC2
     IDENTITY_SWIZZLE, // BC3
+    IDENTITY_SWIZZLE, // BC4
+    IDENTITY_SWIZZLE, // BC5
     IDENTITY_SWIZZLE, // BC7
+    IDENTITY_SWIZZLE, // BC6H_FLOAT
+    IDENTITY_SWIZZLE, // BC6H_UFLOAT
+    IDENTITY_SWIZZLE, // R8_SNORM
     IDENTITY_SWIZZLE, // R8G8_SNORM
     IDENTITY_SWIZZLE, // R8G8B8A8_SNORM
+    IDENTITY_SWIZZLE, // R16_SNORM
+    IDENTITY_SWIZZLE, // R16G16_SNORM
+    IDENTITY_SWIZZLE, // R16G16B16A16_SNORM
     IDENTITY_SWIZZLE, // R16_SFLOAT
     IDENTITY_SWIZZLE, // R16G16_SFLOAT
     IDENTITY_SWIZZLE, // R16G16B16A16_SFLOAT
     IDENTITY_SWIZZLE, // R32_SFLOAT
     IDENTITY_SWIZZLE, // R32G32_SFLOAT
     IDENTITY_SWIZZLE, // R32G32B32A32_SFLOAT
+    {
+        // R11G11B10_UFLOAT
+        VK_COMPONENT_SWIZZLE_R,
+        VK_COMPONENT_SWIZZLE_G,
+        VK_COMPONENT_SWIZZLE_B,
+        VK_COMPONENT_SWIZZLE_ONE,
+    },
     IDENTITY_SWIZZLE, // R8_UINT
     IDENTITY_SWIZZLE, // R8G8_UINT
     IDENTITY_SWIZZLE, // R8G8B8A8_UINT
     IDENTITY_SWIZZLE, // R16_UINT
     IDENTITY_SWIZZLE, // R16G16_UINT
     IDENTITY_SWIZZLE, // R16G16B16A16_UINT
+    IDENTITY_SWIZZLE, // R8_INT
+    IDENTITY_SWIZZLE, // R8G8_INT
+    IDENTITY_SWIZZLE, // R8G8B8A8_INT
+    IDENTITY_SWIZZLE, // R16_INT
+    IDENTITY_SWIZZLE, // R16G16_INT
+    IDENTITY_SWIZZLE, // R16G16B16A16_INT
     IDENTITY_SWIZZLE, // R8G8B8A8_SRGB
     IDENTITY_SWIZZLE, // B8G8R8A8_SRGB
+    IDENTITY_SWIZZLE, // BC1_SRGB
+    IDENTITY_SWIZZLE, // BC2_SRGB
     IDENTITY_SWIZZLE, // BC3_SRGB
     IDENTITY_SWIZZLE, // BC7_SRGB
     IDENTITY_SWIZZLE, // D16_UNORM
@@ -1470,7 +1514,7 @@ static void VULKAN_INTERNAL_NewMemoryFreeRegion(
         }
 
         // perform insertion sort
-        if (allocation->allocator->sortedFreeRegionCount > 0 && insertionIndex != allocation->allocator->sortedFreeRegionCount) {
+        if (allocation->allocator->sortedFreeRegionCount > 0 && (Uint32)insertionIndex != allocation->allocator->sortedFreeRegionCount) {
             for (Sint32 i = allocation->allocator->sortedFreeRegionCount; i > insertionIndex && i > 0; i -= 1) {
                 allocation->allocator->sortedFreeRegions[i] = allocation->allocator->sortedFreeRegions[i - 1];
                 allocation->allocator->sortedFreeRegions[i]->sortedIndex = i;
@@ -1911,7 +1955,7 @@ static Uint8 VULKAN_INTERNAL_BindResourceMemory(
     VulkanMemoryUsedRegion *usedRegion;
 
     VkDeviceSize requiredSize, allocationSize;
-    VkDeviceSize alignedOffset;
+    VkDeviceSize alignedOffset = 0;
     VkDeviceSize newRegionSize, newRegionOffset;
     Uint8 isHostVisible, smallAllocation, allocationResult;
     Sint32 i;
@@ -2728,17 +2772,17 @@ static VulkanBufferUsageMode VULKAN_INTERNAL_DefaultBufferUsageMode(
 {
     // NOTE: order matters here!
 
-    if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX_BIT) {
+    if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX) {
         return VULKAN_BUFFER_USAGE_MODE_VERTEX_READ;
-    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_INDEX_BIT) {
+    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_INDEX) {
         return VULKAN_BUFFER_USAGE_MODE_INDEX_READ;
-    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT_BIT) {
+    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         return VULKAN_BUFFER_USAGE_MODE_INDIRECT;
-    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT) {
+    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) {
         return VULKAN_BUFFER_USAGE_MODE_GRAPHICS_STORAGE_READ;
-    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ_BIT) {
+    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ) {
         return VULKAN_BUFFER_USAGE_MODE_COMPUTE_STORAGE_READ;
-    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE_BIT) {
+    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
         return VULKAN_BUFFER_USAGE_MODE_COMPUTE_STORAGE_READ_WRITE;
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Buffer has no default usage mode!");
@@ -2752,17 +2796,17 @@ static VulkanTextureUsageMode VULKAN_INTERNAL_DefaultTextureUsageMode(
     // NOTE: order matters here!
     // NOTE: graphics storage bits and sampler bit are mutually exclusive!
 
-    if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) {
+    if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER) {
         return VULKAN_TEXTURE_USAGE_MODE_SAMPLER;
-    } else if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT) {
+    } else if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) {
         return VULKAN_TEXTURE_USAGE_MODE_GRAPHICS_STORAGE_READ;
-    } else if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT) {
+    } else if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
         return VULKAN_TEXTURE_USAGE_MODE_COLOR_ATTACHMENT;
-    } else if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT) {
+    } else if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
         return VULKAN_TEXTURE_USAGE_MODE_DEPTH_STENCIL_ATTACHMENT;
-    } else if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT) {
+    } else if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ) {
         return VULKAN_TEXTURE_USAGE_MODE_COMPUTE_STORAGE_READ;
-    } else if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT) {
+    } else if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
         return VULKAN_TEXTURE_USAGE_MODE_COMPUTE_STORAGE_READ_WRITE;
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Texture has no default usage mode!");
@@ -2944,7 +2988,7 @@ static void VULKAN_INTERNAL_DestroyTexture(
 {
     // Clean up subresources
     for (Uint32 subresourceIndex = 0; subresourceIndex < texture->subresourceCount; subresourceIndex += 1) {
-        if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT) {
+        if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
             for (Uint32 depthIndex = 0; depthIndex < texture->depth; depthIndex += 1) {
                 VULKAN_INTERNAL_RemoveFramebuffersContainingView(
                     renderer,
@@ -2967,14 +3011,14 @@ static void VULKAN_INTERNAL_DestroyTexture(
             SDL_free(texture->subresources[subresourceIndex].renderTargetViews);
         }
 
-        if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT) {
+        if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
             renderer->vkDestroyImageView(
                 renderer->logicalDevice,
                 texture->subresources[subresourceIndex].computeWriteView,
                 NULL);
         }
 
-        if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT) {
+        if (texture->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
             renderer->vkDestroyImageView(
                 renderer->logicalDevice,
                 texture->subresources[subresourceIndex].depthStencilView,
@@ -4016,21 +4060,21 @@ static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
     VkBufferUsageFlags vulkanUsageFlags = 0;
     Uint8 bindResult;
 
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX_BIT) {
+    if (usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX) {
         vulkanUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
     }
 
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDEX_BIT) {
+    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDEX) {
         vulkanUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
     }
 
-    if (usageFlags & (SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT |
-                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ_BIT |
-                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE_BIT)) {
+    if (usageFlags & (SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ |
+                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ |
+                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE)) {
         vulkanUsageFlags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
     }
 
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT_BIT) {
+    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         vulkanUsageFlags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
     }
 
@@ -4669,7 +4713,7 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
         swapchainData->textureContainers[i].header.info.type = SDL_GPU_TEXTURETYPE_2D;
         swapchainData->textureContainers[i].header.info.levelCount = 1;
         swapchainData->textureContainers[i].header.info.sampleCount = SDL_GPU_SAMPLECOUNT_1;
-        swapchainData->textureContainers[i].header.info.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
+        swapchainData->textureContainers[i].header.info.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
 
         swapchainData->textureContainers[i].activeTextureHandle = SDL_malloc(sizeof(VulkanTextureHandle));
 
@@ -4690,7 +4734,7 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
         swapchainData->textureContainers[i].activeTextureHandle->vulkanTexture->levelCount = 1;
         swapchainData->textureContainers[i].activeTextureHandle->vulkanTexture->sampleCount = VK_SAMPLE_COUNT_1_BIT;
         swapchainData->textureContainers[i].activeTextureHandle->vulkanTexture->usageFlags =
-            SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
+            SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
         swapchainData->textureContainers[i].activeTextureHandle->vulkanTexture->aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
         SDL_AtomicSet(&swapchainData->textureContainers[i].activeTextureHandle->vulkanTexture->referenceCount, 0);
 
@@ -5630,8 +5674,8 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
     VkImageViewCreateInfo imageViewCreateInfo;
     Uint8 bindResult;
     Uint8 isRenderTarget =
-        ((textureUsageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT) != 0) ||
-        ((textureUsageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT) != 0);
+        ((textureUsageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) != 0) ||
+        ((textureUsageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) != 0);
     VkImageUsageFlags vkUsageFlags = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     VulkanTexture *texture = SDL_malloc(sizeof(VulkanTexture));
 
@@ -5645,18 +5689,18 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
         imageCreateFlags |= VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
     }
 
-    if (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) {
+    if (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER) {
         vkUsageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
     }
-    if (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT) {
+    if (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
         vkUsageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     }
-    if (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT) {
+    if (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
         vkUsageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
     }
-    if (textureUsageFlags & (SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT |
-                             SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT |
-                             SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT)) {
+    if (textureUsageFlags & (SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ |
+                             SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ |
+                             SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE)) {
         vkUsageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
     }
 
@@ -5705,9 +5749,9 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
     texture->fullView = VK_NULL_HANDLE;
 
     if (
-        (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) ||
-        (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT) ||
-        (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT)) {
+        (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER) ||
+        (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) ||
+        (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)) {
 
         imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         imageViewCreateInfo.pNext = NULL;
@@ -5775,7 +5819,7 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
             texture->subresources[subresourceIndex].computeWriteView = VK_NULL_HANDLE;
             texture->subresources[subresourceIndex].depthStencilView = VK_NULL_HANDLE;
 
-            if (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT) {
+            if (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
                 texture->subresources[subresourceIndex].renderTargetViews = SDL_malloc(
                     texture->depth * sizeof(VkImageView));
 
@@ -5800,7 +5844,7 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
                 }
             }
 
-            if (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT) {
+            if (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
                 VULKAN_INTERNAL_CreateSubresourceView(
                     renderer,
                     texture,
@@ -5810,7 +5854,7 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
                     &texture->subresources[subresourceIndex].computeWriteView);
             }
 
-            if (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT) {
+            if (textureUsageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
                 VULKAN_INTERNAL_CreateSubresourceView(
                     renderer,
                     texture,
@@ -5843,7 +5887,7 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
                     texture->format,
                     texture->swizzle,
                     aspectMask,
-                    SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT,
+                    SDL_GPU_TEXTUREUSAGE_COLOR_TARGET,
                     true);
             }
         }
@@ -7787,7 +7831,7 @@ static void VULKAN_BeginRenderPass(
         }
 
         // FIXME: validate this in gpu.c
-        if (!(textureContainer->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT)) {
+        if (!(textureContainer->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Color attachment texture was not designated as a target!");
             return;
         }
@@ -7810,7 +7854,7 @@ static void VULKAN_BeginRenderPass(
         }
 
         // FIXME: validate this in gpu.c
-        if (!(textureContainer->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT)) {
+        if (!(textureContainer->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Depth stencil attachment texture was not designated as a target!");
             return;
         }
@@ -8162,7 +8206,7 @@ static void VULKAN_BeginComputePass(
 
     for (i = 0; i < storageTextureBindingCount; i += 1) {
         VulkanTextureContainer *textureContainer = (VulkanTextureContainer *)storageTextureBindings[i].texture;
-        if (!(textureContainer->activeTextureHandle->vulkanTexture->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT)) {
+        if (!(textureContainer->activeTextureHandle->vulkanTexture->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempted to bind read-only texture as compute write texture");
         }
 
@@ -10775,18 +10819,18 @@ static bool VULKAN_SupportsTextureFormat(
     VkImageFormatProperties properties;
     VkResult vulkanResult;
 
-    if (usage & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) {
+    if (usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) {
         vulkanUsage |= VK_IMAGE_USAGE_SAMPLED_BIT;
     }
-    if (usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT) {
+    if (usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
         vulkanUsage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     }
-    if (usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT) {
+    if (usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
         vulkanUsage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
     }
-    if (usage & (SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT |
-                 SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT |
-                 SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT)) {
+    if (usage & (SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ |
+                 SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ |
+                 SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE)) {
         vulkanUsage |= VK_IMAGE_USAGE_STORAGE_BIT;
     }
 
@@ -11228,7 +11272,8 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
     VkResult vulkanResult;
     VkPhysicalDevice *physicalDevices;
     VulkanExtensions *physicalDeviceExtensions;
-    Uint32 physicalDeviceCount, i, suitableIndex;
+    Uint32 i, physicalDeviceCount;
+    Sint32 suitableIndex;
     Uint32 queueFamilyIndex, suitableQueueFamilyIndex;
     Uint8 deviceRank, highestRank;
 
