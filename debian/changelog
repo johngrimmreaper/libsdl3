@@ -1,4 +1,4 @@
-libsdl3 (3.1.2+git20240902~d501f6d+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.1.2+git20240903~b1b4a9c+ds-1) UNRELEASED; urgency=medium
 
   * New upstream snapshot
   * d/copyright: Exclude more generated files

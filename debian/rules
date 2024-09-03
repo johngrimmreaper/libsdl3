@@ -69,8 +69,8 @@ endif
 	dh $@ --buildsystem=cmake
 
 override_dh_auto_configure:
-	if [ $(DEB_VERSION_UPSTREAM) = 3.1.2+git20240902~d501f6d+ds ]; then \
-		echo prerelease-3.1.2-1538-gd501f6db0 > VERSION.txt; \
+	if [ $(DEB_VERSION_UPSTREAM) = 3.1.2+git20240903~b1b4a9c+ds ]; then \
+		echo prerelease-3.1.2-1549-gb1b4a9cd1 > VERSION.txt; \
 	fi
 	set -e; for bmp in test/icon.bmp test/gamepad_*.bmp test/glass.bmp; do \
 		python3 cmake/xxd.py -i "$${bmp}" -o "$${bmp%.bmp}.h"; \
