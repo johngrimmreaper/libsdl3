@@ -2,11 +2,14 @@ libSDL3.so.0 libsdl3-0 #MINVER#
 * Build-Depends-Package: libsdl3-dev
  SDL3_0.0.0@SDL3_0.0.0 3.1.0~
  SDL_AcquireCameraFrame@SDL3_0.0.0 3.1.0~
+ SDL_AcquireGPUCommandBuffer@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_AcquireGPUSwapchainTexture@SDL3_0.0.0 3.1.2+git20240902~
  SDL_AddEventWatch@SDL3_0.0.0 3.1.0~
  SDL_AddGamepadMapping@SDL3_0.0.0 3.1.0~
  SDL_AddGamepadMappingsFromFile@SDL3_0.0.0 3.1.0~
  SDL_AddGamepadMappingsFromIO@SDL3_0.0.0 3.1.0~
  SDL_AddHintCallback@SDL3_0.0.0 3.1.0~
+ SDL_AddSurfaceAlternateImage@SDL3_0.0.0 3.1.2+git20240902~
  SDL_AddTimer@SDL3_0.0.0 3.1.0~
  SDL_AddTimerNS@SDL3_0.0.0 3.1.2+git20240730~
  SDL_AddVulkanRenderSemaphores@SDL3_0.0.0 3.1.0~
@@ -14,13 +17,29 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_AtomicCompareAndSwap@SDL3_0.0.0 3.1.0~
  SDL_AtomicCompareAndSwapPointer@SDL3_0.0.0 3.1.0~
  SDL_AtomicGet@SDL3_0.0.0 3.1.0~
- SDL_AtomicGetPtr@SDL3_0.0.0 3.1.0~
+ SDL_AtomicGetPointer@SDL3_0.0.0 3.1.2+git20240902~
  SDL_AtomicSet@SDL3_0.0.0 3.1.0~
- SDL_AtomicSetPtr@SDL3_0.0.0 3.1.0~
+ SDL_AtomicSetPointer@SDL3_0.0.0 3.1.2+git20240902~
  SDL_AttachVirtualJoystick@SDL3_0.0.0 3.1.0~
  SDL_AudioDevicePaused@SDL3_0.0.0 3.1.0~
+ SDL_BeginGPUComputePass@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_BeginGPUCopyPass@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_BeginGPURenderPass@SDL3_0.0.0 3.1.2+git20240902~
  SDL_BindAudioStream@SDL3_0.0.0 3.1.0~
  SDL_BindAudioStreams@SDL3_0.0.0 3.1.0~
+ SDL_BindGPUComputePipeline@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_BindGPUComputeStorageBuffers@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_BindGPUComputeStorageTextures@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_BindGPUFragmentSamplers@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_BindGPUFragmentStorageBuffers@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_BindGPUFragmentStorageTextures@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_BindGPUGraphicsPipeline@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_BindGPUIndexBuffer@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_BindGPUVertexBuffers@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_BindGPUVertexSamplers@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_BindGPUVertexStorageBuffers@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_BindGPUVertexStorageTextures@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_BlitGPUTexture@SDL3_0.0.0 3.1.2+git20240902~
  SDL_BlitSurface9Grid@SDL3_0.0.0 3.1.2+git20240730~
  SDL_BlitSurface@SDL3_0.0.0 3.1.0~
  SDL_BlitSurfaceScaled@SDL3_0.0.0 3.1.0~
@@ -30,6 +49,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_BlitSurfaceUncheckedScaled@SDL3_0.0.0 3.1.0~
  SDL_BroadcastCondition@SDL3_0.0.0 3.1.0~
  SDL_CaptureMouse@SDL3_0.0.0 3.1.0~
+ SDL_ClaimWindowForGPUDevice@SDL3_0.0.0 3.1.2+git20240902~
  SDL_CleanupTLS@SDL3_0.0.0 3.1.0~
  SDL_ClearAudioStream@SDL3_0.0.0 3.1.0~
  SDL_ClearClipboardData@SDL3_0.0.0 3.1.0~
@@ -53,6 +73,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ConvertSurface@SDL3_0.0.0 3.1.0~
  SDL_ConvertSurfaceAndColorspace@SDL3_0.0.0 3.1.2+git20240730~
  SDL_CopyFile@SDL3_0.0.0 3.1.2+git20240730~
+ SDL_CopyGPUBufferToBuffer@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_CopyGPUTextureToTexture@SDL3_0.0.0 3.1.2+git20240902~
  SDL_CopyProperties@SDL3_0.0.0 3.1.0~
  SDL_CopyStorageFile@SDL3_0.0.0 3.1.2+git20240730~
  SDL_CreateAudioStream@SDL3_0.0.0 3.1.0~
@@ -60,6 +82,15 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_CreateCondition@SDL3_0.0.0 3.1.0~
  SDL_CreateCursor@SDL3_0.0.0 3.1.0~
  SDL_CreateDirectory@SDL3_0.0.0 3.1.0~
+ SDL_CreateGPUBuffer@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_CreateGPUComputePipeline@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_CreateGPUDevice@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_CreateGPUDeviceWithProperties@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_CreateGPUGraphicsPipeline@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_CreateGPUSampler@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_CreateGPUShader@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_CreateGPUTexture@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_CreateGPUTransferBuffer@SDL3_0.0.0 3.1.2+git20240902~
  SDL_CreateHapticEffect@SDL3_0.0.0 3.1.0~
  SDL_CreateMutex@SDL3_0.0.0 3.1.0~
  SDL_CreatePalette@SDL3_0.0.0 3.1.0~
@@ -86,13 +117,12 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_CursorVisible@SDL3_0.0.0 3.1.0~
  SDL_DYNAPI_entry@SDL3_0.0.0 3.1.0~
  SDL_DateTimeToTime@SDL3_0.0.0 3.1.0~
- SDL_DelEventWatch@SDL3_0.0.0 3.1.0~
- SDL_DelHintCallback@SDL3_0.0.0 3.1.0~
  SDL_Delay@SDL3_0.0.0 3.1.0~
  SDL_DelayNS@SDL3_0.0.0 3.1.0~
  SDL_DestroyAudioStream@SDL3_0.0.0 3.1.0~
  SDL_DestroyCondition@SDL3_0.0.0 3.1.0~
  SDL_DestroyCursor@SDL3_0.0.0 3.1.0~
+ SDL_DestroyGPUDevice@SDL3_0.0.0 3.1.2+git20240902~
  SDL_DestroyHapticEffect@SDL3_0.0.0 3.1.0~
  SDL_DestroyMutex@SDL3_0.0.0 3.1.0~
  SDL_DestroyPalette@SDL3_0.0.0 3.1.0~
@@ -107,6 +137,14 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_DetachThread@SDL3_0.0.0 3.1.0~
  SDL_DetachVirtualJoystick@SDL3_0.0.0 3.1.0~
  SDL_DisableScreenSaver@SDL3_0.0.0 3.1.0~
+ SDL_DispatchGPUCompute@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_DispatchGPUComputeIndirect@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_DownloadFromGPUBuffer@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_DownloadFromGPUTexture@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_DrawGPUIndexedPrimitives@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_DrawGPUIndexedPrimitivesIndirect@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_DrawGPUPrimitives@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_DrawGPUPrimitivesIndirect@SDL3_0.0.0 3.1.2+git20240902~
  SDL_DuplicateSurface@SDL3_0.0.0 3.1.0~
  SDL_EGL_GetCurrentConfig@SDL3_0.0.0 3.1.2+git20240730~
  SDL_EGL_GetCurrentDisplay@SDL3_0.0.0 3.1.2+git20240730~
@@ -114,6 +152,9 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_EGL_GetWindowSurface@SDL3_0.0.0 3.1.2+git20240730~
  SDL_EGL_SetAttributeCallbacks@SDL3_0.0.0 3.1.2+git20240730~
  SDL_EnableScreenSaver@SDL3_0.0.0 3.1.0~
+ SDL_EndGPUComputePass@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_EndGPUCopyPass@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_EndGPURenderPass@SDL3_0.0.0 3.1.2+git20240902~
  SDL_EnterAppMainCallbacks@SDL3_0.0.0 3.1.0~
  SDL_EnumerateDirectory@SDL3_0.0.0 3.1.0~
  SDL_EnumerateProperties@SDL3_0.0.0 3.1.0~
@@ -143,6 +184,9 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GL_SetSwapInterval@SDL3_0.0.0 3.1.0~
  SDL_GL_SwapWindow@SDL3_0.0.0 3.1.0~
  SDL_GL_UnloadLibrary@SDL3_0.0.0 3.1.0~
+ SDL_GPUTextureFormatTexelBlockSize@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_GPUTextureSupportsFormat@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_GPUTextureSupportsSampleCount@SDL3_0.0.0 3.1.2+git20240902~
  SDL_GUIDToString@SDL3_0.0.0 3.1.0~
  SDL_GamepadConnected@SDL3_0.0.0 3.1.0~
  SDL_GamepadEventsEnabled@SDL3_0.0.0 3.1.0~
@@ -150,6 +194,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GamepadHasButton@SDL3_0.0.0 3.1.0~
  SDL_GamepadHasSensor@SDL3_0.0.0 3.1.0~
  SDL_GamepadSensorEnabled@SDL3_0.0.0 3.1.0~
+ SDL_GenerateMipmapsForGPUTexture@SDL3_0.0.0 3.1.2+git20240902~
  SDL_GetAppMetadataProperty@SDL3_0.0.0 3.1.2+git20240730~
  SDL_GetAssertionHandler@SDL3_0.0.0 3.1.0~
  SDL_GetAssertionReport@SDL3_0.0.0 3.1.0~
@@ -158,6 +203,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetAudioDeviceGain@SDL3_0.0.0 3.1.2+git20240730~
  SDL_GetAudioDeviceName@SDL3_0.0.0 3.1.0~
  SDL_GetAudioDriver@SDL3_0.0.0 3.1.0~
+ SDL_GetAudioFormatName@SDL3_0.0.0 3.1.2+git20240902~
  SDL_GetAudioPlaybackDevices@SDL3_0.0.0 3.1.2+git20240730~
  SDL_GetAudioRecordingDevices@SDL3_0.0.0 3.1.2+git20240730~
  SDL_GetAudioStreamAvailable@SDL3_0.0.0 3.1.0~
@@ -201,8 +247,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetDaysInMonth@SDL3_0.0.0 3.1.0~
  SDL_GetDefaultAssertionHandler@SDL3_0.0.0 3.1.0~
  SDL_GetDefaultCursor@SDL3_0.0.0 3.1.0~
- SDL_GetDefaultKeyFromScancode@SDL3_0.0.0 3.1.2+git20240730~
- SDL_GetDefaultScancodeFromKey@SDL3_0.0.0 3.1.2+git20240730~
  SDL_GetDesktopDisplayMode@SDL3_0.0.0 3.1.0~
  SDL_GetDisplayBounds@SDL3_0.0.0 3.1.0~
  SDL_GetDisplayContentScale@SDL3_0.0.0 3.1.0~
@@ -217,6 +261,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetEventFilter@SDL3_0.0.0 3.1.0~
  SDL_GetFloatProperty@SDL3_0.0.0 3.1.0~
  SDL_GetFullscreenDisplayModes@SDL3_0.0.0 3.1.0~
+ SDL_GetGPUDriver@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_GetGPUSwapchainTextureFormat@SDL3_0.0.0 3.1.2+git20240902~
  SDL_GetGamepadAppleSFSymbolsNameForAxis@SDL3_0.0.0 3.1.0~
  SDL_GetGamepadAppleSFSymbolsNameForButton@SDL3_0.0.0 3.1.0~
  SDL_GetGamepadAxis@SDL3_0.0.0 3.1.0~
@@ -343,13 +389,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetNumberProperty@SDL3_0.0.0 3.1.0~
  SDL_GetOriginalMemoryFunctions@SDL3_0.0.0 3.1.0~
  SDL_GetPathInfo@SDL3_0.0.0 3.1.0~
- SDL_GetPenCapabilities@SDL3_0.0.0 3.1.0~
- SDL_GetPenFromGUID@SDL3_0.0.0 3.1.0~
- SDL_GetPenGUID@SDL3_0.0.0 3.1.0~
- SDL_GetPenName@SDL3_0.0.0 3.1.0~
- SDL_GetPenStatus@SDL3_0.0.0 3.1.0~
- SDL_GetPenType@SDL3_0.0.0 3.1.0~
- SDL_GetPens@SDL3_0.0.0 3.1.0~
  SDL_GetPerformanceCounter@SDL3_0.0.0 3.1.0~
  SDL_GetPerformanceFrequency@SDL3_0.0.0 3.1.0~
  SDL_GetPixelFormatDetails@SDL3_0.0.0 3.1.2+git20240730~
@@ -375,7 +414,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetRectIntersectionFloat@SDL3_0.0.0 3.1.0~
  SDL_GetRectUnion@SDL3_0.0.0 3.1.0~
  SDL_GetRectUnionFloat@SDL3_0.0.0 3.1.0~
- SDL_GetRelativeMouseMode@SDL3_0.0.0 3.1.0~
  SDL_GetRelativeMouseState@SDL3_0.0.0 3.1.0~
  SDL_GetRenderClipRect@SDL3_0.0.0 3.1.0~
  SDL_GetRenderColorScale@SDL3_0.0.0 3.1.0~
@@ -426,6 +464,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetSurfaceColorKey@SDL3_0.0.0 3.1.0~
  SDL_GetSurfaceColorMod@SDL3_0.0.0 3.1.0~
  SDL_GetSurfaceColorspace@SDL3_0.0.0 3.1.0~
+ SDL_GetSurfaceImages@SDL3_0.0.0 3.1.2+git20240902~
  SDL_GetSurfacePalette@SDL3_0.0.0 3.1.2+git20240730~
  SDL_GetSurfaceProperties@SDL3_0.0.0 3.1.0~
  SDL_GetSystemRAM@SDL3_0.0.0 3.1.0~
@@ -455,6 +494,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetWindowBordersSize@SDL3_0.0.0 3.1.0~
  SDL_GetWindowDisplayScale@SDL3_0.0.0 3.1.0~
  SDL_GetWindowFlags@SDL3_0.0.0 3.1.0~
+ SDL_GetWindowFromEvent@SDL3_0.0.0 3.1.2+git20240902~
  SDL_GetWindowFromID@SDL3_0.0.0 3.1.0~
  SDL_GetWindowFullscreenMode@SDL3_0.0.0 3.1.0~
  SDL_GetWindowICCProfile@SDL3_0.0.0 3.1.0~
@@ -470,6 +510,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetWindowPixelFormat@SDL3_0.0.0 3.1.0~
  SDL_GetWindowPosition@SDL3_0.0.0 3.1.0~
  SDL_GetWindowProperties@SDL3_0.0.0 3.1.0~
+ SDL_GetWindowRelativeMouseMode@SDL3_0.0.0 3.1.2+git20240902~
  SDL_GetWindowSafeArea@SDL3_0.0.0 3.1.2+git20240730~
  SDL_GetWindowSize@SDL3_0.0.0 3.1.0~
  SDL_GetWindowSizeInPixels@SDL3_0.0.0 3.1.0~
@@ -519,6 +560,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_Init@SDL3_0.0.0 3.1.0~
  SDL_InitHapticRumble@SDL3_0.0.0 3.1.0~
  SDL_InitSubSystem@SDL3_0.0.0 3.1.0~
+ SDL_InsertGPUDebugLabel@SDL3_0.0.0 3.1.2+git20240902~
  SDL_IsGamepad@SDL3_0.0.0 3.1.0~
  SDL_IsJoystickHaptic@SDL3_0.0.0 3.1.0~
  SDL_IsJoystickVirtual@SDL3_0.0.0 3.1.0~
@@ -553,6 +595,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_LogMessageV@SDL3_0.0.0 3.1.0~
  SDL_LogVerbose@SDL3_0.0.0 3.1.0~
  SDL_LogWarn@SDL3_0.0.0 3.1.0~
+ SDL_MapGPUTransferBuffer@SDL3_0.0.0 3.1.2+git20240902~
  SDL_MapRGB@SDL3_0.0.0 3.1.0~
  SDL_MapRGBA@SDL3_0.0.0 3.1.0~
  SDL_MapSurfaceRGB@SDL3_0.0.0 3.1.2+git20240730~
@@ -591,14 +634,19 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_PauseAudioStreamDevice@SDL3_0.0.0 3.1.2+git20240730~
  SDL_PauseHaptic@SDL3_0.0.0 3.1.0~
  SDL_PeepEvents@SDL3_0.0.0 3.1.0~
- SDL_PenConnected@SDL3_0.0.0 3.1.0~
  SDL_PlayHapticRumble@SDL3_0.0.0 3.1.0~
  SDL_PollEvent@SDL3_0.0.0 3.1.0~
+ SDL_PopGPUDebugGroup@SDL3_0.0.0 3.1.2+git20240902~
  SDL_PremultiplyAlpha@SDL3_0.0.0 3.1.0~
  SDL_PremultiplySurfaceAlpha@SDL3_0.0.0 3.1.2+git20240730~
  SDL_PumpEvents@SDL3_0.0.0 3.1.0~
  SDL_PushEvent@SDL3_0.0.0 3.1.0~
+ SDL_PushGPUComputeUniformData@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_PushGPUDebugGroup@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_PushGPUFragmentUniformData@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_PushGPUVertexUniformData@SDL3_0.0.0 3.1.2+git20240902~
  SDL_PutAudioStreamData@SDL3_0.0.0 3.1.0~
+ SDL_QueryGPUFence@SDL3_0.0.0 3.1.2+git20240902~
  SDL_Quit@SDL3_0.0.0 3.1.0~
  SDL_QuitSubSystem@SDL3_0.0.0 3.1.0~
  SDL_RaiseWindow@SDL3_0.0.0 3.1.0~
@@ -622,9 +670,21 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ReadU8@SDL3_0.0.0 3.1.0~
  SDL_RegisterEvents@SDL3_0.0.0 3.1.0~
  SDL_ReleaseCameraFrame@SDL3_0.0.0 3.1.0~
+ SDL_ReleaseGPUBuffer@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_ReleaseGPUComputePipeline@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_ReleaseGPUFence@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_ReleaseGPUGraphicsPipeline@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_ReleaseGPUSampler@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_ReleaseGPUShader@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_ReleaseGPUTexture@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_ReleaseGPUTransferBuffer@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_ReleaseWindowFromGPUDevice@SDL3_0.0.0 3.1.2+git20240902~
  SDL_ReloadGamepadMappings@SDL3_0.0.0 3.1.0~
+ SDL_RemoveEventWatch@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_RemoveHintCallback@SDL3_0.0.0 3.1.2+git20240902~
  SDL_RemovePath@SDL3_0.0.0 3.1.0~
  SDL_RemoveStoragePath@SDL3_0.0.0 3.1.0~
+ SDL_RemoveSurfaceAlternateImages@SDL3_0.0.0 3.1.2+git20240902~
  SDL_RemoveTimer@SDL3_0.0.0 3.1.0~
  SDL_RenamePath@SDL3_0.0.0 3.1.0~
  SDL_RenameStoragePath@SDL3_0.0.0 3.1.0~
@@ -667,6 +727,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_RunHapticEffect@SDL3_0.0.0 3.1.0~
  SDL_SaveBMP@SDL3_0.0.0 3.1.0~
  SDL_SaveBMP_IO@SDL3_0.0.0 3.1.0~
+ SDL_ScaleSurface@SDL3_0.0.0 3.1.2+git20240902~
  SDL_ScreenKeyboardShown@SDL3_0.0.0 3.1.0~
  SDL_ScreenSaverEnabled@SDL3_0.0.0 3.1.0~
  SDL_SeekIO@SDL3_0.0.0 3.1.0~
@@ -693,6 +754,11 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetEventEnabled@SDL3_0.0.0 3.1.0~
  SDL_SetEventFilter@SDL3_0.0.0 3.1.0~
  SDL_SetFloatProperty@SDL3_0.0.0 3.1.0~
+ SDL_SetGPUBufferName@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_SetGPUScissor@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_SetGPUSwapchainParameters@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_SetGPUTextureName@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_SetGPUViewport@SDL3_0.0.0 3.1.2+git20240902~
  SDL_SetGamepadEventsEnabled@SDL3_0.0.0 3.1.0~
  SDL_SetGamepadLED@SDL3_0.0.0 3.1.0~
  SDL_SetGamepadMapping@SDL3_0.0.0 3.1.0~
@@ -715,6 +781,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetLogOutputFunction@SDL3_0.0.0 3.1.0~
  SDL_SetLogPriorities@SDL3_0.0.0 3.1.2+git20240730~
  SDL_SetLogPriority@SDL3_0.0.0 3.1.2+git20240730~
+ SDL_SetLogPriorityPrefix@SDL3_0.0.0 3.1.2+git20240902~
  SDL_SetMainReady@SDL3_0.0.0 3.1.0~
  SDL_SetMemoryFunctions@SDL3_0.0.0 3.1.0~
  SDL_SetModState@SDL3_0.0.0 3.1.0~
@@ -723,7 +790,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetPointerProperty@SDL3_0.0.0 3.1.2+git20240730~
  SDL_SetPointerPropertyWithCleanup@SDL3_0.0.0 3.1.2+git20240730~
  SDL_SetPrimarySelectionText@SDL3_0.0.0 3.1.0~
- SDL_SetRelativeMouseMode@SDL3_0.0.0 3.1.0~
  SDL_SetRenderClipRect@SDL3_0.0.0 3.1.0~
  SDL_SetRenderColorScale@SDL3_0.0.0 3.1.0~
  SDL_SetRenderDrawBlendMode@SDL3_0.0.0 3.1.0~
@@ -769,6 +835,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetWindowMouseRect@SDL3_0.0.0 3.1.0~
  SDL_SetWindowOpacity@SDL3_0.0.0 3.1.0~
  SDL_SetWindowPosition@SDL3_0.0.0 3.1.0~
+ SDL_SetWindowRelativeMouseMode@SDL3_0.0.0 3.1.2+git20240902~
  SDL_SetWindowResizable@SDL3_0.0.0 3.1.0~
  SDL_SetWindowShape@SDL3_0.0.0 3.1.0~
  SDL_SetWindowSize@SDL3_0.0.0 3.1.0~
@@ -786,6 +853,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SignalCondition@SDL3_0.0.0 3.1.0~
  SDL_SignalSemaphore@SDL3_0.0.0 3.1.2+git20240730~
  SDL_StartTextInput@SDL3_0.0.0 3.1.0~
+ SDL_StartTextInputWithProperties@SDL3_0.0.0 3.1.2+git20240902~
  SDL_StepUTF8@SDL3_0.0.0 3.1.2+git20240730~
  SDL_StopHapticEffect@SDL3_0.0.0 3.1.0~
  SDL_StopHapticEffects@SDL3_0.0.0 3.1.0~
@@ -793,6 +861,9 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_StopTextInput@SDL3_0.0.0 3.1.0~
  SDL_StorageReady@SDL3_0.0.0 3.1.0~
  SDL_StringToGUID@SDL3_0.0.0 3.1.2+git20240730~
+ SDL_SubmitGPUCommandBuffer@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_SubmitGPUCommandBufferAndAcquireFence@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_SurfaceHasAlternateImages@SDL3_0.0.0 3.1.2+git20240902~
  SDL_SurfaceHasColorKey@SDL3_0.0.0 3.1.0~
  SDL_SurfaceHasRLE@SDL3_0.0.0 3.1.0~
  SDL_SyncWindow@SDL3_0.0.0 3.1.0~
@@ -818,6 +889,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_UnlockSpinlock@SDL3_0.0.0 3.1.0~
  SDL_UnlockSurface@SDL3_0.0.0 3.1.0~
  SDL_UnlockTexture@SDL3_0.0.0 3.1.0~
+ SDL_UnmapGPUTransferBuffer@SDL3_0.0.0 3.1.2+git20240902~
  SDL_UpdateGamepads@SDL3_0.0.0 3.1.0~
  SDL_UpdateHapticEffect@SDL3_0.0.0 3.1.0~
  SDL_UpdateJoysticks@SDL3_0.0.0 3.1.0~
@@ -827,6 +899,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_UpdateWindowSurface@SDL3_0.0.0 3.1.0~
  SDL_UpdateWindowSurfaceRects@SDL3_0.0.0 3.1.0~
  SDL_UpdateYUVTexture@SDL3_0.0.0 3.1.0~
+ SDL_UploadToGPUBuffer@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_UploadToGPUTexture@SDL3_0.0.0 3.1.2+git20240902~
  SDL_Vulkan_CreateSurface@SDL3_0.0.0 3.1.0~
  SDL_Vulkan_DestroySurface@SDL3_0.0.0 3.1.2+git20240730~
  SDL_Vulkan_GetInstanceExtensions@SDL3_0.0.0 3.1.0~
@@ -838,6 +912,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_WaitConditionTimeout@SDL3_0.0.0 3.1.0~
  SDL_WaitEvent@SDL3_0.0.0 3.1.0~
  SDL_WaitEventTimeout@SDL3_0.0.0 3.1.0~
+ SDL_WaitForGPUFences@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_WaitForGPUIdle@SDL3_0.0.0 3.1.2+git20240902~
  SDL_WaitSemaphore@SDL3_0.0.0 3.1.0~
  SDL_WaitSemaphoreTimeout@SDL3_0.0.0 3.1.0~
  SDL_WaitThread@SDL3_0.0.0 3.1.0~
@@ -845,6 +921,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_WarpMouseInWindow@SDL3_0.0.0 3.1.0~
  SDL_WasInit@SDL3_0.0.0 3.1.0~
  SDL_WindowHasSurface@SDL3_0.0.0 3.1.0~
+ SDL_WindowSupportsGPUPresentMode@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_WindowSupportsGPUSwapchainComposition@SDL3_0.0.0 3.1.2+git20240902~
  SDL_WriteIO@SDL3_0.0.0 3.1.0~
  SDL_WriteS16BE@SDL3_0.0.0 3.1.0~
  SDL_WriteS16LE@SDL3_0.0.0 3.1.0~

@@ -31,15 +31,15 @@
 #include "SDL_surface_c.h"
 
 
-/* Check to make sure we can safely check multiplication of surface w and pitch and it won't overflow size_t */
+// Check to make sure we can safely check multiplication of surface w and pitch and it won't overflow size_t
 SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
                         sizeof(int) == sizeof(Sint32) && sizeof(size_t) >= sizeof(Sint32));
 
 SDL_COMPILE_TIME_ASSERT(can_indicate_overflow, SDL_SIZE_MAX > SDL_MAX_SINT32);
 
-/* Public routines */
+// Public routines
 
-SDL_bool SDL_SurfaceValid(SDL_Surface *surface)
+bool SDL_SurfaceValid(SDL_Surface *surface)
 {
     return surface && surface->internal;
 }
@@ -55,41 +55,40 @@ void SDL_UpdateSurfaceLockFlag(SDL_Surface *surface)
 
 /*
  * Calculate the pad-aligned scanline width of a surface.
- * Return SDL_SIZE_MAX on overflow.
  *
  * for FOURCC, use SDL_CalculateYUVSize()
  */
-static int SDL_CalculateRGBSize(Uint32 format, size_t width, size_t height, size_t *size, size_t *pitch, SDL_bool minimal)
+static bool SDL_CalculateRGBSize(Uint32 format, size_t width, size_t height, size_t *size, size_t *pitch, bool minimal)
 {
     if (SDL_BITSPERPIXEL(format) >= 8) {
-        if (SDL_size_mul_overflow(width, SDL_BYTESPERPIXEL(format), pitch)) {
+        if (!SDL_size_mul_check_overflow(width, SDL_BYTESPERPIXEL(format), pitch)) {
             return SDL_SetError("width * bpp would overflow");
         }
     } else {
-        if (SDL_size_mul_overflow(width, SDL_BITSPERPIXEL(format), pitch)) {
+        if (!SDL_size_mul_check_overflow(width, SDL_BITSPERPIXEL(format), pitch)) {
             return SDL_SetError("width * bpp would overflow");
         }
-        if (SDL_size_add_overflow(*pitch, 7, pitch)) {
+        if (!SDL_size_add_check_overflow(*pitch, 7, pitch)) {
             return SDL_SetError("aligning pitch would overflow");
         }
         *pitch /= 8;
     }
     if (!minimal) {
-        /* 4-byte aligning for speed */
-        if (SDL_size_add_overflow(*pitch, 3, pitch)) {
+        // 4-byte aligning for speed
+        if (!SDL_size_add_check_overflow(*pitch, 3, pitch)) {
             return SDL_SetError("aligning pitch would overflow");
         }
         *pitch &= ~3;
     }
 
-    if (SDL_size_mul_overflow(height, *pitch, size)) {
+    if (!SDL_size_mul_check_overflow(height, *pitch, size)) {
         return SDL_SetError("height * pitch would overflow");
     }
 
-    return 0;
+    return true;
 }
 
-int SDL_CalculateSurfaceSize(SDL_PixelFormat format, int width, int height, size_t *size, size_t *pitch, SDL_bool minimalPitch)
+bool SDL_CalculateSurfaceSize(SDL_PixelFormat format, int width, int height, size_t *size, size_t *pitch, bool minimalPitch)
 {
     size_t p = 0, sz = 0;
 
@@ -102,14 +101,14 @@ int SDL_CalculateSurfaceSize(SDL_PixelFormat format, int width, int height, size
     }
 
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
-        if (SDL_CalculateYUVSize(format, width, height, &sz, &p) < 0) {
-            /* Overflow... */
-            return -1;
+        if (!SDL_CalculateYUVSize(format, width, height, &sz, &p)) {
+            // Overflow...
+            return false;
         }
     } else {
-        if (SDL_CalculateRGBSize(format, width, height, &sz, &p, minimalPitch) < 0) {
-            /* Overflow... */
-            return -1;
+        if (!SDL_CalculateRGBSize(format, width, height, &sz, &p, minimalPitch)) {
+            // Overflow...
+            return false;
         }
     }
 
@@ -121,10 +120,10 @@ int SDL_CalculateSurfaceSize(SDL_PixelFormat format, int width, int height, size
         *pitch = p;
     }
 
-    return 0;
+    return true;
 }
 
-static SDL_Surface *SDL_InitializeSurface(SDL_InternalSurface *mem, int width, int height, SDL_PixelFormat format, SDL_Colorspace colorspace, SDL_PropertiesID props, void *pixels, int pitch, SDL_bool onstack)
+static SDL_Surface *SDL_InitializeSurface(SDL_InternalSurface *mem, int width, int height, SDL_PixelFormat format, SDL_Colorspace colorspace, SDL_PropertiesID props, void *pixels, int pitch, bool onstack)
 {
     SDL_Surface *surface = &mem->surface;
 
@@ -148,11 +147,11 @@ static SDL_Surface *SDL_InitializeSurface(SDL_InternalSurface *mem, int width, i
         return NULL;
     }
 
-    /* Initialize the clip rect */
+    // Initialize the clip rect
     surface->internal->clip_rect.w = width;
     surface->internal->clip_rect.h = height;
 
-    /* Allocate an empty mapping */
+    // Allocate an empty mapping
     surface->internal->map.info.r = 0xFF;
     surface->internal->map.info.g = 0xFF;
     surface->internal->map.info.b = 0xFF;
@@ -165,17 +164,17 @@ static SDL_Surface *SDL_InitializeSurface(SDL_InternalSurface *mem, int width, i
     }
 
     if (props) {
-        if (SDL_CopyProperties(props, SDL_GetSurfaceProperties(surface)) < 0) {
+        if (!SDL_CopyProperties(props, SDL_GetSurfaceProperties(surface))) {
             return NULL;
         }
     }
 
-    /* By default surfaces with an alpha mask are set up for blending */
+    // By default surfaces with an alpha mask are set up for blending
     if (SDL_ISPIXELFORMAT_ALPHA(surface->format)) {
         SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
     }
 
-    /* The surface is ready to go */
+    // The surface is ready to go
     surface->refcount = 1;
     return surface;
 }
@@ -199,18 +198,18 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
         return NULL;
     }
 
-    if (SDL_CalculateSurfaceSize(format, width, height, &size, &pitch, SDL_FALSE /* not minimal pitch */) < 0) {
-        /* Overflow... */
+    if (!SDL_CalculateSurfaceSize(format, width, height, &size, &pitch, false /* not minimal pitch */)) {
+        // Overflow...
         return NULL;
     }
 
-    /* Allocate and initialize the surface */
+    // Allocate and initialize the surface
     mem = (SDL_InternalSurface *)SDL_malloc(sizeof(*mem));
     if (!mem) {
         return NULL;
     }
 
-    surface = SDL_InitializeSurface(mem, width, height, format, SDL_COLORSPACE_UNKNOWN, 0, NULL, (int)pitch, SDL_FALSE);
+    surface = SDL_InitializeSurface(mem, width, height, format, SDL_COLORSPACE_UNKNOWN, 0, NULL, (int)pitch, false);
     if (surface) {
         if (surface->w && surface->h) {
             surface->flags &= ~SDL_SURFACE_PREALLOCATED;
@@ -221,7 +220,7 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
             }
             surface->flags |= SDL_SURFACE_SIMD_ALIGNED;
 
-            /* This is important for bitmaps */
+            // This is important for bitmaps
             SDL_memset(surface->pixels, 0, size);
         }
     }
@@ -247,12 +246,12 @@ SDL_Surface *SDL_CreateSurfaceFrom(int width, int height, SDL_PixelFormat format
     }
 
     if (pitch == 0 && !pixels) {
-        /* The application will fill these in later with valid values */
+        // The application will fill these in later with valid values
     } else {
         size_t minimalPitch;
 
-        if (SDL_CalculateSurfaceSize(format, width, height, NULL, &minimalPitch, SDL_TRUE /* minimal pitch */) < 0) {
-            /* Overflow... */
+        if (!SDL_CalculateSurfaceSize(format, width, height, NULL, &minimalPitch, true /* minimal pitch */)) {
+            // Overflow...
             return NULL;
         }
 
@@ -262,13 +261,13 @@ SDL_Surface *SDL_CreateSurfaceFrom(int width, int height, SDL_PixelFormat format
         }
     }
 
-    /* Allocate and initialize the surface */
+    // Allocate and initialize the surface
     mem = (SDL_InternalSurface *)SDL_malloc(sizeof(*mem));
     if (!mem) {
         return NULL;
     }
 
-    return SDL_InitializeSurface(mem, width, height, format, SDL_COLORSPACE_UNKNOWN, 0, pixels, pitch, SDL_FALSE);
+    return SDL_InitializeSurface(mem, width, height, format, SDL_COLORSPACE_UNKNOWN, 0, pixels, pitch, false);
 }
 
 SDL_PropertiesID SDL_GetSurfaceProperties(SDL_Surface *surface)
@@ -284,14 +283,14 @@ SDL_PropertiesID SDL_GetSurfaceProperties(SDL_Surface *surface)
     return surface->internal->props;
 }
 
-int SDL_SetSurfaceColorspace(SDL_Surface *surface, SDL_Colorspace colorspace)
+SDL_bool SDL_SetSurfaceColorspace(SDL_Surface *surface, SDL_Colorspace colorspace)
 {
     if (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
     surface->internal->colorspace = colorspace;
-    return 0;
+    return true;
 }
 
 SDL_Colorspace SDL_GetSurfaceColorspace(SDL_Surface *surface)
@@ -380,7 +379,7 @@ SDL_Palette *SDL_CreateSurfacePalette(SDL_Surface *surface)
     }
 
     if (palette->ncolors == 2) {
-        /* Create a black and white bitmap palette */
+        // Create a black and white bitmap palette
         palette->colors[0].r = 0xFF;
         palette->colors[0].g = 0xFF;
         palette->colors[0].b = 0xFF;
@@ -389,18 +388,18 @@ SDL_Palette *SDL_CreateSurfacePalette(SDL_Surface *surface)
         palette->colors[1].b = 0x00;
     }
 
-    if (SDL_SetSurfacePalette(surface, palette) < 0) {
+    if (!SDL_SetSurfacePalette(surface, palette)) {
         SDL_DestroyPalette(palette);
         return NULL;
     }
 
-    /* The surface has retained the palette, we can remove the reference here */
+    // The surface has retained the palette, we can remove the reference here
     SDL_assert(palette->refcount == 2);
     SDL_DestroyPalette(palette);
     return palette;
 }
 
-int SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette)
+SDL_bool SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette)
 {
     if (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
@@ -424,7 +423,7 @@ int SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette)
 
     SDL_InvalidateMap(&surface->internal->map);
 
-    return 0;
+    return true;
 }
 
 SDL_Palette *SDL_GetSurfacePalette(SDL_Surface *surface)
@@ -436,7 +435,151 @@ SDL_Palette *SDL_GetSurfacePalette(SDL_Surface *surface)
     return surface->internal->palette;
 }
 
-int SDL_SetSurfaceRLE(SDL_Surface *surface, SDL_bool enabled)
+SDL_bool SDL_AddSurfaceAlternateImage(SDL_Surface *surface, SDL_Surface *image)
+{
+    if (!SDL_SurfaceValid(surface)) {
+        return SDL_InvalidParamError("surface");
+    }
+
+    if (!SDL_SurfaceValid(image)) {
+        return SDL_InvalidParamError("image");
+    }
+
+    SDL_Surface **images = (SDL_Surface **)SDL_realloc(surface->internal->images, (surface->internal->num_images + 1) * sizeof(*images));
+    if (!images) {
+        return false;
+    }
+    images[surface->internal->num_images] = image;
+    surface->internal->images = images;
+    ++surface->internal->num_images;
+    ++image->refcount;
+    return true;
+}
+
+SDL_bool SDL_SurfaceHasAlternateImages(SDL_Surface *surface)
+{
+    if (!SDL_SurfaceValid(surface)) {
+        return false;
+    }
+
+    return (surface->internal->num_images > 0);
+}
+
+SDL_Surface **SDL_GetSurfaceImages(SDL_Surface *surface, int *count)
+{
+    if (count) {
+        *count = 0;
+    }
+
+    if (!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
+    int num_images = 1 + surface->internal->num_images;
+    SDL_Surface **images = (SDL_Surface **)SDL_malloc((num_images + 1) * sizeof(*images));
+    if (!images) {
+        return NULL;
+    }
+    images[0] = surface;
+    if (surface->internal->num_images > 0) {
+        SDL_memcpy(&images[1], surface->internal->images, (surface->internal->num_images * sizeof(images[1])));
+    }
+    images[num_images] = NULL;
+
+    if (count) {
+        *count = num_images;
+    }
+    return images;
+}
+
+SDL_Surface *SDL_GetSurfaceImage(SDL_Surface *surface, float display_scale)
+{
+    if (!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
+    if (!SDL_SurfaceHasAlternateImages(surface)) {
+        ++surface->refcount;
+        return surface;
+    }
+
+    // This surface has high DPI images, pick the best one available, or scale one to the correct size
+    SDL_Surface **images = SDL_GetSurfaceImages(surface, NULL);
+    if (!images) {
+        // Failure, fall back to the existing surface
+        ++surface->refcount;
+        return surface;
+    }
+
+    // Find closest image. Images that are larger than the
+    // desired size are preferred over images that are smaller.
+    SDL_Surface *closest = NULL;
+    int desired_w = (int)SDL_round(surface->w * display_scale);
+    int desired_h = (int)SDL_round(surface->h * display_scale);
+    int desired_size = desired_w * desired_h;
+    int closest_distance = -1;
+    int closest_size = -1;
+    for (int i = 0; images[i]; ++i) {
+        SDL_Surface *candidate = images[i];
+        int size = candidate->w * candidate->h;
+        int delta_w = (candidate->w - desired_w);
+        int delta_h = (candidate->h - desired_h);
+        int distance = (delta_w * delta_w) + (delta_h * delta_h);
+        if (closest_distance < 0 || distance < closest_distance ||
+            (size > desired_size && closest_size < desired_size)) {
+            closest = candidate;
+            closest_distance = distance;
+            closest_size = size;
+        }
+    }
+    SDL_free(images);
+    SDL_assert(closest != NULL);    // We should always have at least one surface
+
+    if (closest->w == desired_w && closest->h == desired_h) {
+        ++closest->refcount;
+        return closest;
+    }
+
+    // We need to scale the image to the correct size. To maintain good image quality, downscaling
+    // is done in steps, never reducing the width and height by more than half each time.
+    SDL_Surface *scaled = closest;
+    do {
+        int next_scaled_w = SDL_max(desired_w, (scaled->w + 1) / 2);
+        int next_scaled_h = SDL_max(desired_h, (scaled->h + 1) / 2);
+        SDL_Surface *next_scaled = SDL_ScaleSurface(scaled, next_scaled_w, next_scaled_h, SDL_SCALEMODE_LINEAR);
+        if (scaled != closest) {
+            SDL_DestroySurface(scaled);
+        }
+        scaled = next_scaled;
+        if (!scaled) {
+            // Failure, fall back to the closest surface
+            ++closest->refcount;
+            return closest;
+        }
+    } while (scaled->w != desired_w || scaled->h != desired_h);
+
+    return scaled;
+}
+
+void SDL_RemoveSurfaceAlternateImages(SDL_Surface *surface)
+{
+    if (!SDL_SurfaceValid(surface)) {
+        return;
+    }
+
+    if (surface->internal->num_images > 0) {
+        for (int i = 0; i < surface->internal->num_images; ++i) {
+            SDL_DestroySurface(surface->internal->images[i]);
+        }
+        SDL_free(surface->internal->images);
+        surface->internal->images = NULL;
+        surface->internal->num_images = 0;
+    }
+}
+
+SDL_bool SDL_SetSurfaceRLE(SDL_Surface *surface, SDL_bool enabled)
 {
     int flags;
 
@@ -454,23 +597,23 @@ int SDL_SetSurfaceRLE(SDL_Surface *surface, SDL_bool enabled)
         SDL_InvalidateMap(&surface->internal->map);
     }
     SDL_UpdateSurfaceLockFlag(surface);
-    return 0;
+    return true;
 }
 
 SDL_bool SDL_SurfaceHasRLE(SDL_Surface *surface)
 {
     if (!SDL_SurfaceValid(surface)) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (!(surface->internal->map.info.flags & SDL_COPY_RLE_DESIRED)) {
-        return SDL_FALSE;
+        return false;
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
-int SDL_SetSurfaceColorKey(SDL_Surface *surface, SDL_bool enabled, Uint32 key)
+SDL_bool SDL_SetSurfaceColorKey(SDL_Surface *surface, SDL_bool enabled, Uint32 key)
 {
     int flags;
 
@@ -493,23 +636,23 @@ int SDL_SetSurfaceColorKey(SDL_Surface *surface, SDL_bool enabled, Uint32 key)
         SDL_InvalidateMap(&surface->internal->map);
     }
 
-    return 0;
+    return true;
 }
 
 SDL_bool SDL_SurfaceHasColorKey(SDL_Surface *surface)
 {
     if (!SDL_SurfaceValid(surface)) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (!(surface->internal->map.info.flags & SDL_COPY_COLORKEY)) {
-        return SDL_FALSE;
+        return false;
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
-int SDL_GetSurfaceColorKey(SDL_Surface *surface, Uint32 *key)
+SDL_bool SDL_GetSurfaceColorKey(SDL_Surface *surface, Uint32 *key)
 {
     if (key) {
         *key = 0;
@@ -526,12 +669,12 @@ int SDL_GetSurfaceColorKey(SDL_Surface *surface, Uint32 *key)
     if (key) {
         *key = surface->internal->map.info.colorkey;
     }
-    return 0;
+    return true;
 }
 
 /* This is a fairly slow function to switch from colorkey to alpha
    NB: it doesn't handle bpp 1 or 3, because they have no alpha channel */
-static void SDL_ConvertColorkeyToAlpha(SDL_Surface *surface, SDL_bool ignore_alpha)
+static void SDL_ConvertColorkeyToAlpha(SDL_Surface *surface, bool ignore_alpha)
 {
     int x, y, bpp;
 
@@ -553,7 +696,7 @@ static void SDL_ConvertColorkeyToAlpha(SDL_Surface *surface, SDL_bool ignore_alp
         Uint16 ckey = (Uint16)surface->internal->map.info.colorkey;
         Uint16 mask = (Uint16)(~surface->internal->format->Amask);
 
-        /* Ignore, or not, alpha in colorkey comparison */
+        // Ignore, or not, alpha in colorkey comparison
         if (ignore_alpha) {
             ckey &= mask;
             row = (Uint16 *)surface->pixels;
@@ -585,7 +728,7 @@ static void SDL_ConvertColorkeyToAlpha(SDL_Surface *surface, SDL_bool ignore_alp
         Uint32 ckey = surface->internal->map.info.colorkey;
         Uint32 mask = ~surface->internal->format->Amask;
 
-        /* Ignore, or not, alpha in colorkey comparison */
+        // Ignore, or not, alpha in colorkey comparison
         if (ignore_alpha) {
             ckey &= mask;
             row = (Uint32 *)surface->pixels;
@@ -616,11 +759,11 @@ static void SDL_ConvertColorkeyToAlpha(SDL_Surface *surface, SDL_bool ignore_alp
 
     SDL_UnlockSurface(surface);
 
-    SDL_SetSurfaceColorKey(surface, 0, 0);
+    SDL_SetSurfaceColorKey(surface, false, 0);
     SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
 }
 
-int SDL_SetSurfaceColorMod(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b)
+SDL_bool SDL_SetSurfaceColorMod(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b)
 {
     int flags;
 
@@ -641,10 +784,10 @@ int SDL_SetSurfaceColorMod(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b)
     if (surface->internal->map.info.flags != flags) {
         SDL_InvalidateMap(&surface->internal->map);
     }
-    return 0;
+    return true;
 }
 
-int SDL_GetSurfaceColorMod(SDL_Surface *surface, Uint8 *r, Uint8 *g, Uint8 *b)
+SDL_bool SDL_GetSurfaceColorMod(SDL_Surface *surface, Uint8 *r, Uint8 *g, Uint8 *b)
 {
     if (!SDL_SurfaceValid(surface)) {
         if (r) {
@@ -668,10 +811,10 @@ int SDL_GetSurfaceColorMod(SDL_Surface *surface, Uint8 *r, Uint8 *g, Uint8 *b)
     if (b) {
         *b = surface->internal->map.info.b;
     }
-    return 0;
+    return true;
 }
 
-int SDL_SetSurfaceAlphaMod(SDL_Surface *surface, Uint8 alpha)
+SDL_bool SDL_SetSurfaceAlphaMod(SDL_Surface *surface, Uint8 alpha)
 {
     int flags;
 
@@ -690,10 +833,10 @@ int SDL_SetSurfaceAlphaMod(SDL_Surface *surface, Uint8 alpha)
     if (surface->internal->map.info.flags != flags) {
         SDL_InvalidateMap(&surface->internal->map);
     }
-    return 0;
+    return true;
 }
 
-int SDL_GetSurfaceAlphaMod(SDL_Surface *surface, Uint8 *alpha)
+SDL_bool SDL_GetSurfaceAlphaMod(SDL_Surface *surface, Uint8 *alpha)
 {
     if (!SDL_SurfaceValid(surface)) {
         if (alpha) {
@@ -705,12 +848,13 @@ int SDL_GetSurfaceAlphaMod(SDL_Surface *surface, Uint8 *alpha)
     if (alpha) {
         *alpha = surface->internal->map.info.a;
     }
-    return 0;
+    return true;
 }
 
-int SDL_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
+SDL_bool SDL_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
 {
-    int flags, status;
+    int flags;
+    bool result = true;
 
     if (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
@@ -720,9 +864,8 @@ int SDL_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
         return SDL_InvalidParamError("blendMode");
     }
 
-    status = 0;
     flags = surface->internal->map.info.flags;
-    surface->internal->map.info.flags &= ~(SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL);
+    surface->internal->map.info.flags &= ~SDL_COPY_BLEND_MASK;
     switch (blendMode) {
     case SDL_BLENDMODE_NONE:
         break;
@@ -745,7 +888,7 @@ int SDL_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
         surface->internal->map.info.flags |= SDL_COPY_MUL;
         break;
     default:
-        status = SDL_Unsupported();
+        result = SDL_Unsupported();
         break;
     }
 
@@ -753,10 +896,10 @@ int SDL_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
         SDL_InvalidateMap(&surface->internal->map);
     }
 
-    return status;
+    return result;
 }
 
-int SDL_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode)
+SDL_bool SDL_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode)
 {
     if (blendMode) {
         *blendMode = SDL_BLENDMODE_INVALID;
@@ -767,10 +910,10 @@ int SDL_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode)
     }
 
     if (!blendMode) {
-        return 0;
+        return true;
     }
 
-    switch (surface->internal->map.info.flags & (SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL)) {
+    switch (surface->internal->map.info.flags & SDL_COPY_BLEND_MASK) {
     case SDL_COPY_BLEND:
         *blendMode = SDL_BLENDMODE_BLEND;
         break;
@@ -793,33 +936,33 @@ int SDL_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode)
         *blendMode = SDL_BLENDMODE_NONE;
         break;
     }
-    return 0;
+    return true;
 }
 
 SDL_bool SDL_SetSurfaceClipRect(SDL_Surface *surface, const SDL_Rect *rect)
 {
     SDL_Rect full_rect;
 
-    /* Don't do anything if there's no surface to act on */
+    // Don't do anything if there's no surface to act on
     if (!SDL_SurfaceValid(surface)) {
-        return SDL_FALSE;
+        return false;
     }
 
-    /* Set up the full surface rectangle */
+    // Set up the full surface rectangle
     full_rect.x = 0;
     full_rect.y = 0;
     full_rect.w = surface->w;
     full_rect.h = surface->h;
 
-    /* Set the clipping rectangle */
+    // Set the clipping rectangle
     if (!rect) {
         surface->internal->clip_rect = full_rect;
-        return SDL_TRUE;
+        return true;
     }
     return SDL_GetRectIntersection(rect, &full_rect, &surface->internal->clip_rect);
 }
 
-int SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
+SDL_bool SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
 {
     if (!SDL_SurfaceValid(surface)) {
         if (rect) {
@@ -831,7 +974,7 @@ int SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
         return SDL_InvalidParamError("rect");
     }
     *rect = surface->internal->clip_rect;
-    return 0;
+    return true;
 }
 
 /*
@@ -845,22 +988,21 @@ int SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
  * you know exactly what you are doing, you can optimize your code
  * by calling the one(s) you need.
  */
-int SDL_BlitSurfaceUnchecked(SDL_Surface *src, const SDL_Rect *srcrect,
+SDL_bool SDL_BlitSurfaceUnchecked(SDL_Surface *src, const SDL_Rect *srcrect,
                              SDL_Surface *dst, const SDL_Rect *dstrect)
 {
-    /* Check to make sure the blit mapping is valid */
-    if (SDL_ValidateMap(src, dst) < 0) {
-        return -1;
+    // Check to make sure the blit mapping is valid
+    if (!SDL_ValidateMap(src, dst)) {
+        return false;
     }
     return src->internal->map.blit(src, srcrect, dst, dstrect);
 }
 
-int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
-                  SDL_Surface *dst, const SDL_Rect *dstrect)
+SDL_bool SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect)
 {
     SDL_Rect r_src, r_dst;
 
-    /* Make sure the surfaces aren't locked */
+    // Make sure the surfaces aren't locked
     if (!SDL_SurfaceValid(src)) {
         return SDL_InvalidParamError("src");
     } else if (!SDL_SurfaceValid(dst)) {
@@ -869,7 +1011,7 @@ int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
         return SDL_SetError("Surfaces must not be locked during blit");
     }
 
-    /* Full src surface */
+    // Full src surface
     r_src.x = 0;
     r_src.y = 0;
     r_src.w = src->w;
@@ -883,48 +1025,48 @@ int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
         r_dst.y = 0;
     }
 
-    /* clip the source rectangle to the source surface */
+    // clip the source rectangle to the source surface
     if (srcrect) {
         SDL_Rect tmp;
-        if (SDL_GetRectIntersection(srcrect, &r_src, &tmp) == SDL_FALSE) {
-            return 0;
+        if (SDL_GetRectIntersection(srcrect, &r_src, &tmp) == false) {
+            return true;
         }
 
-        /* Shift dstrect, if srcrect origin has changed */
+        // Shift dstrect, if srcrect origin has changed
         r_dst.x += tmp.x - srcrect->x;
         r_dst.y += tmp.y - srcrect->y;
 
-        /* Update srcrect */
+        // Update srcrect
         r_src = tmp;
     }
 
-    /* There're no dstrect.w/h parameters. It's the same as srcrect */
+    // There're no dstrect.w/h parameters. It's the same as srcrect
     r_dst.w = r_src.w;
     r_dst.h = r_src.h;
 
-    /* clip the destination rectangle against the clip rectangle */
+    // clip the destination rectangle against the clip rectangle
     {
         SDL_Rect tmp;
-        if (SDL_GetRectIntersection(&r_dst, &dst->internal->clip_rect, &tmp) == SDL_FALSE) {
-            return 0;
+        if (SDL_GetRectIntersection(&r_dst, &dst->internal->clip_rect, &tmp) == false) {
+            return true;
         }
 
-        /* Shift srcrect, if dstrect has changed */
+        // Shift srcrect, if dstrect has changed
         r_src.x += tmp.x - r_dst.x;
         r_src.y += tmp.y - r_dst.y;
         r_src.w = tmp.w;
         r_src.h = tmp.h;
 
-        /* Update dstrect */
+        // Update dstrect
         r_dst = tmp;
     }
 
     if (r_dst.w <= 0 || r_dst.h <= 0) {
-        /* No-op. */
-        return 0;
+        // No-op.
+        return true;
     }
 
-    /* Switch back to a fast blit if we were previously stretching */
+    // Switch back to a fast blit if we were previously stretching
     if (src->internal->map.info.flags & SDL_COPY_NEAREST) {
         src->internal->map.info.flags &= ~SDL_COPY_NEAREST;
         SDL_InvalidateMap(&src->internal->map);
@@ -933,9 +1075,7 @@ int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
     return SDL_BlitSurfaceUnchecked(src, &r_src, dst, &r_dst);
 }
 
-int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
-                          SDL_Surface *dst, const SDL_Rect *dstrect,
-                          SDL_ScaleMode scaleMode)
+SDL_bool SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
 {
     SDL_Rect *clip_rect;
     double src_x0, src_y0, src_x1, src_y1;
@@ -945,7 +1085,7 @@ int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
     int src_w, src_h;
     int dst_w, dst_h;
 
-    /* Make sure the surfaces aren't locked */
+    // Make sure the surfaces aren't locked
     if (!SDL_SurfaceValid(src)) {
         return SDL_InvalidParamError("src");
     } else if (!SDL_SurfaceValid(dst)) {
@@ -953,8 +1093,7 @@ int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
     } else if ((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
         return SDL_SetError("Surfaces must not be locked during blit");
     } else if (scaleMode != SDL_SCALEMODE_NEAREST &&
-               scaleMode != SDL_SCALEMODE_LINEAR &&
-               scaleMode != SDL_SCALEMODE_BEST) {
+               scaleMode != SDL_SCALEMODE_LINEAR) {
         return SDL_InvalidParamError("scaleMode");
     }
 
@@ -975,7 +1114,7 @@ int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
     }
 
     if (dst_w == src_w && dst_h == src_h) {
-        /* No scaling, defer to regular blit */
+        // No scaling, defer to regular blit
         return SDL_BlitSurface(src, srcrect, dst, dstrect);
     }
 
@@ -1005,7 +1144,7 @@ int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
         src_x1 = src_x0 + src_w;
         src_y1 = src_y0 + src_h;
 
-        /* Clip source rectangle to the source surface */
+        // Clip source rectangle to the source surface
 
         if (src_x0 < 0) {
             dst_x0 -= src_x0 * scaling_w;
@@ -1028,10 +1167,10 @@ int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
         }
     }
 
-    /* Clip destination rectangle to the clip rectangle */
+    // Clip destination rectangle to the clip rectangle
     clip_rect = &dst->internal->clip_rect;
 
-    /* Translate to clip space for easier calculations */
+    // Translate to clip space for easier calculations
     dst_x0 -= clip_rect->x;
     dst_x1 -= clip_rect->x;
     dst_y0 -= clip_rect->y;
@@ -1057,7 +1196,7 @@ int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
         dst_y1 = clip_rect->h;
     }
 
-    /* Translate back to surface coordinates */
+    // Translate back to surface coordinates
     dst_x0 += clip_rect->x;
     dst_x1 += clip_rect->x;
     dst_y0 += clip_rect->y;
@@ -1073,7 +1212,7 @@ int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
     final_dst.w = (int)SDL_round(dst_x1 - dst_x0);
     final_dst.h = (int)SDL_round(dst_y1 - dst_y0);
 
-    /* Clip again */
+    // Clip again
     {
         SDL_Rect tmp;
         tmp.x = 0;
@@ -1083,13 +1222,13 @@ int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
         SDL_GetRectIntersection(&tmp, &final_src, &final_src);
     }
 
-    /* Clip again */
+    // Clip again
     SDL_GetRectIntersection(clip_rect, &final_dst, &final_dst);
 
     if (final_dst.w == 0 || final_dst.h == 0 ||
         final_src.w <= 0 || final_src.h <= 0) {
-        /* No-op. */
-        return 0;
+        // No-op.
+        return true;
     }
 
     return SDL_BlitSurfaceUncheckedScaled(src, &final_src, dst, &final_dst, scaleMode);
@@ -1099,13 +1238,9 @@ int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
  *  This is a semi-private blit function and it performs low-level surface
  *  scaled blitting only.
  */
-int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
-                                   SDL_Surface *dst, const SDL_Rect *dstrect,
-                                   SDL_ScaleMode scaleMode)
+SDL_bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
 {
-    static const Uint32 complex_copy_flags = (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA |
-                                              SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL |
-                                              SDL_COPY_COLORKEY);
+    static const Uint32 complex_copy_flags = (SDL_COPY_MODULATE_MASK | SDL_COPY_BLEND_MASK | SDL_COPY_COLORKEY);
 
     if (srcrect->w > SDL_MAX_UINT16 || srcrect->h > SDL_MAX_UINT16 ||
         dstrect->w > SDL_MAX_UINT16 || dstrect->h > SDL_MAX_UINT16) {
@@ -1122,6 +1257,15 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
             src->format == dst->format &&
             !SDL_ISPIXELFORMAT_INDEXED(src->format)) {
             return SDL_SoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
+        } else if (SDL_BITSPERPIXEL(src->format) < 8) {
+            // Scaling bitmap not yet supported, convert to RGBA for blit
+            bool result = false;
+            SDL_Surface *tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_ARGB8888);
+            if (tmp) {
+                result = SDL_BlitSurfaceUncheckedScaled(tmp, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
+                SDL_DestroySurface(tmp);
+            }
+            return result;
         } else {
             return SDL_BlitSurfaceUnchecked(src, srcrect, dst, dstrect);
         }
@@ -1131,12 +1275,21 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
             !SDL_ISPIXELFORMAT_INDEXED(src->format) &&
             SDL_BYTESPERPIXEL(src->format) == 4 &&
             src->format != SDL_PIXELFORMAT_ARGB2101010) {
-            /* fast path */
+            // fast path
             return SDL_SoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_LINEAR);
+        } else if (SDL_BITSPERPIXEL(src->format) < 8) {
+            // Scaling bitmap not yet supported, convert to RGBA for blit
+            bool result = false;
+            SDL_Surface *tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_ARGB8888);
+            if (tmp) {
+                result = SDL_BlitSurfaceUncheckedScaled(tmp, srcrect, dst, dstrect, scaleMode);
+                SDL_DestroySurface(tmp);
+            }
+            return result;
         } else {
-            /* Use intermediate surface(s) */
+            // Use intermediate surface(s)
             SDL_Surface *tmp1 = NULL;
-            int ret;
+            bool result;
             SDL_Rect srcrect2;
             int is_complex_copy_flags = (src->internal->map.info.flags & complex_copy_flags);
 
@@ -1144,7 +1297,7 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
             Uint8 alpha;
             SDL_BlendMode blendMode;
 
-            /* Save source infos */
+            // Save source infos
             SDL_GetSurfaceColorMod(src, &r, &g, &b);
             SDL_GetSurfaceAlphaMod(src, &alpha);
             SDL_GetSurfaceBlendMode(src, &blendMode);
@@ -1153,7 +1306,7 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
             srcrect2.w = srcrect->w;
             srcrect2.h = srcrect->h;
 
-            /* Change source format if not appropriate for scaling */
+            // Change source format if not appropriate for scaling
             if (SDL_BYTESPERPIXEL(src->format) != 4 || src->format == SDL_PIXELFORMAT_ARGB2101010) {
                 SDL_Rect tmprect;
                 SDL_PixelFormat fmt;
@@ -1178,7 +1331,7 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
                 src = tmp1;
             }
 
-            /* Intermediate scaling */
+            // Intermediate scaling
             if (is_complex_copy_flags || src->format != dst->format) {
                 SDL_Rect tmprect;
                 SDL_Surface *tmp2 = SDL_CreateSurface(dstrect->w, dstrect->h, src->format);
@@ -1192,23 +1345,23 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
                 tmprect.y = 0;
                 tmprect.w = dstrect->w;
                 tmprect.h = dstrect->h;
-                ret = SDL_BlitSurfaceUnchecked(tmp2, &tmprect, dst, dstrect);
+                result = SDL_BlitSurfaceUnchecked(tmp2, &tmprect, dst, dstrect);
                 SDL_DestroySurface(tmp2);
             } else {
-                ret = SDL_SoftStretch(src, &srcrect2, dst, dstrect, SDL_SCALEMODE_LINEAR);
+                result = SDL_SoftStretch(src, &srcrect2, dst, dstrect, SDL_SCALEMODE_LINEAR);
             }
 
             SDL_DestroySurface(tmp1);
-            return ret;
+            return result;
         }
     }
 }
 
-int SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect)
+SDL_bool SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect)
 {
     SDL_Rect r_src, r_dst;
 
-    /* Make sure the surfaces aren't locked */
+    // Make sure the surfaces aren't locked
     if (!SDL_SurfaceValid(src)) {
         return SDL_InvalidParamError("src");
     } else if (!SDL_SurfaceValid(dst)) {
@@ -1217,7 +1370,7 @@ int SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface 
         return SDL_SetError("Surfaces must not be locked during blit");
     }
 
-    /* Full src surface */
+    // Full src surface
     r_src.x = 0;
     r_src.y = 0;
     r_src.w = src->w;
@@ -1235,25 +1388,25 @@ int SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface 
         r_dst.h = dst->h;
     }
 
-    /* clip the source rectangle to the source surface */
+    // clip the source rectangle to the source surface
     if (srcrect) {
-        if (SDL_GetRectIntersection(srcrect, &r_src, &r_src) == SDL_FALSE) {
-            return 0;
+        if (SDL_GetRectIntersection(srcrect, &r_src, &r_src) == false) {
+            return true;
         }
 
-        /* For tiling we don't adjust the destination rectangle */
+        // For tiling we don't adjust the destination rectangle
     }
 
-    /* clip the destination rectangle against the clip rectangle */
+    // clip the destination rectangle against the clip rectangle
     {
-        if (SDL_GetRectIntersection(&r_dst, &dst->internal->clip_rect, &r_dst) == SDL_FALSE) {
-            return 0;
+        if (SDL_GetRectIntersection(&r_dst, &dst->internal->clip_rect, &r_dst) == false) {
+            return true;
         }
 
-        /* For tiling we don't adjust the source rectangle */
+        // For tiling we don't adjust the source rectangle
     }
 
-    /* Switch back to a fast blit if we were previously stretching */
+    // Switch back to a fast blit if we were previously stretching
     if (src->internal->map.info.flags & SDL_COPY_NEAREST) {
         src->internal->map.info.flags &= ~SDL_COPY_NEAREST;
         SDL_InvalidateMap(&src->internal->map);
@@ -1272,16 +1425,16 @@ int SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface 
     for (int y = 0; y < rows; ++y) {
         curr_dst.x = r_dst.x;
         for (int x = 0; x < cols; ++x) {
-            if (SDL_BlitSurfaceUnchecked(src, &curr_src, dst, &curr_dst) < 0) {
-                return -1;
+            if (!SDL_BlitSurfaceUnchecked(src, &curr_src, dst, &curr_dst)) {
+                return false;
             }
             curr_dst.x += curr_dst.w;
         }
         if (remaining_w) {
             curr_src.w = remaining_w;
             curr_dst.w = remaining_w;
-            if (SDL_BlitSurfaceUnchecked(src, &curr_src, dst, &curr_dst) < 0) {
-                return -1;
+            if (!SDL_BlitSurfaceUnchecked(src, &curr_src, dst, &curr_dst)) {
+                return false;
             }
             curr_src.w = r_src.w;
             curr_dst.w = r_src.w;
@@ -1293,27 +1446,27 @@ int SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface 
         curr_dst.h = remaining_h;
         curr_dst.x = r_dst.x;
         for (int x = 0; x < cols; ++x) {
-            if (SDL_BlitSurfaceUnchecked(src, &curr_src, dst, &curr_dst) < 0) {
-                return -1;
+            if (!SDL_BlitSurfaceUnchecked(src, &curr_src, dst, &curr_dst)) {
+                return false;
             }
             curr_dst.x += curr_dst.w;
         }
         if (remaining_w) {
             curr_src.w = remaining_w;
             curr_dst.w = remaining_w;
-            if (SDL_BlitSurfaceUnchecked(src, &curr_src, dst, &curr_dst) < 0) {
-                return -1;
+            if (!SDL_BlitSurfaceUnchecked(src, &curr_src, dst, &curr_dst)) {
+                return false;
             }
         }
     }
-    return 0;
+    return true;
 }
 
-int SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect)
+SDL_bool SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect)
 {
     SDL_Rect r_src, r_dst;
 
-    /* Make sure the surfaces aren't locked */
+    // Make sure the surfaces aren't locked
     if (!SDL_SurfaceValid(src)) {
         return SDL_InvalidParamError("src");
     } else if (!SDL_SurfaceValid(dst)) {
@@ -1326,7 +1479,7 @@ int SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, flo
         return SDL_InvalidParamError("scale");
     }
 
-    /* Full src surface */
+    // Full src surface
     r_src.x = 0;
     r_src.y = 0;
     r_src.w = src->w;
@@ -1344,25 +1497,25 @@ int SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, flo
         r_dst.h = dst->h;
     }
 
-    /* clip the source rectangle to the source surface */
+    // clip the source rectangle to the source surface
     if (srcrect) {
-        if (SDL_GetRectIntersection(srcrect, &r_src, &r_src) == SDL_FALSE) {
-            return 0;
+        if (SDL_GetRectIntersection(srcrect, &r_src, &r_src) == false) {
+            return true;
         }
 
-        /* For tiling we don't adjust the destination rectangle */
+        // For tiling we don't adjust the destination rectangle
     }
 
-    /* clip the destination rectangle against the clip rectangle */
+    // clip the destination rectangle against the clip rectangle
     {
-        if (SDL_GetRectIntersection(&r_dst, &dst->internal->clip_rect, &r_dst) == SDL_FALSE) {
-            return 0;
+        if (SDL_GetRectIntersection(&r_dst, &dst->internal->clip_rect, &r_dst) == false) {
+            return true;
         }
 
-        /* For tiling we don't adjust the source rectangle */
+        // For tiling we don't adjust the source rectangle
     }
 
-    /* Switch back to a fast blit if we were previously stretching */
+    // Switch back to a fast blit if we were previously stretching
     if (src->internal->map.info.flags & SDL_COPY_NEAREST) {
         src->internal->map.info.flags &= ~SDL_COPY_NEAREST;
         SDL_InvalidateMap(&src->internal->map);
@@ -1385,16 +1538,16 @@ int SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, flo
     for (int y = 0; y < rows; ++y) {
         curr_dst.x = r_dst.x;
         for (int x = 0; x < cols; ++x) {
-            if (SDL_BlitSurfaceUncheckedScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
-                return -1;
+            if (!SDL_BlitSurfaceUncheckedScaled(src, &curr_src, dst, &curr_dst, scaleMode)) {
+                return false;
             }
             curr_dst.x += curr_dst.w;
         }
         if (remaining_dst_w > 0) {
             curr_src.w = remaining_src_w;
             curr_dst.w = remaining_dst_w;
-            if (SDL_BlitSurfaceUncheckedScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
-                return -1;
+            if (!SDL_BlitSurfaceUncheckedScaled(src, &curr_src, dst, &curr_dst, scaleMode)) {
+                return false;
             }
             curr_src.w = r_src.w;
             curr_dst.w = tile_width;
@@ -1406,29 +1559,32 @@ int SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, flo
         curr_dst.h = remaining_dst_h;
         curr_dst.x = r_dst.x;
         for (int x = 0; x < cols; ++x) {
-            if (SDL_BlitSurfaceUncheckedScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
-                return -1;
+            if (!SDL_BlitSurfaceUncheckedScaled(src, &curr_src, dst, &curr_dst, scaleMode)) {
+                return false;
             }
             curr_dst.x += curr_dst.w;
         }
         if (remaining_dst_w > 0) {
             curr_src.w = remaining_src_w;
             curr_dst.w = remaining_dst_w;
-            if (SDL_BlitSurfaceUncheckedScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
-                return -1;
+            if (!SDL_BlitSurfaceUncheckedScaled(src, &curr_src, dst, &curr_dst, scaleMode)) {
+                return false;
             }
         }
     }
-    return 0;
+    return true;
 }
 
-int SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int corner_size, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect)
+SDL_bool SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect)
 {
     SDL_Rect full_src, full_dst;
     SDL_Rect curr_src, curr_dst;
-    int dst_corner_size;
+    int dst_left_width;
+    int dst_right_width;
+    int dst_top_height;
+    int dst_bottom_height;
 
-    /* Make sure the surfaces aren't locked */
+    // Make sure the surfaces aren't locked
     if (!SDL_SurfaceValid(src)) {
         return SDL_InvalidParamError("src");
     } else if (!SDL_SurfaceValid(dst)) {
@@ -1452,101 +1608,115 @@ int SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int corner_s
     }
 
     if (scale <= 0.0f || scale == 1.0f) {
-        dst_corner_size = corner_size;
+        dst_left_width = left_width;
+        dst_right_width = right_width;
+        dst_top_height = top_height;
+        dst_bottom_height = bottom_height;
     } else {
-        dst_corner_size = (int)SDL_roundf(corner_size * scale);
+        dst_left_width = (int)SDL_roundf(left_width * scale);
+        dst_right_width = (int)SDL_roundf(right_width * scale);
+        dst_top_height = (int)SDL_roundf(top_height * scale);
+        dst_bottom_height = (int)SDL_roundf(bottom_height * scale);
     }
 
     // Upper-left corner
     curr_src.x = srcrect->x;
     curr_src.y = srcrect->y;
-    curr_src.w = corner_size;
-    curr_src.h = corner_size;
+    curr_src.w = left_width;
+    curr_src.h = top_height;
     curr_dst.x = dstrect->x;
     curr_dst.y = dstrect->y;
-    curr_dst.w = dst_corner_size;
-    curr_dst.h = dst_corner_size;
-    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
-        return -1;
+    curr_dst.w = dst_left_width;
+    curr_dst.h = dst_top_height;
+    if (!SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode)) {
+        return false;
     }
 
     // Upper-right corner
-    curr_src.x = srcrect->x + srcrect->w - corner_size;
-    curr_dst.x = dstrect->x + dstrect->w - dst_corner_size;
-    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
-        return -1;
+    curr_src.x = srcrect->x + srcrect->w - right_width;
+    curr_src.w = right_width;
+    curr_dst.x = dstrect->x + dstrect->w - dst_right_width;
+    curr_dst.w = dst_right_width;
+    if (!SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode)) {
+        return false;
     }
 
     // Lower-right corner
-    curr_src.y = srcrect->y + srcrect->h - corner_size;
-    curr_dst.y = dstrect->y + dstrect->h - dst_corner_size;
-    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
-        return -1;
+    curr_src.y = srcrect->y + srcrect->h - bottom_height;
+    curr_dst.y = dstrect->y + dstrect->h - dst_bottom_height;
+    curr_dst.h = dst_bottom_height;
+    if (!SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode)) {
+        return false;
     }
 
     // Lower-left corner
     curr_src.x = srcrect->x;
+    curr_src.w = left_width;
     curr_dst.x = dstrect->x;
-    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
-        return -1;
+    curr_dst.w = dst_left_width;
+    if (!SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode)) {
+        return false;
     }
 
     // Left
-    curr_src.y = srcrect->y + corner_size;
-    curr_src.h = srcrect->h - 2 * corner_size;
-    curr_dst.y = dstrect->y + dst_corner_size;
-    curr_dst.h = dstrect->h - 2 * dst_corner_size;
-    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
-        return -1;
+    curr_src.y = srcrect->y + top_height;
+    curr_src.h = srcrect->h - top_height - bottom_height;
+    curr_dst.y = dstrect->y + dst_top_height;
+    curr_dst.h = dstrect->h - dst_top_height - dst_bottom_height;
+    if (!SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode)) {
+        return false;
     }
 
     // Right
-    curr_src.x = srcrect->x + srcrect->w - corner_size;
-    curr_dst.x = dstrect->x + dstrect->w - dst_corner_size;
-    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
-        return -1;
+    curr_src.x = srcrect->x + srcrect->w - right_width;
+    curr_src.w = right_width;
+    curr_dst.x = dstrect->x + dstrect->w - dst_right_width;
+    curr_dst.w = dst_right_width;
+    if (!SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode)) {
+        return false;
     }
 
     // Top
-    curr_src.x = srcrect->x + corner_size;
+    curr_src.x = srcrect->x + left_width;
     curr_src.y = srcrect->y;
-    curr_src.w = srcrect->w - 2 * corner_size;
-    curr_src.h = corner_size;
-    curr_dst.x = dstrect->x + dst_corner_size;
+    curr_src.w = srcrect->w - left_width - right_width;
+    curr_src.h = top_height;
+    curr_dst.x = dstrect->x + dst_left_width;
     curr_dst.y = dstrect->y;
-    curr_dst.w = dstrect->w - 2 * dst_corner_size;
-    curr_dst.h = dst_corner_size;
-    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
-        return -1;
+    curr_dst.w = dstrect->w - dst_left_width - dst_right_width;
+    curr_dst.h = dst_top_height;
+    if (!SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode)) {
+        return false;
     }
 
     // Bottom
-    curr_src.y = srcrect->y + srcrect->h - corner_size;
-    curr_dst.y = dstrect->y + dstrect->h - dst_corner_size;
-    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
-        return -1;
+    curr_src.y = srcrect->y + srcrect->h - bottom_height;
+    curr_dst.y = dstrect->y + dstrect->h - dst_bottom_height;
+    curr_dst.h = dst_bottom_height;
+    if (!SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode)) {
+        return false;
     }
 
     // Center
-    curr_src.x = srcrect->x + corner_size;
-    curr_src.y = srcrect->y + corner_size;
-    curr_src.w = srcrect->w - 2 * corner_size;
-    curr_src.h = srcrect->h - 2 * corner_size;
-    curr_dst.x = dstrect->x + dst_corner_size;
-    curr_dst.y = dstrect->y + dst_corner_size;
-    curr_dst.w = dstrect->w - 2 * dst_corner_size;
-    curr_dst.h = dstrect->h - 2 * dst_corner_size;
-    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
-        return -1;
+    curr_src.x = srcrect->x + left_width;
+    curr_src.y = srcrect->y + top_height;
+    curr_src.w = srcrect->w - left_width - right_width;
+    curr_src.h = srcrect->h - top_height - bottom_height;
+    curr_dst.x = dstrect->x + dst_left_width;
+    curr_dst.y = dstrect->y + dst_top_height;
+    curr_dst.w = dstrect->w - dst_left_width - dst_right_width;
+    curr_dst.h = dstrect->h - dst_top_height - dst_bottom_height;
+    if (!SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode)) {
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
 /*
  * Lock a surface to directly access the pixels
  */
-int SDL_LockSurface(SDL_Surface *surface)
+SDL_bool SDL_LockSurface(SDL_Surface *surface)
 {
     if (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
@@ -1554,20 +1724,20 @@ int SDL_LockSurface(SDL_Surface *surface)
 
     if (!surface->internal->locked) {
 #if SDL_HAVE_RLE
-        /* Perform the lock */
+        // Perform the lock
         if (surface->internal->flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-            SDL_UnRLESurface(surface, SDL_TRUE);
-            surface->internal->flags |= SDL_INTERNAL_SURFACE_RLEACCEL; /* save accel'd state */
+            SDL_UnRLESurface(surface, true);
+            surface->internal->flags |= SDL_INTERNAL_SURFACE_RLEACCEL; // save accel'd state
         }
 #endif
     }
 
-    /* Increment the surface lock count, for recursive locks */
+    // Increment the surface lock count, for recursive locks
     ++surface->internal->locked;
     surface->flags |= SDL_SURFACE_LOCKED;
 
-    /* Ready to go.. */
-    return 0;
+    // Ready to go..
+    return true;
 }
 
 /*
@@ -1579,15 +1749,15 @@ void SDL_UnlockSurface(SDL_Surface *surface)
         return;
     }
 
-    /* Only perform an unlock if we are locked */
+    // Only perform an unlock if we are locked
     if (!surface->internal->locked || (--surface->internal->locked > 0)) {
         return;
     }
 
 #if SDL_HAVE_RLE
-    /* Update RLE encoded surface with new data */
+    // Update RLE encoded surface with new data
     if (surface->internal->flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-        surface->internal->flags &= ~SDL_INTERNAL_SURFACE_RLEACCEL; /* stop lying */
+        surface->internal->flags &= ~SDL_INTERNAL_SURFACE_RLEACCEL; // stop lying
         SDL_RLESurface(surface);
     }
 #endif
@@ -1595,23 +1765,23 @@ void SDL_UnlockSurface(SDL_Surface *surface)
     surface->flags &= ~SDL_SURFACE_LOCKED;
 }
 
-static int SDL_FlipSurfaceHorizontal(SDL_Surface *surface)
+static bool SDL_FlipSurfaceHorizontal(SDL_Surface *surface)
 {
-    SDL_bool isstack;
+    bool isstack;
     Uint8 *row, *a, *b, *tmp;
     int i, j, bpp;
 
     if (SDL_BITSPERPIXEL(surface->format) < 8) {
-        /* We could implement this if needed, but we'd have to flip sets of bits within a byte */
+        // We could implement this if needed, but we'd have to flip sets of bits within a byte
         return SDL_Unsupported();
     }
 
     if (surface->h <= 0) {
-        return 0;
+        return true;
     }
 
     if (surface->w <= 1) {
-        return 0;
+        return true;
     }
 
     bpp = SDL_BYTESPERPIXEL(surface->format);
@@ -1630,17 +1800,17 @@ static int SDL_FlipSurfaceHorizontal(SDL_Surface *surface)
         row += surface->pitch;
     }
     SDL_small_free(tmp, isstack);
-    return 0;
+    return true;
 }
 
-static int SDL_FlipSurfaceVertical(SDL_Surface *surface)
+static bool SDL_FlipSurfaceVertical(SDL_Surface *surface)
 {
-    SDL_bool isstack;
+    bool isstack;
     Uint8 *a, *b, *tmp;
     int i;
 
     if (surface->h <= 1) {
-        return 0;
+        return true;
     }
 
     a = (Uint8 *)surface->pixels;
@@ -1654,16 +1824,16 @@ static int SDL_FlipSurfaceVertical(SDL_Surface *surface)
         b -= surface->pitch;
     }
     SDL_small_free(tmp, isstack);
-    return 0;
+    return true;
 }
 
-int SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode flip)
+SDL_bool SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode flip)
 {
     if (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
     if (!surface->pixels) {
-        return 0;
+        return true;
     }
 
     switch (flip) {
@@ -1685,8 +1855,8 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
     Uint32 copy_flags;
     SDL_Color copy_color;
     SDL_Rect bounds;
-    int ret;
-    SDL_bool palette_ck_transform = SDL_FALSE;
+    bool result;
+    bool palette_ck_transform = false;
     Uint8 palette_ck_value = 0;
     Uint8 *palette_saved_alpha = NULL;
     int palette_saved_alpha_ncolors = 0;
@@ -1701,7 +1871,7 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
         goto error;
     }
 
-    /* Check for empty destination palette! (results in empty image) */
+    // Check for empty destination palette! (results in empty image)
     if (palette) {
         int i;
         for (i = 0; i < palette->ncolors; ++i) {
@@ -1725,7 +1895,7 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
     src_colorspace = surface->internal->colorspace;
     src_properties = surface->internal->props;
 
-    /* Create a new surface with the desired format */
+    // Create a new surface with the desired format
     convert = SDL_CreateSurface(surface->w, surface->h, format);
     if (!convert) {
         goto error;
@@ -1740,17 +1910,17 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
     SDL_SetSurfaceColorspace(convert, colorspace);
 
     if (SDL_ISPIXELFORMAT_FOURCC(format) || SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
-        if (SDL_ConvertPixelsAndColorspace(surface->w, surface->h, surface->format, src_colorspace, src_properties, surface->pixels, surface->pitch, convert->format, colorspace, props, convert->pixels, convert->pitch) < 0) {
+        if (!SDL_ConvertPixelsAndColorspace(surface->w, surface->h, surface->format, src_colorspace, src_properties, surface->pixels, surface->pitch, convert->format, colorspace, props, convert->pixels, convert->pitch)) {
             goto error;
         }
 
-        /* Save the original copy flags */
+        // Save the original copy flags
         copy_flags = surface->internal->map.info.flags;
 
         goto end;
     }
 
-    /* Save the original copy flags */
+    // Save the original copy flags
     copy_flags = surface->internal->map.info.flags;
     copy_color.r = surface->internal->map.info.r;
     copy_color.g = surface->internal->map.info.g;
@@ -1763,7 +1933,7 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
     surface->internal->map.info.flags = (copy_flags & (SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY));
     SDL_InvalidateMap(&surface->internal->map);
 
-    /* Copy over the image data */
+    // Copy over the image data
     bounds.x = 0;
     bounds.y = 0;
     bounds.w = surface->w;
@@ -1773,18 +1943,18 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
      * Destination format has alpha.
      * -> set alpha channel to be opaque */
     if (surface->internal->palette && SDL_ISPIXELFORMAT_ALPHA(format)) {
-        SDL_bool set_opaque = SDL_FALSE;
+        bool set_opaque = false;
 
-        SDL_bool is_opaque, has_alpha_channel;
+        bool is_opaque, has_alpha_channel;
         SDL_DetectPalette(surface->internal->palette, &is_opaque, &has_alpha_channel);
 
         if (is_opaque) {
             if (!has_alpha_channel) {
-                set_opaque = SDL_TRUE;
+                set_opaque = true;
             }
         }
 
-        /* Set opaque and backup palette alpha values */
+        // Set opaque and backup palette alpha values
         if (set_opaque) {
             int i;
             palette_saved_alpha_ncolors = surface->internal->palette->ncolors;
@@ -1798,23 +1968,23 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
         }
     }
 
-    /* Transform colorkey to alpha. for cases where source palette has duplicate values, and colorkey is one of them */
+    // Transform colorkey to alpha. for cases where source palette has duplicate values, and colorkey is one of them
     if (copy_flags & SDL_COPY_COLORKEY) {
         if (surface->internal->palette && !palette) {
-            palette_ck_transform = SDL_TRUE;
+            palette_ck_transform = true;
             palette_ck_value = surface->internal->palette->colors[surface->internal->map.info.colorkey].a;
             surface->internal->palette->colors[surface->internal->map.info.colorkey].a = SDL_ALPHA_TRANSPARENT;
         }
     }
 
-    ret = SDL_BlitSurfaceUnchecked(surface, &bounds, convert, &bounds);
+    result = SDL_BlitSurfaceUnchecked(surface, &bounds, convert, &bounds);
 
-    /* Restore colorkey alpha value */
+    // Restore colorkey alpha value
     if (palette_ck_transform) {
         surface->internal->palette->colors[surface->internal->map.info.colorkey].a = palette_ck_value;
     }
 
-    /* Restore palette alpha values */
+    // Restore palette alpha values
     if (palette_saved_alpha) {
         int i;
         for (i = 0; i < palette_saved_alpha_ncolors; i++) {
@@ -1823,7 +1993,7 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
         SDL_stack_free(palette_saved_alpha);
     }
 
-    /* Clean up the original surface, and update converted surface */
+    // Clean up the original surface, and update converted surface
     convert->internal->map.info.r = copy_color.r;
     convert->internal->map.info.g = copy_color.g;
     convert->internal->map.info.b = copy_color.b;
@@ -1839,35 +2009,35 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
     surface->internal->map.info.flags = copy_flags;
     SDL_InvalidateMap(&surface->internal->map);
 
-    /* SDL_BlitSurfaceUnchecked failed, and so the conversion */
-    if (ret < 0) {
+    // SDL_BlitSurfaceUnchecked failed, and so the conversion
+    if (!result) {
         goto error;
     }
 
     if (copy_flags & SDL_COPY_COLORKEY) {
-        SDL_bool set_colorkey_by_color = SDL_FALSE;
-        SDL_bool convert_colorkey = SDL_TRUE;
+        bool set_colorkey_by_color = false;
+        bool convert_colorkey = true;
 
         if (surface->internal->palette) {
             if (palette &&
                 surface->internal->palette->ncolors <= palette->ncolors &&
                 (SDL_memcmp(surface->internal->palette->colors, palette->colors,
                             surface->internal->palette->ncolors * sizeof(SDL_Color)) == 0)) {
-                /* The palette is identical, just set the same colorkey */
-                SDL_SetSurfaceColorKey(convert, 1, surface->internal->map.info.colorkey);
+                // The palette is identical, just set the same colorkey
+                SDL_SetSurfaceColorKey(convert, true, surface->internal->map.info.colorkey);
             } else if (!palette) {
                 if (SDL_ISPIXELFORMAT_ALPHA(format)) {
-                    /* No need to add the colorkey, transparency is in the alpha channel*/
+                    // No need to add the colorkey, transparency is in the alpha channel
                 } else {
-                    /* Only set the colorkey information */
-                    set_colorkey_by_color = SDL_TRUE;
-                    convert_colorkey = SDL_FALSE;
+                    // Only set the colorkey information
+                    set_colorkey_by_color = true;
+                    convert_colorkey = false;
                 }
             } else {
-                set_colorkey_by_color = SDL_TRUE;
+                set_colorkey_by_color = true;
             }
         } else {
-            set_colorkey_by_color = SDL_TRUE;
+            set_colorkey_by_color = true;
         }
 
         if (set_colorkey_by_color) {
@@ -1875,13 +2045,13 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
             SDL_Surface *tmp2;
             int converted_colorkey = 0;
 
-            /* Create a dummy surface to get the colorkey converted */
+            // Create a dummy surface to get the colorkey converted
             tmp = SDL_CreateSurface(1, 1, surface->format);
             if (!tmp) {
                 goto error;
             }
 
-            /* Share the palette, if any */
+            // Share the palette, if any
             if (surface->internal->palette) {
                 SDL_SetSurfacePalette(tmp, surface->internal->palette);
             }
@@ -1890,25 +2060,25 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
 
             tmp->internal->map.info.flags &= ~SDL_COPY_COLORKEY;
 
-            /* Conversion of the colorkey */
+            // Conversion of the colorkey
             tmp2 = SDL_ConvertSurfaceAndColorspace(tmp, format, palette, colorspace, props);
             if (!tmp2) {
                 SDL_DestroySurface(tmp);
                 goto error;
             }
 
-            /* Get the converted colorkey */
+            // Get the converted colorkey
             SDL_memcpy(&converted_colorkey, tmp2->pixels, tmp2->internal->format->bytes_per_pixel);
 
             SDL_DestroySurface(tmp);
             SDL_DestroySurface(tmp2);
 
-            /* Set the converted colorkey on the new surface */
-            SDL_SetSurfaceColorKey(convert, 1, converted_colorkey);
+            // Set the converted colorkey on the new surface
+            SDL_SetSurfaceColorKey(convert, true, converted_colorkey);
 
-            /* This is needed when converting for 3D texture upload */
+            // This is needed when converting for 3D texture upload
             if (convert_colorkey) {
-                SDL_ConvertColorkeyToAlpha(convert, SDL_TRUE);
+                SDL_ConvertColorkeyToAlpha(convert, true);
             }
         }
     }
@@ -1927,10 +2097,17 @@ end:
         SDL_SetSurfaceBlendMode(convert, SDL_BLENDMODE_BLEND);
     }
     if (copy_flags & SDL_COPY_RLE_DESIRED) {
-        SDL_SetSurfaceRLE(convert, SDL_TRUE);
+        SDL_SetSurfaceRLE(convert, true);
     }
 
-    /* We're ready to go! */
+    // Copy alternate images
+    for (int i = 0; i < surface->internal->num_images; ++i) {
+        if (!SDL_AddSurfaceAlternateImage(convert, surface->internal->images[i])) {
+            goto error;
+        }
+    }
+
+    // We're ready to go!
     return convert;
 
 error:
@@ -1951,6 +2128,88 @@ SDL_Surface *SDL_DuplicateSurface(SDL_Surface *surface)
     }
 
     return SDL_ConvertSurfaceAndColorspace(surface, surface->format, surface->internal->palette, surface->internal->colorspace, surface->internal->props);
+}
+
+SDL_Surface *SDL_ScaleSurface(SDL_Surface *surface, int width, int height, SDL_ScaleMode scaleMode)
+{
+    SDL_Surface *convert = NULL;
+    Uint32 copy_flags;
+    SDL_Color copy_color;
+    bool rc;
+
+    if (!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        goto error;
+    }
+
+    if (SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+        // We can't directly scale a YUV surface (yet!)
+        SDL_Surface *tmp = SDL_CreateSurface(surface->w, surface->h, SDL_PIXELFORMAT_ARGB8888);
+        if (!tmp) {
+            return NULL;
+        }
+
+        SDL_Surface *scaled = SDL_ScaleSurface(tmp, width, height, scaleMode);
+        SDL_DestroySurface(tmp);
+        if (!scaled) {
+            return NULL;
+        }
+        tmp = scaled;
+
+        SDL_Surface *result = SDL_ConvertSurfaceAndColorspace(tmp, surface->format, NULL, surface->internal->colorspace, surface->internal->props);
+        SDL_DestroySurface(tmp);
+        return result;
+    }
+
+    // Create a new surface with the desired size
+    convert = SDL_CreateSurface(width, height, surface->format);
+    if (!convert) {
+        goto error;
+    }
+    SDL_SetSurfacePalette(convert, surface->internal->palette);
+    SDL_SetSurfaceColorspace(convert, surface->internal->colorspace);
+
+    // Save the original copy flags
+    copy_flags = surface->internal->map.info.flags;
+    copy_color.r = surface->internal->map.info.r;
+    copy_color.g = surface->internal->map.info.g;
+    copy_color.b = surface->internal->map.info.b;
+    copy_color.a = surface->internal->map.info.a;
+    surface->internal->map.info.r = 0xFF;
+    surface->internal->map.info.g = 0xFF;
+    surface->internal->map.info.b = 0xFF;
+    surface->internal->map.info.a = 0xFF;
+    surface->internal->map.info.flags = (copy_flags & (SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY));
+    SDL_InvalidateMap(&surface->internal->map);
+
+    rc = SDL_BlitSurfaceScaled(surface, NULL, convert, NULL, scaleMode);
+
+    // Clean up the original surface, and update converted surface
+    convert->internal->map.info.r = copy_color.r;
+    convert->internal->map.info.g = copy_color.g;
+    convert->internal->map.info.b = copy_color.b;
+    convert->internal->map.info.a = copy_color.a;
+    convert->internal->map.info.flags = (copy_flags & ~(SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY));
+    surface->internal->map.info.r = copy_color.r;
+    surface->internal->map.info.g = copy_color.g;
+    surface->internal->map.info.b = copy_color.b;
+    surface->internal->map.info.a = copy_color.a;
+    surface->internal->map.info.flags = copy_flags;
+    SDL_InvalidateMap(&surface->internal->map);
+
+    // SDL_BlitSurfaceScaled failed, and so the conversion
+    if (!rc) {
+        goto error;
+    }
+
+    // We're ready to go!
+    return convert;
+
+error:
+    if (convert) {
+        SDL_DestroySurface(convert);
+    }
+    return NULL;
 }
 
 SDL_Surface *SDL_ConvertSurface(SDL_Surface *surface, SDL_PixelFormat format)
@@ -1982,7 +2241,7 @@ SDL_Surface *SDL_DuplicatePixels(int width, int height, SDL_PixelFormat format, 
     return surface;
 }
 
-int SDL_ConvertPixelsAndColorspace(int width, int height,
+SDL_bool SDL_ConvertPixelsAndColorspace(int width, int height,
                       SDL_PixelFormat src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch,
                       SDL_PixelFormat dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
 {
@@ -1991,7 +2250,7 @@ int SDL_ConvertPixelsAndColorspace(int width, int height,
     SDL_Surface *dst_surface;
     SDL_Rect rect;
     void *nonconst_src = (void *)src;
-    int ret;
+    bool result;
 
     if (!src) {
         return SDL_InvalidParamError("src");
@@ -2027,7 +2286,7 @@ int SDL_ConvertPixelsAndColorspace(int width, int height,
     }
 #endif
 
-    /* Fast path for same format copy */
+    // Fast path for same format copy
     if (src_format == dst_format && src_colorspace == dst_colorspace) {
         int i;
         const int bpp = SDL_BYTESPERPIXEL(src_format);
@@ -2037,36 +2296,34 @@ int SDL_ConvertPixelsAndColorspace(int width, int height,
             src = (const Uint8 *)src + src_pitch;
             dst = (Uint8 *)dst + dst_pitch;
         }
-        return 0;
+        return true;
     }
 
-    src_surface = SDL_InitializeSurface(&src_data, width, height, src_format, src_colorspace, src_properties, nonconst_src, src_pitch, SDL_TRUE);
+    src_surface = SDL_InitializeSurface(&src_data, width, height, src_format, src_colorspace, src_properties, nonconst_src, src_pitch, true);
     if (!src_surface) {
-        return -1;
+        return false;
     }
     SDL_SetSurfaceBlendMode(src_surface, SDL_BLENDMODE_NONE);
 
-    dst_surface = SDL_InitializeSurface(&dst_data, width, height, dst_format, dst_colorspace, dst_properties, dst, dst_pitch, SDL_TRUE);
+    dst_surface = SDL_InitializeSurface(&dst_data, width, height, dst_format, dst_colorspace, dst_properties, dst, dst_pitch, true);
     if (!dst_surface) {
-        return -1;
+        return false;
     }
 
-    /* Set up the rect and go! */
+    // Set up the rect and go!
     rect.x = 0;
     rect.y = 0;
     rect.w = width;
     rect.h = height;
-    ret = SDL_BlitSurfaceUnchecked(src_surface, &rect, dst_surface, &rect);
+    result = SDL_BlitSurfaceUnchecked(src_surface, &rect, dst_surface, &rect);
 
     SDL_DestroySurface(src_surface);
     SDL_DestroySurface(dst_surface);
 
-    return ret;
+    return result;
 }
 
-int SDL_ConvertPixels(int width, int height,
-                      SDL_PixelFormat src_format, const void *src, int src_pitch,
-                      SDL_PixelFormat dst_format, void *dst, int dst_pitch)
+SDL_bool SDL_ConvertPixels(int width, int height, SDL_PixelFormat src_format, const void *src, int src_pitch, SDL_PixelFormat dst_format, void *dst, int dst_pitch)
 {
     return SDL_ConvertPixelsAndColorspace(width, height,
                       src_format, SDL_COLORSPACE_UNKNOWN, 0, src, src_pitch,
@@ -2093,17 +2350,17 @@ static void SDL_PremultiplyAlpha_AXYZ8888(int width, int height, const void *src
         const Uint32 *src_px = (const Uint32 *)src;
         Uint32 *dst_px = (Uint32 *)dst;
         for (c = width; c; --c) {
-            /* Component bytes extraction. */
+            // Component bytes extraction.
             srcpixel = *src_px++;
             RGBA_FROM_ARGB8888(srcpixel, srcR, srcG, srcB, srcA);
 
-            /* Alpha pre-multiplication of each component. */
+            // Alpha pre-multiplication of each component.
             dstA = srcA;
             dstR = (srcA * srcR) / 255;
             dstG = (srcA * srcG) / 255;
             dstB = (srcA * srcB) / 255;
 
-            /* ARGB8888 pixel recomposition. */
+            // ARGB8888 pixel recomposition.
             ARGB8888_FROM_RGBA(dstpixel, dstR, dstG, dstB, dstA);
             *dst_px++ = dstpixel;
         }
@@ -2124,17 +2381,17 @@ static void SDL_PremultiplyAlpha_XYZA8888(int width, int height, const void *src
         const Uint32 *src_px = (const Uint32 *)src;
         Uint32 *dst_px = (Uint32 *)dst;
         for (c = width; c; --c) {
-            /* Component bytes extraction. */
+            // Component bytes extraction.
             srcpixel = *src_px++;
             RGBA_FROM_RGBA8888(srcpixel, srcR, srcG, srcB, srcA);
 
-            /* Alpha pre-multiplication of each component. */
+            // Alpha pre-multiplication of each component.
             dstA = srcA;
             dstR = (srcA * srcR) / 255;
             dstG = (srcA * srcG) / 255;
             dstB = (srcA * srcB) / 255;
 
-            /* RGBA8888 pixel recomposition. */
+            // RGBA8888 pixel recomposition.
             RGBA8888_FROM_RGBA(dstpixel, dstR, dstG, dstB, dstA);
             *dst_px++ = dstpixel;
         }
@@ -2157,7 +2414,7 @@ static void SDL_PremultiplyAlpha_AXYZ128(int width, int height, const void *src,
             flG = *src_px++;
             flB = *src_px++;
 
-            /* Alpha pre-multiplication of each component. */
+            // Alpha pre-multiplication of each component.
             flR *= flA;
             flG *= flA;
             flB *= flA;
@@ -2172,14 +2429,14 @@ static void SDL_PremultiplyAlpha_AXYZ128(int width, int height, const void *src,
     }
 }
 
-static int SDL_PremultiplyAlphaPixelsAndColorspace(int width, int height, SDL_PixelFormat src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch, SDL_PixelFormat dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch, SDL_bool linear)
+static bool SDL_PremultiplyAlphaPixelsAndColorspace(int width, int height, SDL_PixelFormat src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch, SDL_PixelFormat dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch, bool linear)
 {
     SDL_Surface *convert = NULL;
     void *final_dst = dst;
     int final_dst_pitch = dst_pitch;
     SDL_PixelFormat format;
     SDL_Colorspace colorspace;
-    int result = -1;
+    bool result = false;
 
     if (!src) {
         return SDL_InvalidParamError("src");
@@ -2225,7 +2482,7 @@ static int SDL_PremultiplyAlphaPixelsAndColorspace(int width, int height, SDL_Pi
         if (!convert) {
             goto done;
         }
-        if (SDL_ConvertPixelsAndColorspace(width, height, src_format, src_colorspace, src_properties, src, src_pitch, format, colorspace, 0, convert->pixels, convert->pitch) < 0) {
+        if (!SDL_ConvertPixelsAndColorspace(width, height, src_format, src_colorspace, src_properties, src, src_pitch, format, colorspace, 0, convert->pixels, convert->pitch)) {
             goto done;
         }
 
@@ -2262,11 +2519,11 @@ static int SDL_PremultiplyAlphaPixelsAndColorspace(int width, int height, SDL_Pi
     }
 
     if (dst != final_dst) {
-        if (SDL_ConvertPixelsAndColorspace(width, height, format, colorspace, 0, convert->pixels, convert->pitch, dst_format, dst_colorspace, dst_properties, final_dst, final_dst_pitch) < 0) {
+        if (!SDL_ConvertPixelsAndColorspace(width, height, format, colorspace, 0, convert->pixels, convert->pitch, dst_format, dst_colorspace, dst_properties, final_dst, final_dst_pitch)) {
             goto done;
         }
     }
-    result = 0;
+    result = true;
 
 done:
     if (convert) {
@@ -2275,7 +2532,7 @@ done:
     return result;
 }
 
-int SDL_PremultiplyAlpha(int width, int height,
+SDL_bool SDL_PremultiplyAlpha(int width, int height,
                          SDL_PixelFormat src_format, const void *src, int src_pitch,
                          SDL_PixelFormat dst_format, void *dst, int dst_pitch, SDL_bool linear)
 {
@@ -2285,7 +2542,7 @@ int SDL_PremultiplyAlpha(int width, int height,
     return SDL_PremultiplyAlphaPixelsAndColorspace(width, height, src_format, src_colorspace, 0, src, src_pitch, dst_format, dst_colorspace, 0, dst, dst_pitch, linear);
 }
 
-int SDL_PremultiplySurfaceAlpha(SDL_Surface *surface, SDL_bool linear)
+SDL_bool SDL_PremultiplySurfaceAlpha(SDL_Surface *surface, SDL_bool linear)
 {
     SDL_Colorspace colorspace;
 
@@ -2298,10 +2555,10 @@ int SDL_PremultiplySurfaceAlpha(SDL_Surface *surface, SDL_bool linear)
     return SDL_PremultiplyAlphaPixelsAndColorspace(surface->w, surface->h, surface->format, colorspace, surface->internal->props, surface->pixels, surface->pitch, surface->format, colorspace, surface->internal->props, surface->pixels, surface->pitch, linear);
 }
 
-int SDL_ClearSurface(SDL_Surface *surface, float r, float g, float b, float a)
+SDL_bool SDL_ClearSurface(SDL_Surface *surface, float r, float g, float b, float a)
 {
     SDL_Rect clip_rect;
-    int result = -1;
+    bool result = false;
 
     if (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
@@ -2327,7 +2584,7 @@ int SDL_ClearSurface(SDL_Surface *surface, float r, float g, float b, float a)
             goto done;
         }
 
-        if (SDL_ClearSurface(tmp, r, g, b, a) == 0) {
+        if (SDL_ClearSurface(tmp, r, g, b, a)) {
             result = SDL_ConvertPixelsAndColorspace(surface->w, surface->h, tmp->format, tmp->internal->colorspace, tmp->internal->props, tmp->pixels, tmp->pitch, surface->format, surface->internal->colorspace, surface->internal->props, surface->pixels, surface->pitch);
         }
         SDL_DestroySurface(tmp);
@@ -2364,19 +2621,19 @@ Uint32 SDL_MapSurfaceRGBA(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b, Uint8
 {
     if (!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
-        return 0;
+        return true;
     }
     return SDL_MapRGBA(surface->internal->format, surface->internal->palette, r, g, b, a);
 }
 
-/* This function Copyright 2023 Collabora Ltd., contributed to SDL under the ZLib license */
-int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
+// This function Copyright 2023 Collabora Ltd., contributed to SDL under the ZLib license
+SDL_bool SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
 {
     Uint32 pixel = 0;
     size_t bytes_per_pixel;
     Uint8 unused;
     Uint8 *p;
-    int result = -1;
+    bool result = false;
 
     if (r) {
         *r = 0;
@@ -2417,8 +2674,8 @@ int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g,
     bytes_per_pixel = SDL_BYTESPERPIXEL(surface->format);
 
     if (SDL_MUSTLOCK(surface)) {
-        if (SDL_LockSurface(surface) < 0) {
-            return -1;
+        if (!SDL_LockSurface(surface)) {
+            return false;
         }
     }
 
@@ -2433,7 +2690,7 @@ int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g,
         SDL_memcpy(&pixel, p, bytes_per_pixel);
 #endif
         SDL_GetRGBA(pixel, surface->internal->format, surface->internal->palette, r, g, b, a);
-        result = 0;
+        result = true;
     } else if (SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
         // FIXME: We need code to extract a single macroblock from a YUV surface
         SDL_Surface *converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
@@ -2442,15 +2699,15 @@ int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g,
             SDL_DestroySurface(converted);
         }
     } else {
-        /* This is really slow, but it gets the job done */
+        // This is really slow, but it gets the job done
         Uint8 rgba[4];
 
-        if (SDL_ConvertPixelsAndColorspace(1, 1, surface->format, surface->internal->colorspace, surface->internal->props, p, surface->pitch, SDL_PIXELFORMAT_RGBA32, SDL_COLORSPACE_SRGB, 0, rgba, sizeof(rgba)) == 0) {
+        if (SDL_ConvertPixelsAndColorspace(1, 1, surface->format, surface->internal->colorspace, surface->internal->props, p, surface->pitch, SDL_PIXELFORMAT_RGBA32, SDL_COLORSPACE_SRGB, 0, rgba, sizeof(rgba))) {
             *r = rgba[0];
             *g = rgba[1];
             *b = rgba[2];
             *a = rgba[3];
-            result = 0;
+            result = true;
         }
     }
 
@@ -2460,10 +2717,10 @@ int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g,
     return result;
 }
 
-int SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, float *g, float *b, float *a)
+SDL_bool SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, float *g, float *b, float *a)
 {
     float unused;
-    int result = -1;
+    bool result = false;
 
     if (r) {
         *r = 0.0f;
@@ -2504,12 +2761,12 @@ int SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, floa
     if (SDL_BYTESPERPIXEL(surface->format) <= sizeof(Uint32) && !SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
         Uint8 r8, g8, b8, a8;
 
-        if (SDL_ReadSurfacePixel(surface, x, y, &r8, &g8, &b8, &a8) == 0) {
+        if (SDL_ReadSurfacePixel(surface, x, y, &r8, &g8, &b8, &a8)) {
             *r = (float)r8 / 255.0f;
             *g = (float)g8 / 255.0f;
             *b = (float)b8 / 255.0f;
             *a = (float)a8 / 255.0f;
-            result = 0;
+            result = true;
         }
     } else if (SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
         // FIXME: We need code to extract a single macroblock from a YUV surface
@@ -2519,13 +2776,13 @@ int SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, floa
             SDL_DestroySurface(converted);
         }
     } else {
-        /* This is really slow, but it gets the job done */
+        // This is really slow, but it gets the job done
         float rgba[4];
         Uint8 *p;
 
         if (SDL_MUSTLOCK(surface)) {
-            if (SDL_LockSurface(surface) < 0) {
-                return -1;
+            if (!SDL_LockSurface(surface)) {
+                return false;
             }
         }
 
@@ -2533,17 +2790,17 @@ int SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, floa
 
         if (surface->format == SDL_PIXELFORMAT_RGBA128_FLOAT) {
             SDL_memcpy(rgba, p, sizeof(rgba));
-            result = 0;
+            result = true;
         } else {
             SDL_Colorspace src_colorspace = surface->internal->colorspace;
             SDL_Colorspace dst_colorspace = (src_colorspace == SDL_COLORSPACE_SRGB_LINEAR ? SDL_COLORSPACE_SRGB_LINEAR : SDL_COLORSPACE_SRGB);
 
-            if (SDL_ConvertPixelsAndColorspace(1, 1, surface->format, src_colorspace, surface->internal->props, p, surface->pitch, SDL_PIXELFORMAT_RGBA128_FLOAT, dst_colorspace, 0, rgba, sizeof(rgba)) == 0) {
-                result = 0;
+            if (SDL_ConvertPixelsAndColorspace(1, 1, surface->format, src_colorspace, surface->internal->props, p, surface->pitch, SDL_PIXELFORMAT_RGBA128_FLOAT, dst_colorspace, 0, rgba, sizeof(rgba))) {
+                result = true;
             }
         }
 
-        if (result == 0) {
+        if (result) {
             *r = rgba[0];
             *g = rgba[1];
             *b = rgba[2];
@@ -2557,12 +2814,12 @@ int SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, floa
     return result;
 }
 
-int SDL_WriteSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+SDL_bool SDL_WriteSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     Uint32 pixel = 0;
     size_t bytes_per_pixel;
     Uint8 *p;
-    int result = -1;
+    bool result = false;
 
     if (!SDL_SurfaceValid(surface) || !surface->format || !surface->pixels) {
         return SDL_InvalidParamError("surface");
@@ -2579,8 +2836,8 @@ int SDL_WriteSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 r, Uint8 g, 
     bytes_per_pixel = SDL_BYTESPERPIXEL(surface->format);
 
     if (SDL_MUSTLOCK(surface)) {
-        if (SDL_LockSurface(surface) < 0) {
-            return -1;
+        if (!SDL_LockSurface(surface)) {
+            return false;
         }
     }
 
@@ -2593,11 +2850,11 @@ int SDL_WriteSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 r, Uint8 g, 
 #else
         SDL_memcpy(p, &pixel, bytes_per_pixel);
 #endif
-        result = 0;
+        result = true;
     } else if (SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
         result = SDL_Unsupported();
     } else {
-        /* This is really slow, but it gets the job done */
+        // This is really slow, but it gets the job done
         Uint8 rgba[4];
 
         rgba[0] = r;
@@ -2613,9 +2870,9 @@ int SDL_WriteSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 r, Uint8 g, 
     return result;
 }
 
-int SDL_WriteSurfacePixelFloat(SDL_Surface *surface, int x, int y, float r, float g, float b, float a)
+SDL_bool SDL_WriteSurfacePixelFloat(SDL_Surface *surface, int x, int y, float r, float g, float b, float a)
 {
-    int result = -1;
+    bool result = false;
 
     if (!SDL_SurfaceValid(surface) || !surface->format || !surface->pixels) {
         return SDL_InvalidParamError("surface");
@@ -2636,19 +2893,19 @@ int SDL_WriteSurfacePixelFloat(SDL_Surface *surface, int x, int y, float r, floa
         g8 = (Uint8)SDL_round(SDL_clamp(g, 0.0f, 1.0f) * 255.0f);
         b8 = (Uint8)SDL_round(SDL_clamp(b, 0.0f, 1.0f) * 255.0f);
         a8 = (Uint8)SDL_round(SDL_clamp(a, 0.0f, 1.0f) * 255.0f);
-        if (SDL_WriteSurfacePixel(surface, x, y, r8, g8, b8, a8) == 0) {
-            result = 0;
+        if (SDL_WriteSurfacePixel(surface, x, y, r8, g8, b8, a8)) {
+            result = true;
         }
     } else if (SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
         result = SDL_Unsupported();
     } else {
-        /* This is really slow, but it gets the job done */
+        // This is really slow, but it gets the job done
         float rgba[4];
         Uint8 *p;
 
         if (SDL_MUSTLOCK(surface)) {
-            if (SDL_LockSurface(surface) < 0) {
-                return -1;
+            if (!SDL_LockSurface(surface)) {
+                return false;
             }
         }
 
@@ -2661,7 +2918,7 @@ int SDL_WriteSurfacePixelFloat(SDL_Surface *surface, int x, int y, float r, floa
 
         if (surface->format == SDL_PIXELFORMAT_RGBA128_FLOAT) {
             SDL_memcpy(p, rgba, sizeof(rgba));
-            result = 0;
+            result = true;
         } else {
             SDL_Colorspace dst_colorspace = surface->internal->colorspace;
             SDL_Colorspace src_colorspace = (dst_colorspace == SDL_COLORSPACE_SRGB_LINEAR ? SDL_COLORSPACE_SRGB_LINEAR : SDL_COLORSPACE_SRGB);
@@ -2691,6 +2948,8 @@ void SDL_DestroySurface(SDL_Surface *surface)
         return;
     }
 
+    SDL_RemoveSurfaceAlternateImages(surface);
+
     SDL_DestroyProperties(surface->internal->props);
 
     SDL_InvalidateMap(&surface->internal->map);
@@ -2700,18 +2959,18 @@ void SDL_DestroySurface(SDL_Surface *surface)
     }
 #if SDL_HAVE_RLE
     if (surface->internal->flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-        SDL_UnRLESurface(surface, SDL_FALSE);
+        SDL_UnRLESurface(surface, false);
     }
 #endif
     SDL_SetSurfacePalette(surface, NULL);
 
     if (surface->flags & SDL_SURFACE_PREALLOCATED) {
-        /* Don't free */
+        // Don't free
     } else if (surface->flags & SDL_SURFACE_SIMD_ALIGNED) {
-        /* Free aligned */
+        // Free aligned
         SDL_aligned_free(surface->pixels);
     } else {
-        /* Normal */
+        // Normal
         SDL_free(surface->pixels);
     }
     if (!(surface->internal->flags & SDL_INTERNAL_SURFACE_STACK)) {

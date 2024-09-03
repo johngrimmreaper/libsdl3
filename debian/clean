@@ -3,3 +3,7 @@ src/render/vulkan/VULKAN_VertexShader.h
 test/gamepad_*.h
 test/glass.h
 test/icon.h
+test/testgpu/testgpu_dxbc.h
+test/testgpu/testgpu_dxil.h
+test/testgpu/testgpu_metallib.h
+test/testgpu/testgpu_spirv.h

@@ -14,6 +14,7 @@ export SDL_AUDIO_DRIVER=dummy
 export SDL_VIDEO_DRIVER=dummy
 
 confflags = \
+	-DCMAKE_BUILD_RPATH_USE_ORIGIN=ON \
 	-DSDL_ALSA_SHARED=OFF \
 	-DSDL_EXAMPLES=ON \
 	-DSDL_HIDAPI_LIBUSB_SHARED=OFF \
@@ -68,16 +69,19 @@ endif
 	dh $@ --buildsystem=cmake
 
 override_dh_auto_configure:
-	if [ $(DEB_VERSION_UPSTREAM) = 3.1.2+ds ]; then \
-		echo prerelease-3.1.2-0-gd95f5bad2 > VERSION.txt; \
+	if [ $(DEB_VERSION_UPSTREAM) = 3.1.2+git20240903~b1b4a9c+ds ]; then \
+		echo prerelease-3.1.2-1549-gb1b4a9cd1 > VERSION.txt; \
 	fi
 	set -e; for bmp in test/icon.bmp test/gamepad_*.bmp test/glass.bmp; do \
 		python3 cmake/xxd.py -i "$${bmp}" -o "$${bmp%.bmp}.h"; \
 	done
 	cd build-scripts && ./makecasefoldhashtable.pl > ../src/stdlib/SDL_casefolding.h
+	cd src/render/sdlgpu/shaders && bash -ex ./build-shaders.sh
 	# This is intended as a Windows batch file, but at the time of writing
 	# it's so simple that it's also a valid shell script
 	cd src/render/vulkan && sh -ex ./compile_shaders.bat
+	cd test/testgpu && OSTYPE=$(DEB_HOST_ARCH_OS) bash -ex ./build-shaders.sh
+	cp debian/placeholders/testgpu_*.h test/testgpu/
 	dh_auto_configure -- $(confflags)
 
 execute_after_dh_auto_build:

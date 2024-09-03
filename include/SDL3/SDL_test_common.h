@@ -91,6 +91,7 @@ typedef struct
     SDL_DisplayMode fullscreen_mode;
     int num_windows;
     SDL_Window **windows;
+    const char *gpudriver;
 
     /* Renderer info */
     const char *renderdriver;
@@ -208,9 +209,16 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state);
 SDL_bool SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **argv);
 
 /**
- * Common event handler for test windows if you use a standard SDL_main.
+ * Print the details of an event.
  *
- * This will free data from the event, like the string in a drop event!
+ * This is automatically called by SDLTest_CommonEvent() as needed.
+ *
+ * \param event The event to print.
+ */
+void SDLTest_PrintEvent(const SDL_Event *event);
+
+/**
+ * Common event handler for test windows if you use a standard SDL_main.
  *
  * \param state The common state used to create test window.
  * \param event The event to handle.
@@ -227,7 +235,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
  * \param event The event to handle.
  * \returns Value suitable for returning from SDL_AppEvent().
  */
-int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event *event);
+SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event *event);
 
 /**
  * Close test window.

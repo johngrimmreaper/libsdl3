@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video: %s\n",
                      SDL_GetError());
         exit(1);
@@ -206,6 +206,14 @@ int main(int argc, char *argv[])
     while (!done) {
         /* Check for events */
         while (SDL_PollEvent(&event)) {
+            if (state->verbose & VERBOSE_EVENT) {
+                if (((event.type != SDL_EVENT_MOUSE_MOTION) &&
+                    (event.type != SDL_EVENT_FINGER_MOTION)) ||
+                    (state->verbose & VERBOSE_MOTION)) {
+                    SDLTest_PrintEvent(&event);
+                }
+            }
+
             switch (event.type) {
             case SDL_EVENT_WINDOW_EXPOSED:
                 SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);

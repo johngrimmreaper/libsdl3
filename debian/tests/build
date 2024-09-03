@@ -31,14 +31,14 @@ cat <<EOF > use-sdl.c
 
 int main(void)
 {
-    SDL_Version compiled;
-    SDL_Version linked;
+    int compiled = SDL_VERSION;
+    int linked = SDL_GetVersion();
 
-    SDL_VERSION(&compiled);
-    SDL_GetVersion(&linked);
+    SDL_Log("Compiled against version %d\n", compiled);
+    SDL_Log("Now running with version %d (%s)\n", linked, SDL_GetRevision());
 
-    assert(compiled.major == 3);
-    assert(linked.major == 3);
+    assert(SDL_VERSIONNUM_MAJOR(compiled) == 3);
+    assert(SDL_VERSIONNUM_MAJOR(linked) == 3);
 
     return 0;
 }

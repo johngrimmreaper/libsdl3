@@ -5,8 +5,17 @@ Source: https://www.libsdl.org/
 # To the best of my knowledge, everything we exclude is (meant to be)
 # Free Software, we just don't want to review or keep track of the
 # licensing status of files that are irrelevant to Debian.
-Files-Excluded: Android.mk
+Files-Excluded: .github
+                Android.mk
                 android-project
+                build-scripts/pkg-support/android
+                build-scripts/pkg-support/mingw
+                src/video/directx/SDL_d3d12_xbox_cmacros.h
+                src/video/directx/d3d12.h
+                src/video/directx/d3d12sdklayers.h
+                src/gpu/d3d11/D3D11_Blit.h
+                src/gpu/d3d12/D3D12_Blit.h
+                src/gpu/metal/Metal_Blit.h
                 src/hidapi/documentation/*.png
                 src/hidapi/*/*.sln
                 src/hidapi/*/*.vcproj
@@ -15,12 +24,21 @@ Files-Excluded: Android.mk
                 src/render/direct3d12/D3D12_*RootSig*.h
                 src/render/direct3d12/D3D12_*Shader*.h
                 src/render/metal/SDL_shaders_metal_*.h
+                src/render/sdlgpu/shaders/dxbc50.h
+                src/render/sdlgpu/shaders/dxil60.h
+                src/render/sdlgpu/shaders/metal.h
+                src/render/sdlgpu/shaders/*.dxbc.h
+                src/render/sdlgpu/shaders/*.dxil.h
+                src/render/sdlgpu/shaders/*.metal.h
                 test/android
                 test/emscripten
                 test/gamepad_*.h
                 test/glass.h
                 test/icon.h
                 test/n3ds
+                test/testgpu/testgpu_dxbc.h
+                test/testgpu/testgpu_dxil.h
+                test/testgpu/testgpu_metallib.h
                 test/unifont-*
                 test/uwp
                 VisualC
@@ -122,6 +140,13 @@ Copyright: 1995 Erik Corry
            1995 Brown University
 License: BrownUn_UnCalifornia_ErikCorry
 
+Files:
+ src/stdlib/SDL_malloc.c
+Copyright:
+ 1997-2024 Sam Lantinga <slouken@libsdl.org>
+ 2005-2012 Doug Lea
+License: Zlib and CC0-1.0
+
 Files: src/stdlib/SDL_qsort.c
 Copyright: 1998-2021 Gareth McCaughan
 License: Gareth_McCaughan
@@ -193,6 +218,12 @@ Copyright:
  2023-2024 Xaver Hugl
 License: Expat and MIT-open-group
 
+Files: wayland-protocols/xdg-toplevel-icon-v1.xml
+Copyright:
+ 2023-2024 Matthias Klumpp
+ 2024 David Edmundson
+License: Expat
+
 Files:
  wayland-protocols/kde-output-order-v1.xml
 Copyright:
@@ -241,6 +272,13 @@ License: BSL-1.0
  WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
+
+License: CC0-1.0
+ Released to the public domain, as explained at
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+ .
+ On Debian systems, a copy of the Creative Commons Zero 1.0 Universal deed
+ can be found in <file:///usr/share/common-licenses/CC0-1.0>.
 
 License: Expat
  Permission is hereby granted, free of charge, to any person obtaining a
