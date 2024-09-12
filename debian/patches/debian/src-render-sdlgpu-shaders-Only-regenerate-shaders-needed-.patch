@@ -7,13 +7,13 @@ the shaders that it produces.
 
 Forwarded: not-needed, Debian-specific
 ---
- src/render/sdlgpu/shaders/build-shaders.sh | 7 +++++--
+ src/render/gpu/shaders/build-shaders.sh | 7 +++++--
  1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/src/render/sdlgpu/shaders/build-shaders.sh b/src/render/sdlgpu/shaders/build-shaders.sh
-index 7778fe0..1350ca2 100755
---- a/src/render/sdlgpu/shaders/build-shaders.sh
-+++ b/src/render/sdlgpu/shaders/build-shaders.sh
+diff --git a/src/render/gpu/shaders/build-shaders.sh b/src/render/gpu/shaders/build-shaders.sh
+index 3345a0b..3c5a40b 100755
+--- a/src/render/gpu/shaders/build-shaders.sh
++++ b/src/render/gpu/shaders/build-shaders.sh
 @@ -4,8 +4,8 @@ set -e
  
  # NOTE: fxc is tested on Linux with https://github.com/mozilla/fxc2
