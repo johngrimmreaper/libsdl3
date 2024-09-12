@@ -51,10 +51,13 @@
 #define SDL_render_h_
 
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_blendmode.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
+#include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_rect.h>
+#include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 
 #include <SDL3/SDL_begin_code.h>
@@ -475,6 +478,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Renderer
 
 /**
  * Create a texture for a rendering context.
+ *
+ * The contents of a texture when first created are not defined.
  *
  * \param renderer the rendering context.
  * \param format one of the enumerated values in SDL_PixelFormat.

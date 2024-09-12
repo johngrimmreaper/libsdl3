@@ -22,7 +22,7 @@
 /**
  * # CategoryLog
  *
- * Simple log messages with priorities and categories. A message’s
+ * Simple log messages with priorities and categories. A message's
  * SDL_LogPriority signifies how important the message is. A message's
  * SDL_LogCategory signifies from what domain it belongs to. Every category
  * has a minimum priority specified: when a message belongs to that category,
@@ -87,12 +87,11 @@ typedef enum SDL_LogCategory
     SDL_LOG_CATEGORY_AUDIO,
     SDL_LOG_CATEGORY_VIDEO,
     SDL_LOG_CATEGORY_RENDER,
-    SDL_LOG_CATEGORY_GPU,
     SDL_LOG_CATEGORY_INPUT,
     SDL_LOG_CATEGORY_TEST,
+    SDL_LOG_CATEGORY_GPU,
 
     /* Reserved for future SDL library use */
-    SDL_LOG_CATEGORY_RESERVED1,
     SDL_LOG_CATEGORY_RESERVED2,
     SDL_LOG_CATEGORY_RESERVED3,
     SDL_LOG_CATEGORY_RESERVED4,
@@ -127,7 +126,7 @@ typedef enum SDL_LogPriority
     SDL_LOG_PRIORITY_WARN,
     SDL_LOG_PRIORITY_ERROR,
     SDL_LOG_PRIORITY_CRITICAL,
-    SDL_NUM_LOG_PRIORITIES
+    SDL_LOG_PRIORITY_COUNT
 } SDL_LogPriority;
 
 

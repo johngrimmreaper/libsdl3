@@ -28,17 +28,21 @@
 #ifndef SDL_events_h_
 #define SDL_events_h_
 
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_audio.h>
+#include <SDL3/SDL_camera.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_gamepad.h>
 #include <SDL3/SDL_joystick.h>
 #include <SDL3/SDL_keyboard.h>
+#include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_pen.h>
-#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_power.h>
+#include <SDL3/SDL_sensor.h>
+#include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
-#include <SDL3/SDL_camera.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -47,25 +51,6 @@ extern "C" {
 #endif
 
 /* General keyboard/mouse/pen state definitions */
-
-/**
- * A value that signifies a button is no longer pressed.
- *
- * \since This macro is available since SDL 3.0.0.
- *
- * \sa SDL_PRESSED
- */
-#define SDL_RELEASED    0
-
-/**
- * A value that signifies a button has been pressed down.
- *
- * \since This macro is available since SDL 3.0.0.
- *
- * \sa SDL_RELEASED
- */
-#define SDL_PRESSED     1
-
 
 /**
  * The types of events that can be delivered.
@@ -342,8 +327,8 @@ typedef struct SDL_KeyboardEvent
     SDL_Keycode key;        /**< SDL virtual key code */
     SDL_Keymod mod;         /**< current key modifiers */
     Uint16 raw;             /**< The platform dependent scancode for this event */
-    Uint8 state;            /**< SDL_PRESSED or SDL_RELEASED */
-    Uint8 repeat;           /**< Non-zero if this is a key repeat */
+    SDL_bool down;          /**< SDL_TRUE if the key is pressed */
+    SDL_bool repeat;        /**< SDL_TRUE if this is a key repeat */
 } SDL_KeyboardEvent;
 
 /**
@@ -381,6 +366,9 @@ typedef struct SDL_TextEditingCandidatesEvent
     Sint32 num_candidates;      /**< The number of strings in `candidates` */
     Sint32 selected_candidate;  /**< The index of the selected candidate, or -1 if no candidate is selected */
     SDL_bool horizontal;          /**< SDL_TRUE if the list is horizontal, SDL_FALSE if it's vertical */
+    Uint8 padding1;
+    Uint8 padding2;
+    Uint8 padding3;
 } SDL_TextEditingCandidatesEvent;
 
 /**
@@ -448,7 +436,7 @@ typedef struct SDL_MouseButtonEvent
     SDL_WindowID windowID; /**< The window with mouse focus, if any */
     SDL_MouseID which;  /**< The mouse instance id, SDL_TOUCH_MOUSEID */
     Uint8 button;       /**< The mouse button index */
-    Uint8 state;        /**< SDL_PRESSED or SDL_RELEASED */
+    SDL_bool down;      /**< SDL_TRUE if the button is pressed */
     Uint8 clicks;       /**< 1 for single-click, 2 for double-click, etc. */
     Uint8 padding;
     float x;            /**< X coordinate, relative to window */
@@ -547,7 +535,7 @@ typedef struct SDL_JoyButtonEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 button;       /**< The joystick button index */
-    Uint8 state;        /**< SDL_PRESSED or SDL_RELEASED */
+    SDL_bool down;      /**< SDL_TRUE if the button is pressed */
     Uint8 padding1;
     Uint8 padding2;
 } SDL_JoyButtonEvent;
@@ -612,7 +600,7 @@ typedef struct SDL_GamepadButtonEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 button;       /**< The gamepad button (SDL_GamepadButton) */
-    Uint8 state;        /**< SDL_PRESSED or SDL_RELEASED */
+    SDL_bool down;      /**< SDL_TRUE if the button is pressed */
     Uint8 padding1;
     Uint8 padding2;
 } SDL_GamepadButtonEvent;
@@ -676,7 +664,7 @@ typedef struct SDL_AudioDeviceEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_AudioDeviceID which;       /**< SDL_AudioDeviceID for the device being added or removed or changing */
-    Uint8 recording;    /**< zero if a playback device, non-zero if a recording device. */
+    SDL_bool recording; /**< SDL_FALSE if a playback device, SDL_TRUE if a recording device. */
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
@@ -780,8 +768,8 @@ typedef struct SDL_PenTouchEvent
     SDL_PenInputFlags pen_state;   /**< Complete pen input state at time of event */
     float x;                /**< X position of pen on tablet */
     float y;                /**< Y position of pen on tablet */
-    Uint8 eraser;           /**< Non-zero if eraser end is used (not all pens support this). */
-    Uint8 state;            /**< SDL_PRESSED (pen is touching) or SDL_RELEASED (pen is lifted off) */
+    SDL_bool eraser;        /**< SDL_TRUE if eraser end is used (not all pens support this). */
+    SDL_bool down;          /**< SDL_TRUE if the pen is touching or SDL_FALSE if the pen is lifted off */
 } SDL_PenTouchEvent;
 
 /**
@@ -803,7 +791,7 @@ typedef struct SDL_PenButtonEvent
     float x;                /**< X position of pen on tablet */
     float y;                /**< Y position of pen on tablet */
     Uint8 button;       /**< The pen button index (first button is 1). */
-    Uint8 state;        /**< SDL_PRESSED or SDL_RELEASED */
+    SDL_bool down;      /**< SDL_TRUE if the button is pressed */
 } SDL_PenButtonEvent;
 
 /**
@@ -1001,11 +989,17 @@ SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof(((SDL_Event *)NUL
 extern SDL_DECLSPEC void SDLCALL SDL_PumpEvents(void);
 
 /* @{ */
+
+/**
+ * The type of action to request from SDL_PeepEvents().
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_EventAction
 {
-    SDL_ADDEVENT,
-    SDL_PEEKEVENT,
-    SDL_GETEVENT
+    SDL_ADDEVENT,  /**< Add events to the back of the queue. */
+    SDL_PEEKEVENT, /**< Check but don't remove events from the queue front. */
+    SDL_GETEVENT   /**< Retrieve/remove events from the front of the queue. */
 } SDL_EventAction;
 
 /**

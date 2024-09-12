@@ -2122,8 +2122,8 @@ bool Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *b
     }
 
     if (messageboxdata->colorScheme) {
-        colors = (*env)->NewIntArray(env, SDL_MESSAGEBOX_COLOR_MAX);
-        for (i = 0; i < SDL_MESSAGEBOX_COLOR_MAX; ++i) {
+        colors = (*env)->NewIntArray(env, SDL_MESSAGEBOX_COLOR_COUNT);
+        for (i = 0; i < SDL_MESSAGEBOX_COLOR_COUNT; ++i) {
             temp = (0xFFU << 24) |
                    (messageboxdata->colorScheme->colors[i].r << 16) |
                    (messageboxdata->colorScheme->colors[i].g << 8) |
@@ -2710,7 +2710,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
 
         // Convert fileList to string
         size_t count = (*env)->GetArrayLength(env, fileList);
-        char **charFileList = SDL_calloc(sizeof(char*), count + 1);
+        char **charFileList = SDL_calloc(count + 1, sizeof(char*));
 
         if (charFileList == NULL) {
             mAndroidFileDialogData.callback(mAndroidFileDialogData.userdata, NULL, -1);

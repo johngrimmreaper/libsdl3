@@ -104,47 +104,46 @@ this should probably be removed at some point in the future.  --ryan. */
     SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_DST_COLOR, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD, \
                           SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD)
 
-#ifndef SDL_RENDER_DISABLED
 static const SDL_RenderDriver *render_drivers[] = {
 // Temporarily list the GPU renderer first so we get testing feedback
-#if SDL_VIDEO_RENDER_GPU
+#ifdef SDL_VIDEO_RENDER_GPU
     &GPU_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_D3D11
+#ifdef SDL_VIDEO_RENDER_D3D11
     &D3D11_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_D3D12
+#ifdef SDL_VIDEO_RENDER_D3D12
     &D3D12_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_D3D
+#ifdef SDL_VIDEO_RENDER_D3D
     &D3D_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_METAL
+#ifdef SDL_VIDEO_RENDER_METAL
     &METAL_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_OGL
+#ifdef SDL_VIDEO_RENDER_OGL
     &GL_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_OGL_ES2
+#ifdef SDL_VIDEO_RENDER_OGL_ES2
     &GLES2_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_PS2
+#ifdef SDL_VIDEO_RENDER_PS2
     &PS2_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_PSP
+#ifdef SDL_VIDEO_RENDER_PSP
     &PSP_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_VITA_GXM
+#ifdef SDL_VIDEO_RENDER_VITA_GXM
     &VITA_GXM_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_VULKAN
+#ifdef SDL_VIDEO_RENDER_VULKAN
     &VULKAN_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_SW
+#ifdef SDL_VIDEO_RENDER_SW
     &SW_RenderDriver,
 #endif
+    NULL
 };
-#endif // !SDL_RENDER_DISABLED
 
 static SDL_Renderer *SDL_renderers;
 
@@ -173,16 +172,6 @@ void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props)
     renderer->output_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
 }
 
-static float sRGBtoLinear(float v)
-{
-    return v <= 0.04045f ? (v / 12.92f) : SDL_powf(((v + 0.055f) / 1.055f), 2.4f);
-}
-
-static float sRGBfromLinear(float v)
-{
-    return v <= 0.0031308f ? (v * 12.92f) : (SDL_powf(v, 1.0f / 2.4f) * 1.055f - 0.055f);
-}
-
 bool SDL_RenderingLinearSpace(SDL_Renderer *renderer)
 {
     SDL_Colorspace colorspace;
@@ -200,16 +189,16 @@ bool SDL_RenderingLinearSpace(SDL_Renderer *renderer)
 
 void SDL_ConvertToLinear(SDL_FColor *color)
 {
-    color->r = sRGBtoLinear(color->r);
-    color->g = sRGBtoLinear(color->g);
-    color->b = sRGBtoLinear(color->b);
+    color->r = SDL_sRGBtoLinear(color->r);
+    color->g = SDL_sRGBtoLinear(color->g);
+    color->b = SDL_sRGBtoLinear(color->b);
 }
 
 void SDL_ConvertFromLinear(SDL_FColor *color)
 {
-    color->r = sRGBfromLinear(color->r);
-    color->g = sRGBfromLinear(color->g);
-    color->b = sRGBfromLinear(color->b);
+    color->r = SDL_sRGBfromLinear(color->r);
+    color->g = SDL_sRGBfromLinear(color->g);
+    color->b = SDL_sRGBfromLinear(color->b);
 }
 
 static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
@@ -337,7 +326,6 @@ static bool FlushRenderCommands(SDL_Renderer *renderer)
     renderer->vertex_data_used = 0;
     renderer->render_command_generation++;
     renderer->color_queued = false;
-    renderer->color_scale_queued = false;
     renderer->viewport_queued = false;
     renderer->cliprect_queued = false;
     return result;
@@ -759,6 +747,17 @@ static void UpdateMainViewDimensions(SDL_Renderer *renderer)
     UpdatePixelViewport(renderer, &renderer->main_view);
 }
 
+static void UpdateColorScale(SDL_Renderer *renderer)
+{
+    float SDR_white_point;
+    if (renderer->target) {
+        SDR_white_point = renderer->target->SDR_white_point;
+    } else {
+        SDR_white_point = renderer->SDR_white_point;
+    }
+    renderer->color_scale = renderer->desired_color_scale * SDR_white_point;
+}
+
 static void UpdateHDRProperties(SDL_Renderer *renderer)
 {
     SDL_PropertiesID window_props;
@@ -773,8 +772,6 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
     if (!renderer_props) {
         return;
     }
-
-    renderer->color_scale /= renderer->SDR_white_point;
 
     if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
         renderer->SDR_white_point = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
@@ -792,7 +789,7 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
     SDL_SetFloatProperty(renderer_props, SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT, renderer->SDR_white_point);
     SDL_SetFloatProperty(renderer_props, SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT, renderer->HDR_headroom);
 
-    renderer->color_scale *= renderer->SDR_white_point;
+    UpdateColorScale(renderer);
 }
 
 static bool UpdateLogicalPresentation(SDL_Renderer *renderer);
@@ -800,11 +797,7 @@ static bool UpdateLogicalPresentation(SDL_Renderer *renderer);
 
 int SDL_GetNumRenderDrivers(void)
 {
-#ifndef SDL_RENDER_DISABLED
-    return SDL_arraysize(render_drivers);
-#else
-    return 0;
-#endif
+    return SDL_arraysize(render_drivers) - 1;
 }
 
 const char *SDL_GetRenderDriver(int index)
@@ -1000,7 +993,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     }
 
     if (surface) {
-#if SDL_VIDEO_RENDER_SW
+#ifdef SDL_VIDEO_RENDER_SW
         const bool rc = SW_CreateRendererForSurface(renderer, surface, props);
 #else
         const bool rc = SDL_SetError("SDL not built with software renderer");
@@ -1087,6 +1080,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 
     renderer->SDR_white_point = 1.0f;
     renderer->HDR_headroom = 1.0f;
+    renderer->desired_color_scale = 1.0f;
     renderer->color_scale = 1.0f;
 
     if (window) {
@@ -1172,7 +1166,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name)
 
 SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 {
-#if SDL_VIDEO_RENDER_SW
+#ifdef SDL_VIDEO_RENDER_SW
     SDL_Renderer *renderer;
 
     if (!surface) {
@@ -2517,6 +2511,7 @@ static bool SDL_SetRenderTargetInternal(SDL_Renderer *renderer, SDL_Texture *tex
     } else {
         renderer->view = &renderer->main_view;
     }
+    UpdateColorScale(renderer);
 
     if (!renderer->SetRenderTarget(renderer, texture)) {
         SDL_UnlockMutex(renderer->target_mutex);
@@ -3277,7 +3272,8 @@ SDL_bool SDL_SetRenderColorScale(SDL_Renderer *renderer, float scale)
 {
     CHECK_RENDERER_MAGIC(renderer, false);
 
-    renderer->color_scale = scale * renderer->SDR_white_point;
+    renderer->desired_color_scale = scale;
+    UpdateColorScale(renderer);
     return true;
 }
 
@@ -3290,7 +3286,7 @@ SDL_bool SDL_GetRenderColorScale(SDL_Renderer *renderer, float *scale)
     CHECK_RENDERER_MAGIC(renderer, false);
 
     if (scale) {
-        *scale = renderer->color_scale / renderer->SDR_white_point;
+        *scale = renderer->desired_color_scale;
     }
     return true;
 }
@@ -4423,7 +4419,7 @@ SDL_bool SDL_RenderGeometry(SDL_Renderer *renderer,
     }
 }
 
-#if SDL_VIDEO_RENDER_SW
+#ifdef SDL_VIDEO_RENDER_SW
 static bool remap_one_indice(
     int prev,
     int k,
@@ -4894,7 +4890,7 @@ SDL_bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
     }
 
     // For the software renderer, try to reinterpret triangles as SDL_Rect
-#if SDL_VIDEO_RENDER_SW
+#ifdef SDL_VIDEO_RENDER_SW
     if (renderer->software && texture_address_mode == SDL_TEXTURE_ADDRESS_CLAMP) {
         return SDL_SW_RenderGeometryRaw(renderer, texture,
                                         xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices,
@@ -5340,7 +5336,7 @@ SDL_bool SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
     renderer->wanted_vsync = vsync ? true : false;
 
     // for the software renderer, forward the call to the WindowTexture renderer
-#if SDL_VIDEO_RENDER_SW
+#ifdef SDL_VIDEO_RENDER_SW
     if (renderer->software) {
         if (!renderer->window) {
             if (!vsync) {

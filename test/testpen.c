@@ -19,7 +19,7 @@ typedef struct Pen
 {
     SDL_PenID pen;
     Uint8 r, g, b;
-    float axes[SDL_PEN_NUM_AXES];
+    float axes[SDL_PEN_AXIS_COUNT];
     float x;
     float y;
     Uint32 buttons;
@@ -107,7 +107,7 @@ static Pen *FindPen(SDL_PenID which)
     return NULL;
 }
 
-SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event)
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     Pen *pen = NULL;
 

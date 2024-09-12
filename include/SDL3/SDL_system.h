@@ -31,7 +31,6 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_keyboard.h>
-#include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 
 #include <SDL3/SDL_begin_code.h>
@@ -44,7 +43,7 @@ extern "C" {
 /*
  * Platform specific functions for Windows
  */
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WINDOWS)
 
 typedef struct tagMSG MSG;
 
@@ -90,7 +89,7 @@ typedef SDL_bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata);
 
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) */
+#endif /* defined(SDL_PLATFORM_WINDOWS) */
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
@@ -107,10 +106,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHoo
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID);
-
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
-
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
 /**
  * Get the DXGI Adapter and Output indices for the specified display.
@@ -130,6 +125,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displ
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
 
 #endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
+
 
 /*
  * Platform specific functions for UNIX
@@ -558,90 +554,6 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ShowAndroidToast(const char *message, i
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SendAndroidMessage(Uint32 command, int param);
 
 #endif /* SDL_PLATFORM_ANDROID */
-
-/*
- * Platform specific functions for WinRT
- */
-#ifdef SDL_PLATFORM_WINRT
-
-/**
- * WinRT / Windows Phone path types
- *
- * \since This enum is available since SDL 3.0.0.
- */
-typedef enum SDL_WinRT_Path
-{
-    /** The installed app's root directory.
-        Files here are likely to be read-only. */
-    SDL_WINRT_PATH_INSTALLED_LOCATION,
-
-    /** The app's local data store.  Files may be written here */
-    SDL_WINRT_PATH_LOCAL_FOLDER,
-
-    /** The app's roaming data store.  Unsupported on Windows Phone.
-        Files written here may be copied to other machines via a network
-        connection.
-    */
-    SDL_WINRT_PATH_ROAMING_FOLDER,
-
-    /** The app's temporary data store.  Unsupported on Windows Phone.
-        Files written here may be deleted at any time. */
-    SDL_WINRT_PATH_TEMP_FOLDER
-} SDL_WinRT_Path;
-
-
-/**
- * WinRT Device Family
- *
- * \since This enum is available since SDL 3.0.0.
- */
-typedef enum SDL_WinRT_DeviceFamily
-{
-    /** Unknown family  */
-    SDL_WINRT_DEVICEFAMILY_UNKNOWN,
-
-    /** Desktop family*/
-    SDL_WINRT_DEVICEFAMILY_DESKTOP,
-
-    /** Mobile family (for example smartphone) */
-    SDL_WINRT_DEVICEFAMILY_MOBILE,
-
-    /** XBox family */
-    SDL_WINRT_DEVICEFAMILY_XBOX,
-} SDL_WinRT_DeviceFamily;
-
-
-/**
- * Retrieve a WinRT defined path on the local file system.
- *
- * Not all paths are available on all versions of Windows. This is especially
- * true on Windows Phone. Check the documentation for the given SDL_WinRT_Path
- * for more information on which path types are supported where.
- *
- * Documentation on most app-specific path types on WinRT can be found on
- * MSDN, at the URL:
- *
- * https://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
- *
- * \param pathType the type of path to retrieve, one of SDL_WinRT_Path.
- * \returns a UTF-8 string (8-bit, multi-byte) containing the path, or NULL if
- *          the path is not available for any reason; call SDL_GetError() for
- *          more information.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetWinRTFSPath(SDL_WinRT_Path pathType);
-
-/**
- * Detects the device family of WinRT platform at runtime.
- *
- * \returns a value from the SDL_WinRT_DeviceFamily enum.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern SDL_DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_GetWinRTDeviceFamily();
-
-#endif /* SDL_PLATFORM_WINRT */
 
 /**
  * Query if the current device is a tablet.

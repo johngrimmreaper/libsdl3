@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_GPU
+#ifdef SDL_VIDEO_RENDER_GPU
 
 #include "SDL_shaders_gpu.h"
 
@@ -33,7 +33,7 @@ typedef struct GPU_ShaderModuleSource
     SDL_GPUShaderFormat format;
 } GPU_ShaderModuleSource;
 
-#ifdef SDL_GPU_VULKAN
+#if defined(SDL_GPU_VULKAN) && SDL_GPU_VULKAN
 #define IF_VULKAN(...)     __VA_ARGS__
 #define HAVE_SPIRV_SHADERS 1
 #include "shaders/spir-v.h"
@@ -83,7 +83,7 @@ typedef struct GPU_ShaderSources
     IF_VULKAN(.spirv = { code, sizeof(code), SDL_GPU_SHADERFORMAT_SPIRV }, )
 
 #define SHADER_DXBC50(code) \
-    IF_D3D11(.dxbc50 = { code, sizeof(code), SDL_GPU_SHADERFORMAT_DXBC }, )
+    IF_D3D11(.dxbc50 = { (const unsigned char *)code, sizeof(code), SDL_GPU_SHADERFORMAT_DXBC }, )
 
 #define SHADER_DXIL60(code) \
     IF_D3D12(.dxil60 = { code, sizeof(code), SDL_GPU_SHADERFORMAT_DXIL }, )
@@ -167,12 +167,12 @@ static SDL_GPUShader *CompileShader(const GPU_ShaderSources *sources, SDL_GPUDev
 
     SDL_GPUShaderCreateInfo sci = { 0 };
     sci.code = sms->code;
-    sci.codeSize = sms->code_len;
+    sci.code_size = sms->code_len;
     sci.format = sms->format;
     // FIXME not sure if this is correct
-    sci.entryPointName = driver == SDL_GPU_DRIVER_METAL ? "main0" : "main";
-    sci.samplerCount = sources->num_samplers;
-    sci.uniformBufferCount = sources->num_uniform_buffers;
+    sci.entrypoint = driver == SDL_GPU_DRIVER_METAL ? "main0" : "main";
+    sci.num_samplers = sources->num_samplers;
+    sci.num_uniform_buffers = sources->num_uniform_buffers;
     sci.stage = stage;
 
     return SDL_CreateGPUShader(device, &sci);
