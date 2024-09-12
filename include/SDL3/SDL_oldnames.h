@@ -419,9 +419,14 @@
 #define SDL_LogSetAllPriority SDL_SetLogPriorities
 #define SDL_LogSetOutputFunction SDL_SetLogOutputFunction
 #define SDL_LogSetPriority SDL_SetLogPriority
+#define SDL_NUM_LOG_PRIORITIES SDL_LOG_PRIORITY_COUNT
+
+/* ##SDL_messagebox.h */
+#define SDL_MESSAGEBOX_COLOR_MAX SDL_MESSAGEBOX_COLOR_COUNT
 
 /* ##SDL_mouse.h */
 #define SDL_FreeCursor SDL_DestroyCursor
+#define SDL_NUM_SYSTEM_CURSORS SDL_SYSTEM_CURSOR_COUNT
 #define SDL_SYSTEM_CURSOR_ARROW SDL_SYSTEM_CURSOR_DEFAULT
 #define SDL_SYSTEM_CURSOR_HAND SDL_SYSTEM_CURSOR_POINTER
 #define SDL_SYSTEM_CURSOR_IBEAM SDL_SYSTEM_CURSOR_TEXT
@@ -558,6 +563,7 @@
 #define SDL_WriteLE64 SDL_WriteU64LE
 
 /* ##SDL_scancode.h */
+#define SDL_NUM_SCANCODES SDL_SCANCODE_COUNT
 #define SDL_SCANCODE_AUDIOFASTFORWARD SDL_SCANCODE_MEDIA_FAST_FORWARD
 #define SDL_SCANCODE_AUDIOMUTE SDL_SCANCODE_MUTE
 #define SDL_SCANCODE_AUDIONEXT SDL_SCANCODE_MEDIA_NEXT_TRACK
@@ -625,8 +631,6 @@
 #define SDL_LinuxSetThreadPriorityAndPolicy SDL_SetLinuxThreadPriorityAndPolicy
 #define SDL_OnApplicationDidBecomeActive SDL_OnApplicationDidEnterForeground
 #define SDL_OnApplicationWillResignActive SDL_OnApplicationWillEnterBackground
-#define SDL_WinRTGetDeviceFamily SDL_GetWinRTDeviceFamily
-#define SDL_GetWinRTFSPathUTF8 SDL_GetWinRTFSPath
 #define SDL_iOSSetAnimationCallback SDL_SetiOSAnimationCallback
 #define SDL_iOSSetEventPump SDL_SetiOSEventPump
 #define SDL_iPhoneSetAnimationCallback SDL_SetiOSAnimationCallback
@@ -1045,9 +1049,14 @@
 #define SDL_LogSetAllPriority SDL_LogSetAllPriority_renamed_SDL_SetLogPriorities
 #define SDL_LogSetOutputFunction SDL_LogSetOutputFunction_renamed_SDL_SetLogOutputFunction
 #define SDL_LogSetPriority SDL_LogSetPriority_renamed_SDL_SetLogPriority
+#define SDL_NUM_LOG_PRIORITIES SDL_NUM_LOG_PRIORITIES_renamed_SDL_LOG_PRIORITY_COUNT
+
+/* ##SDL_messagebox.h */
+#define SDL_MESSAGEBOX_COLOR_MAX SDL_MESSAGEBOX_COLOR_MAX_renamed_SDL_MESSAGEBOX_COLOR_COUNT
 
 /* ##SDL_mouse.h */
 #define SDL_FreeCursor SDL_FreeCursor_renamed_SDL_DestroyCursor
+#define SDL_NUM_SYSTEM_CURSORS SDL_NUM_SYSTEM_CURSORS_renamed_SDL_SYSTEM_CURSOR_COUNT
 #define SDL_SYSTEM_CURSOR_ARROW SDL_SYSTEM_CURSOR_ARROW_renamed_SDL_SYSTEM_CURSOR_DEFAULT
 #define SDL_SYSTEM_CURSOR_HAND SDL_SYSTEM_CURSOR_HAND_renamed_SDL_SYSTEM_CURSOR_POINTER
 #define SDL_SYSTEM_CURSOR_IBEAM SDL_SYSTEM_CURSOR_IBEAM_renamed_SDL_SYSTEM_CURSOR_TEXT
@@ -1184,6 +1193,7 @@
 #define SDL_WriteLE64 SDL_WriteLE64_renamed_SDL_WriteU64LE
 
 /* ##SDL_scancode.h */
+#define SDL_NUM_SCANCODES SDL_NUM_SCANCODES_renamed_SDL_SCANCODE_COUNT
 #define SDL_SCANCODE_AUDIOFASTFORWARD SDL_SCANCODE_AUDIOFASTFORWARD_renamed_SDL_SCANCODE_MEDIA_FAST_FORWARD
 #define SDL_SCANCODE_AUDIOMUTE SDL_SCANCODE_AUDIOMUTE_renamed_SDL_SCANCODE_MUTE
 #define SDL_SCANCODE_AUDIONEXT SDL_SCANCODE_AUDIONEXT_renamed_SDL_SCANCODE_MEDIA_NEXT_TRACK
@@ -1251,8 +1261,6 @@
 #define SDL_LinuxSetThreadPriorityAndPolicy SDL_LinuxSetThreadPriorityAndPolicy_renamed_SDL_SetLinuxThreadPriorityAndPolicy
 #define SDL_OnApplicationDidBecomeActive SDL_OnApplicationDidBecomeActive_renamed_SDL_OnApplicationDidEnterForeground
 #define SDL_OnApplicationWillResignActive SDL_OnApplicationWillResignActive_renamed_SDL_OnApplicationWillEnterBackground
-#define SDL_WinRTGetDeviceFamily SDL_WinRTGetDeviceFamily_renamed_SDL_GetWinRTDeviceFamily
-#define SDL_GetWinRTFSPathUTF8 SDL_GetWinRTFSPathUTF8_renamed_SDL_GetWinRTFSPath
 #define SDL_iOSSetAnimationCallback SDL_iOSSetAnimationCallback_renamed_SDL_SetiOSAnimationCallback
 #define SDL_iOSSetEventPump SDL_iOSSetEventPump_renamed_SDL_SetiOSEventPump
 #define SDL_iPhoneSetAnimationCallback SDL_iPhoneSetAnimationCallback_renamed_SDL_iOSSetAnimationCallback

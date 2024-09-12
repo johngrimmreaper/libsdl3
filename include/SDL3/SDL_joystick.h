@@ -120,7 +120,8 @@ typedef enum SDL_JoystickType
     SDL_JOYSTICK_TYPE_GUITAR,
     SDL_JOYSTICK_TYPE_DRUM_KIT,
     SDL_JOYSTICK_TYPE_ARCADE_PAD,
-    SDL_JOYSTICK_TYPE_THROTTLE
+    SDL_JOYSTICK_TYPE_THROTTLE,
+    SDL_JOYSTICK_TYPE_COUNT
 } SDL_JoystickType;
 
 /**
@@ -414,16 +415,19 @@ typedef struct SDL_VirtualJoystickSensorDesc
 /**
  * The structure that describes a virtual joystick.
  *
- * All elements of this structure are optional and can be left 0.
+ * This structure should be initialized using SDL_INIT_INTERFACE(). All
+ * elements of this structure are optional.
  *
  * \since This struct is available since SDL 3.0.0.
  *
  * \sa SDL_AttachVirtualJoystick
+ * \sa SDL_INIT_INTERFACE
  * \sa SDL_VirtualJoystickSensorDesc
  * \sa SDL_VirtualJoystickTouchpadDesc
  */
 typedef struct SDL_VirtualJoystickDesc
 {
+    Uint32 version;     /**< the version of this interface */
     Uint16 type;        /**< `SDL_JoystickType` */
     Uint16 padding;     /**< unused */
     Uint16 vendor_id;   /**< the USB vendor ID of this joystick */
@@ -454,10 +458,20 @@ typedef struct SDL_VirtualJoystickDesc
     void (SDLCALL *Cleanup)(void *userdata); /**< Cleans up the userdata when the joystick is detached */
 } SDL_VirtualJoystickDesc;
 
+/* Check the size of SDL_VirtualJoystickDesc
+ *
+ * If this assert fails, either the compiler is padding to an unexpected size,
+ * or the interface has been updated and this should be updated to match and
+ * the code using this interface should be updated to handle the old version.
+ */
+SDL_COMPILE_TIME_ASSERT(SDL_VirtualJoystickDesc_SIZE,
+    (sizeof(void *) == 4 && sizeof(SDL_VirtualJoystickDesc) == 84) ||
+    (sizeof(void *) == 8 && sizeof(SDL_VirtualJoystickDesc) == 136));
+
 /**
  * Attach a new virtual joystick.
  *
- * \param desc joystick description.
+ * \param desc joystick description, initialized using SDL_INIT_INTERFACE().
  * \returns the joystick instance ID, or 0 on failure; call SDL_GetError() for
  *          more information.
  *
@@ -545,13 +559,13 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetJoystickVirtualBall(SDL_Joystick *jo
  *
  * \param joystick the virtual joystick on which to set state.
  * \param button the index of the button on the virtual joystick to update.
- * \param value the new value for the specified button.
+ * \param down SDL_TRUE if the button is pressed, SDL_FALSE otherwise.
  * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
  *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetJoystickVirtualButton(SDL_Joystick *joystick, int button, Uint8 value);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetJoystickVirtualButton(SDL_Joystick *joystick, int button, SDL_bool down);
 
 /**
  * Set the state of a hat on an opened virtual joystick.
@@ -585,8 +599,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joy
  * \param touchpad the index of the touchpad on the virtual joystick to
  *                 update.
  * \param finger the index of the finger on the touchpad to set.
- * \param state `SDL_PRESSED` if the finger is pressed, `SDL_RELEASED` if the
- *              finger is released.
+ * \param down SDL_TRUE if the finger is pressed, SDL_FALSE if the finger is
+ *             released.
  * \param x the x coordinate of the finger on the touchpad, normalized 0 to 1,
  *          with the origin in the upper left.
  * \param y the y coordinate of the finger on the touchpad, normalized 0 to 1,
@@ -597,7 +611,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joy
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetJoystickVirtualTouchpad(SDL_Joystick *joystick, int touchpad, int finger, Uint8 state, float x, float y, float pressure);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetJoystickVirtualTouchpad(SDL_Joystick *joystick, int touchpad, int finger, SDL_bool down, float x, float y, float pressure);
 
 /**
  * Send a sensor update for an opened virtual joystick.
@@ -1052,13 +1066,13 @@ extern SDL_DECLSPEC Uint8 SDLCALL SDL_GetJoystickHat(SDL_Joystick *joystick, int
  * \param joystick an SDL_Joystick structure containing joystick information.
  * \param button the button index to get the state from; indices start at
  *               index 0.
- * \returns 1 if the specified button is pressed, 0 otherwise.
+ * \returns SDL_TRUE if the button is pressed, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetNumJoystickButtons
  */
-extern SDL_DECLSPEC Uint8 SDLCALL SDL_GetJoystickButton(SDL_Joystick *joystick, int button);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetJoystickButton(SDL_Joystick *joystick, int button);
 
 /**
  * Start a rumble effect.

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_WINRT)
+#if defined(SDL_PLATFORM_WINDOWS)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -54,7 +54,7 @@ struct SDL_IOStream
 #include "../core/android/SDL_android.h"
 #endif
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_WINRT)
+#if defined(SDL_PLATFORM_WINDOWS)
 
 typedef struct IOStreamWindowsData
 {
@@ -75,7 +75,7 @@ typedef struct IOStreamWindowsData
 
 static bool SDLCALL windows_file_open(IOStreamWindowsData *iodata, const char *filename, const char *mode)
 {
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) && !defined(SDL_PLATFORM_WINRT)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     UINT old_error_mode;
 #endif
     HANDLE h;
@@ -108,7 +108,7 @@ static bool SDLCALL windows_file_open(IOStreamWindowsData *iodata, const char *f
     if (!iodata->data) {
         return false;
     }
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) && !defined(SDL_PLATFORM_WINRT)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     // Do not open a dialog box if failure
     old_error_mode =
         SetErrorMode(SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
@@ -116,17 +116,6 @@ static bool SDLCALL windows_file_open(IOStreamWindowsData *iodata, const char *f
 
     {
         LPWSTR str = WIN_UTF8ToStringW(filename);
-#if defined(SDL_PLATFORM_WINRT)
-        CREATEFILE2_EXTENDED_PARAMETERS extparams;
-        SDL_zero(extparams);
-        extparams.dwSize = sizeof(extparams);
-        extparams.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-        h = CreateFile2(str,
-                        (w_right | r_right),
-                        (w_right) ? 0 : FILE_SHARE_READ,
-                        (must_exist | truncate | a_mode),
-                        &extparams);
-#else
         h = CreateFileW(str,
                        (w_right | r_right),
                        (w_right) ? 0 : FILE_SHARE_READ,
@@ -134,11 +123,10 @@ static bool SDLCALL windows_file_open(IOStreamWindowsData *iodata, const char *f
                        (must_exist | truncate | a_mode),
                        FILE_ATTRIBUTE_NORMAL,
                        NULL);
-#endif
         SDL_free(str);
     }
 
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) && !defined(SDL_PLATFORM_WINRT)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     // restore old behavior
     SetErrorMode(old_error_mode);
 #endif
@@ -288,9 +276,9 @@ static SDL_bool SDLCALL windows_file_close(void *userdata)
     SDL_free(iodata);
     return true;
 }
-#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#endif // defined(SDL_PLATFORM_WINDOWS)
 
-#if defined(HAVE_STDIO_H) && !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK))
+#if defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINDOWS)
 
 // Functions to read/write stdio file pointers. Not used for windows.
 
@@ -419,7 +407,7 @@ static SDL_IOStream *SDL_IOFromFP(FILE *fp, bool autoclose)
     }
 
     SDL_IOStreamInterface iface;
-    SDL_zero(iface);
+    SDL_INIT_INTERFACE(&iface);
     // There's no stdio_size because SDL_GetIOSize emulates it the same way we'd do it for stdio anyhow.
     iface.seek = stdio_seek;
     iface.read = stdio_read;
@@ -441,7 +429,7 @@ static SDL_IOStream *SDL_IOFromFP(FILE *fp, bool autoclose)
 
     return iostr;
 }
-#endif // !HAVE_STDIO_H && !(SDL_PLATFORM_WIN32 || SDL_PLATFORM_GDK)
+#endif // !HAVE_STDIO_H && !defined(SDL_PLATFORM_WINDOWS)
 
 // Functions to read/write memory pointers
 
@@ -522,18 +510,10 @@ static SDL_bool SDLCALL mem_close(void *userdata)
 #if defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINDOWS)
 static bool IsRegularFileOrPipe(FILE *f)
 {
-    #ifdef SDL_PLATFORM_WINRT
-    struct __stat64 st;
-    if (_fstat64(_fileno(f), &st) < 0 ||
-        !((st.st_mode & _S_IFMT) == _S_IFREG || (st.st_mode & _S_IFMT) == _S_IFIFO)) {
-        return false;
-    }
-    #else
     struct stat st;
     if (fstat(fileno(f), &st) < 0 || !(S_ISREG(st.st_mode) || S_ISFIFO(st.st_mode))) {
         return false;
     }
-    #endif
     return true;
 }
 #endif
@@ -607,7 +587,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
     }
 
     SDL_IOStreamInterface iface;
-    SDL_zero(iface);
+    SDL_INIT_INTERFACE(&iface);
     iface.size = Android_JNI_FileSize;
     iface.seek = Android_JNI_FileSeek;
     iface.read = Android_JNI_FileRead;
@@ -624,7 +604,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
         }
     }
 
-#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_WINRT)
+#elif defined(SDL_PLATFORM_WINDOWS)
     IOStreamWindowsData *iodata = (IOStreamWindowsData *) SDL_malloc(sizeof (*iodata));
     if (!iodata) {
         return NULL;
@@ -636,7 +616,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
     }
 
     SDL_IOStreamInterface iface;
-    SDL_zero(iface);
+    SDL_INIT_INTERFACE(&iface);
     iface.size = windows_file_size;
     iface.seek = windows_file_seek;
     iface.read = windows_file_read;
@@ -655,10 +635,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
 
 #elif defined(HAVE_STDIO_H)
     {
-        #if defined(SDL_PLATFORM_WINRT)
-        FILE *fp = NULL;
-        fopen_s(&fp, file, mode);
-        #elif defined(SDL_PLATFORM_3DS)
+        #if defined(SDL_PLATFORM_3DS)
         FILE *fp = N3DS_FileOpen(file, mode);
         #else
         FILE *fp = fopen(file, mode);
@@ -698,7 +675,7 @@ SDL_IOStream *SDL_IOFromMem(void *mem, size_t size)
     }
 
     SDL_IOStreamInterface iface;
-    SDL_zero(iface);
+    SDL_INIT_INTERFACE(&iface);
     iface.size = mem_size;
     iface.seek = mem_seek;
     iface.read = mem_read;
@@ -732,7 +709,7 @@ SDL_IOStream *SDL_IOFromConstMem(const void *mem, size_t size)
     }
 
     SDL_IOStreamInterface iface;
-    SDL_zero(iface);
+    SDL_INIT_INTERFACE(&iface);
     iface.size = mem_size;
     iface.seek = mem_seek;
     iface.read = mem_read;
@@ -832,7 +809,7 @@ SDL_IOStream *SDL_IOFromDynamicMem(void)
     }
 
     SDL_IOStreamInterface iface;
-    SDL_zero(iface);
+    SDL_INIT_INTERFACE(&iface);
     iface.size = dynamic_mem_size;
     iface.seek = dynamic_mem_seek;
     iface.read = dynamic_mem_read;
@@ -866,6 +843,11 @@ SDL_IOStream *SDL_OpenIO(const SDL_IOStreamInterface *iface, void *userdata)
 {
     if (!iface) {
         SDL_InvalidParamError("iface");
+        return NULL;
+    }
+    if (iface->version < sizeof(*iface)) {
+        // Update this to handle older versions of this interface
+        SDL_SetError("Invalid interface, should be initialized with SDL_INIT_INTERFACE()");
         return NULL;
     }
 

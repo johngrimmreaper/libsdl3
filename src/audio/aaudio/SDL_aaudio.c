@@ -308,8 +308,8 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     }
     ctx.AAudioStreamBuilder_setFormat(builder, format);
     ctx.AAudioStreamBuilder_setSampleRate(builder, device->spec.freq);
-    ctx.AAudioStreamBuilder_setChannelCount(builder, device->spec.channels);
 #endif
+    ctx.AAudioStreamBuilder_setChannelCount(builder, device->spec.channels);
 
     const aaudio_direction_t direction = (recording ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
     ctx.AAudioStreamBuilder_setDirection(builder, direction);
@@ -320,7 +320,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
         ctx.AAudioStreamBuilder_setPerformanceMode(builder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
     }
 
-    LOGI("AAudio Try to open %u hz %u bit chan %u %s samples %u",
+    LOGI("AAudio Try to open %u hz %u bit %u channels %s samples %u",
          device->spec.freq, SDL_AUDIO_BITSIZE(device->spec.format),
          device->spec.channels, SDL_AUDIO_ISBIGENDIAN(device->spec.format) ? "BE" : "LE", device->sample_frames);
 
@@ -370,7 +370,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
         return false;
     }
 
-    LOGI("AAudio Actually opened %u hz %u bit chan %u %s samples %u, buffers %d",
+    LOGI("AAudio Actually opened %u hz %u bit %u channels %s samples %u, buffers %d",
          device->spec.freq, SDL_AUDIO_BITSIZE(device->spec.format),
          device->spec.channels, SDL_AUDIO_ISBIGENDIAN(device->spec.format) ? "BE" : "LE", device->sample_frames, hidden->num_buffers);
 

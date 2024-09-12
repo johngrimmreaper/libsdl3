@@ -85,9 +85,6 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
     &WINDOWS_bootstrap,
 #endif
-#ifdef SDL_VIDEO_DRIVER_WINRT
-    &WINRT_bootstrap,
-#endif
 #ifdef SDL_VIDEO_DRIVER_HAIKU
     &HAIKU_bootstrap,
 #endif
@@ -219,7 +216,7 @@ static void SDL_SyncIfRequired(SDL_Window *window)
     }
 }
 
-static void SDL_SetWindowParent(SDL_Window *window, SDL_Window *parent)
+static void SDL_UpdateWindowHierarchy(SDL_Window *window, SDL_Window *parent)
 {
     // Unlink the window from the existing parent.
     if (window->parent) {
@@ -1750,10 +1747,6 @@ static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window)
     }
 }
 
-#ifdef SDL_PLATFORM_WINRT
-extern SDL_WindowFlags WINRT_DetectWindowFlags(SDL_Window *window);
-#endif
-
 static void SDL_RestoreMousePosition(SDL_Window *window)
 {
     float x, y;
@@ -1850,35 +1843,6 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
                 goto done;
             }
         }
-    }
-#elif defined(SDL_PLATFORM_WINRT) && (NTDDI_VERSION < NTDDI_WIN10)
-    /* HACK: WinRT 8.x apps can't choose whether or not they are fullscreen
-       or not.  The user can choose this, via OS-provided UI, but this can't
-       be set programmatically.
-
-       Just look at what SDL's WinRT video backend code detected with regards
-       to fullscreen (being active, or not), and figure out a return/error code
-       from that.
-    */
-    if (!!fullscreen == !(WINRT_DetectWindowFlags(window) & SDL_WINDOW_FULLSCREEN)) {
-        /* Uh oh, either:
-            1. fullscreen was requested, and we're already windowed
-            2. windowed-mode was requested, and we're already fullscreen
-
-            WinRT 8.x can't resolve either programmatically, so we're
-            giving up.
-        */
-        goto error;
-    } else {
-        /* Whatever was requested, fullscreen or windowed mode, is already
-            in-place.
-        */
-        if (fullscreen) {
-            display->fullscreen_window = window;
-        } else {
-            display->fullscreen_window = NULL;
-        }
-        goto done;
     }
 #endif
 
@@ -2169,6 +2133,10 @@ static void ApplyWindowFlags(SDL_Window *window, SDL_WindowFlags flags)
             SDL_MinimizeWindow(window);
         }
 
+        if (flags & SDL_WINDOW_MODAL) {
+            SDL_SetWindowModal(window, true);
+        }
+
         if (flags & SDL_WINDOW_MOUSE_GRABBED) {
             SDL_SetWindowMouseGrab(window, true);
         }
@@ -2432,10 +2400,8 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     }
     _this->windows = window;
 
-    // Set the parent before creation if this is non-modal, otherwise it will be set later.
-    if (!(flags & SDL_WINDOW_MODAL)) {
-        SDL_SetWindowParent(window, parent);
-    }
+    // Set the parent before creation.
+    SDL_UpdateWindowHierarchy(window, parent);
 
     if (_this->CreateSDLWindow && !_this->CreateSDLWindow(_this, window, props)) {
         SDL_DestroyWindow(window);
@@ -2445,27 +2411,12 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     /* Clear minimized if not on windows, only windows handles it at create rather than FinishWindowCreation,
      * but it's important or window focus will get broken on windows!
      */
-#if !defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_GDK)
+#if !defined(SDL_PLATFORM_WINDOWS)
     if (window->flags & SDL_WINDOW_MINIMIZED) {
         window->flags &= ~SDL_WINDOW_MINIMIZED;
     }
 #endif
 
-#if defined(SDL_PLATFORM_WINRT) && (NTDDI_VERSION < NTDDI_WIN10)
-    /* HACK: WinRT 8.x apps can't choose whether or not they are fullscreen
-       or not.  The user can choose this, via OS-provided UI, but this can't
-       be set programmatically.
-
-       Just look at what SDL's WinRT video backend code detected with regards
-       to fullscreen (being active, or not), and figure out a return/error code
-       from that.
-    */
-    flags = window->flags;
-#endif
-
-    if (flags & SDL_WINDOW_MODAL) {
-        SDL_SetWindowModalFor(window, parent);
-    }
     if (title) {
         SDL_SetWindowTitle(window, title);
     }
@@ -2525,7 +2476,6 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
     bool need_vulkan_unload = false;
     bool need_vulkan_load = false;
     SDL_WindowFlags graphics_flags;
-    SDL_Window *parent = window->parent;
 
     // ensure no more than one of these flags is set
     graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
@@ -2552,7 +2502,7 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
 
     // If this is a modal dialog, clear the modal status.
     if (window->flags & SDL_WINDOW_MODAL) {
-        SDL_SetWindowModalFor(window, NULL);
+        SDL_SetWindowModal(window, false);
     }
 
     // Restore video mode, etc.
@@ -2640,10 +2590,6 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
 
     if (flags & SDL_WINDOW_EXTERNAL) {
         window->flags |= SDL_WINDOW_EXTERNAL;
-    }
-
-    if (flags & SDL_WINDOW_MODAL) {
-        SDL_SetWindowModalFor(window, parent);
     }
 
     if (_this->SetWindowTitle && window->title) {
@@ -3579,40 +3525,59 @@ float SDL_GetWindowOpacity(SDL_Window *window)
     return window->opacity;
 }
 
-SDL_bool SDL_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window)
+SDL_bool SDL_SetWindowParent(SDL_Window *window, SDL_Window *parent)
 {
-    bool result;
+    CHECK_WINDOW_MAGIC(window, false);
+    CHECK_WINDOW_NOT_POPUP(window, false);
 
-    CHECK_WINDOW_MAGIC(modal_window, false);
-    CHECK_WINDOW_NOT_POPUP(modal_window, false);
-
-    if (parent_window) {
-        CHECK_WINDOW_MAGIC(parent_window, false);
-        CHECK_WINDOW_NOT_POPUP(parent_window, false);
+    if (parent) {
+        CHECK_WINDOW_MAGIC(parent, false);
+        CHECK_WINDOW_NOT_POPUP(parent, false);
     }
 
-    if (!_this->SetWindowModalFor) {
+    if (!_this->SetWindowParent) {
         return SDL_Unsupported();
     }
 
-    if (parent_window) {
-        modal_window->flags |= SDL_WINDOW_MODAL;
-    } else if (modal_window->flags & SDL_WINDOW_MODAL) {
-        modal_window->flags &= ~SDL_WINDOW_MODAL;
+    if (window->flags & SDL_WINDOW_MODAL) {
+        return SDL_SetError("Modal windows cannot change parents; call SDL_SetWindowModal() to clear modal status first.");
+    }
+
+    if (window->parent == parent) {
+        return true;
+    }
+
+    const SDL_bool ret = _this->SetWindowParent(_this, window, parent);
+    SDL_UpdateWindowHierarchy(window, ret ? parent : NULL);
+
+    return ret;
+}
+
+SDL_bool SDL_SetWindowModal(SDL_Window *window, SDL_bool modal)
+{
+    CHECK_WINDOW_MAGIC(window, false);
+    CHECK_WINDOW_NOT_POPUP(window, false);
+
+    if (!_this->SetWindowModal) {
+        return SDL_Unsupported();
+    }
+
+    if (modal) {
+        if (!window->parent) {
+            return SDL_SetError("Window must have a parent to enable the modal state; use SDL_SetWindowParent() to set the parent first.");
+        }
+        window->flags |= SDL_WINDOW_MODAL;
+    } else if (window->flags & SDL_WINDOW_MODAL) {
+        window->flags &= ~SDL_WINDOW_MODAL;
     } else {
-        return true; // Not modal; nothing to do.
+        return true; // Already not modal, so nothing to do.
     }
 
-    result = _this->SetWindowModalFor(_this, modal_window, parent_window);
-
-    /* The existing parent might be needed when changing the modal status,
-     * so don't change the hierarchy until after setting the new modal state.
-     */
-    if (result) {
-        SDL_SetWindowParent(modal_window, parent_window);
+    if (window->flags & SDL_WINDOW_HIDDEN) {
+        return true;
     }
 
-    return result;
+    return _this->SetWindowModal(_this, window, modal);
 }
 
 SDL_bool SDL_SetWindowFocusable(SDL_Window *window, SDL_bool focusable)
@@ -4101,12 +4066,12 @@ void SDL_DestroyWindow(SDL_Window *window)
     SDL_DestroyProperties(window->text_input_props);
     SDL_DestroyProperties(window->props);
 
-    /* Clear the modal status, but don't unset the parent, as it may be
-     * needed later in the destruction process if a backend needs to
-     * update the input focus.
+    /* Clear the modal status, but don't unset the parent just yet, as it
+     * may be needed later in the destruction process if a backend needs
+     * to update the input focus.
      */
-    if (_this->SetWindowModalFor && (window->flags & SDL_WINDOW_MODAL)) {
-        _this->SetWindowModalFor(_this, window, NULL);
+    if (_this->SetWindowModal && (window->flags & SDL_WINDOW_MODAL)) {
+        _this->SetWindowModal(_this, window, false);
     }
 
     // Make sure the destroyed window isn't referenced by any display as a fullscreen window.
@@ -4168,9 +4133,9 @@ void SDL_DestroyWindow(SDL_Window *window)
     SDL_DestroySurface(window->icon);
 
     // Unlink the window from its siblings.
-    SDL_SetWindowParent(window, NULL);
+    SDL_UpdateWindowHierarchy(window, NULL);
 
-    // Unlink the window from the list
+    // Unlink the window from the global window list
     if (window->next) {
         window->next->prev = window->prev;
     }
@@ -5413,9 +5378,6 @@ int SDL_GetMessageBoxCount(void)
 #endif
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
 #include "windows/SDL_windowsmessagebox.h"
-#endif
-#ifdef SDL_VIDEO_DRIVER_WINRT
-#include "winrt/SDL_winrtmessagebox.h"
 #endif
 #ifdef SDL_VIDEO_DRIVER_COCOA
 #include "cocoa/SDL_cocoamessagebox.h"

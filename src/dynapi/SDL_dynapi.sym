@@ -29,6 +29,7 @@ SDL3_0.0.0 {
     SDL_BindAudioStream;
     SDL_BindAudioStreams;
     SDL_BindGPUComputePipeline;
+    SDL_BindGPUComputeSamplers;
     SDL_BindGPUComputeStorageBuffers;
     SDL_BindGPUComputeStorageTextures;
     SDL_BindGPUFragmentSamplers;
@@ -117,8 +118,6 @@ SDL3_0.0.0 {
     SDL_CreateWindowWithProperties;
     SDL_CursorVisible;
     SDL_DateTimeToTime;
-    SDL_RemoveEventWatch;
-    SDL_RemoveHintCallback;
     SDL_Delay;
     SDL_DelayNS;
     SDL_DestroyAudioStream;
@@ -506,8 +505,6 @@ SDL3_0.0.0 {
     SDL_GetUserFolder;
     SDL_GetVersion;
     SDL_GetVideoDriver;
-    SDL_GetWinRTDeviceFamily;
-    SDL_GetWinRTFSPath;
     SDL_GetWindowAspectRatio;
     SDL_GetWindowBordersSize;
     SDL_GetWindowDisplayScale;
@@ -703,6 +700,8 @@ SDL3_0.0.0 {
     SDL_ReleaseGPUTransferBuffer;
     SDL_ReleaseWindowFromGPUDevice;
     SDL_ReloadGamepadMappings;
+    SDL_RemoveEventWatch;
+    SDL_RemoveHintCallback;
     SDL_RemovePath;
     SDL_RemoveStoragePath;
     SDL_RemoveSurfaceAlternateImages;
@@ -778,8 +777,10 @@ SDL3_0.0.0 {
     SDL_SetEventEnabled;
     SDL_SetEventFilter;
     SDL_SetFloatProperty;
+    SDL_SetGPUBlendConstants;
     SDL_SetGPUBufferName;
     SDL_SetGPUScissor;
+    SDL_SetGPUStencilReference;
     SDL_SetGPUSwapchainParameters;
     SDL_SetGPUTextureName;
     SDL_SetGPUViewport;
@@ -854,10 +855,11 @@ SDL3_0.0.0 {
     SDL_SetWindowKeyboardGrab;
     SDL_SetWindowMaximumSize;
     SDL_SetWindowMinimumSize;
-    SDL_SetWindowModalFor;
+    SDL_SetWindowModal;
     SDL_SetWindowMouseGrab;
     SDL_SetWindowMouseRect;
     SDL_SetWindowOpacity;
+    SDL_SetWindowParent;
     SDL_SetWindowPosition;
     SDL_SetWindowRelativeMouseMode;
     SDL_SetWindowResizable;
@@ -1101,6 +1103,7 @@ SDL3_0.0.0 {
     SDL_strndup;
     SDL_strnlen;
     SDL_strnstr;
+    SDL_strpbrk;
     SDL_strrchr;
     SDL_strrev;
     SDL_strstr;

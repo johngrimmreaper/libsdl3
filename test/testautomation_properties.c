@@ -23,7 +23,7 @@ static void SDLCALL count_foo_properties(void *userdata, SDL_PropertiesID props,
         ++(*count);
     }
 }
-static int properties_testBasic(void *arg)
+static int SDLCALL properties_testBasic(void *arg)
 {
     SDL_PropertiesID props;
     char key[2], expected_value[2];
@@ -219,7 +219,7 @@ static int properties_testBasic(void *arg)
 static void SDLCALL copy_cleanup(void *userdata, void *value)
 {
 }
-static int properties_testCopy(void *arg)
+static int SDLCALL properties_testCopy(void *arg)
 {
     SDL_PropertiesID a, b;
     int num;
@@ -282,7 +282,7 @@ static void SDLCALL cleanup(void *userdata, void *value)
     int *count = (int *)userdata;
     ++(*count);
 }
-static int properties_testCleanup(void *arg)
+static int SDLCALL properties_testCleanup(void *arg)
 {
     SDL_PropertiesID props;
     char key[2], expected_value[2];
@@ -319,7 +319,7 @@ struct properties_thread_data
     SDL_bool done;
     SDL_PropertiesID props;
 };
-static int properties_thread(void *arg)
+static int SDLCALL properties_thread(void *arg)
 {
     struct properties_thread_data *data = (struct properties_thread_data *)arg;
 
@@ -333,7 +333,7 @@ static int properties_thread(void *arg)
     SDL_UnlockProperties(data->props);
     return 0;
 }
-static int properties_testLocking(void *arg)
+static int SDLCALL properties_testLocking(void *arg)
 {
     struct properties_thread_data data;
     SDL_Thread *thread;
@@ -386,19 +386,19 @@ static int properties_testLocking(void *arg)
 
 /* Properties test cases */
 static const SDLTest_TestCaseReference propertiesTestBasic = {
-    (SDLTest_TestCaseFp)properties_testBasic, "properties_testBasic", "Test basic property functionality", TEST_ENABLED
+    properties_testBasic, "properties_testBasic", "Test basic property functionality", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference propertiesTestCopy = {
-    (SDLTest_TestCaseFp)properties_testCopy, "properties_testCopy", "Test property copy functionality", TEST_ENABLED
+    properties_testCopy, "properties_testCopy", "Test property copy functionality", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference propertiesTestCleanup = {
-    (SDLTest_TestCaseFp)properties_testCleanup, "properties_testCleanup", "Test property cleanup functionality", TEST_ENABLED
+    properties_testCleanup, "properties_testCleanup", "Test property cleanup functionality", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference propertiesTestLocking = {
-    (SDLTest_TestCaseFp)properties_testLocking, "properties_testLocking", "Test property locking functionality", TEST_ENABLED
+    properties_testLocking, "properties_testLocking", "Test property locking functionality", TEST_ENABLED
 };
 
 /* Sequence of Properties test cases */

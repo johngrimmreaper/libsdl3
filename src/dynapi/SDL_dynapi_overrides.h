@@ -54,6 +54,7 @@
 #define SDL_BindAudioStream SDL_BindAudioStream_REAL
 #define SDL_BindAudioStreams SDL_BindAudioStreams_REAL
 #define SDL_BindGPUComputePipeline SDL_BindGPUComputePipeline_REAL
+#define SDL_BindGPUComputeSamplers SDL_BindGPUComputeSamplers_REAL
 #define SDL_BindGPUComputeStorageBuffers SDL_BindGPUComputeStorageBuffers_REAL
 #define SDL_BindGPUComputeStorageTextures SDL_BindGPUComputeStorageTextures_REAL
 #define SDL_BindGPUFragmentSamplers SDL_BindGPUFragmentSamplers_REAL
@@ -142,8 +143,6 @@
 #define SDL_CreateWindowWithProperties SDL_CreateWindowWithProperties_REAL
 #define SDL_CursorVisible SDL_CursorVisible_REAL
 #define SDL_DateTimeToTime SDL_DateTimeToTime_REAL
-#define SDL_RemoveEventWatch SDL_RemoveEventWatch_REAL
-#define SDL_RemoveHintCallback SDL_RemoveHintCallback_REAL
 #define SDL_Delay SDL_Delay_REAL
 #define SDL_DelayNS SDL_DelayNS_REAL
 #define SDL_DestroyAudioStream SDL_DestroyAudioStream_REAL
@@ -531,8 +530,6 @@
 #define SDL_GetUserFolder SDL_GetUserFolder_REAL
 #define SDL_GetVersion SDL_GetVersion_REAL
 #define SDL_GetVideoDriver SDL_GetVideoDriver_REAL
-#define SDL_GetWinRTDeviceFamily SDL_GetWinRTDeviceFamily_REAL
-#define SDL_GetWinRTFSPath SDL_GetWinRTFSPath_REAL
 #define SDL_GetWindowAspectRatio SDL_GetWindowAspectRatio_REAL
 #define SDL_GetWindowBordersSize SDL_GetWindowBordersSize_REAL
 #define SDL_GetWindowDisplayScale SDL_GetWindowDisplayScale_REAL
@@ -728,6 +725,8 @@
 #define SDL_ReleaseGPUTransferBuffer SDL_ReleaseGPUTransferBuffer_REAL
 #define SDL_ReleaseWindowFromGPUDevice SDL_ReleaseWindowFromGPUDevice_REAL
 #define SDL_ReloadGamepadMappings SDL_ReloadGamepadMappings_REAL
+#define SDL_RemoveEventWatch SDL_RemoveEventWatch_REAL
+#define SDL_RemoveHintCallback SDL_RemoveHintCallback_REAL
 #define SDL_RemovePath SDL_RemovePath_REAL
 #define SDL_RemoveStoragePath SDL_RemoveStoragePath_REAL
 #define SDL_RemoveSurfaceAlternateImages SDL_RemoveSurfaceAlternateImages_REAL
@@ -803,8 +802,10 @@
 #define SDL_SetEventEnabled SDL_SetEventEnabled_REAL
 #define SDL_SetEventFilter SDL_SetEventFilter_REAL
 #define SDL_SetFloatProperty SDL_SetFloatProperty_REAL
+#define SDL_SetGPUBlendConstants SDL_SetGPUBlendConstants_REAL
 #define SDL_SetGPUBufferName SDL_SetGPUBufferName_REAL
 #define SDL_SetGPUScissor SDL_SetGPUScissor_REAL
+#define SDL_SetGPUStencilReference SDL_SetGPUStencilReference_REAL
 #define SDL_SetGPUSwapchainParameters SDL_SetGPUSwapchainParameters_REAL
 #define SDL_SetGPUTextureName SDL_SetGPUTextureName_REAL
 #define SDL_SetGPUViewport SDL_SetGPUViewport_REAL
@@ -879,10 +880,11 @@
 #define SDL_SetWindowKeyboardGrab SDL_SetWindowKeyboardGrab_REAL
 #define SDL_SetWindowMaximumSize SDL_SetWindowMaximumSize_REAL
 #define SDL_SetWindowMinimumSize SDL_SetWindowMinimumSize_REAL
-#define SDL_SetWindowModalFor SDL_SetWindowModalFor_REAL
+#define SDL_SetWindowModal SDL_SetWindowModal_REAL
 #define SDL_SetWindowMouseGrab SDL_SetWindowMouseGrab_REAL
 #define SDL_SetWindowMouseRect SDL_SetWindowMouseRect_REAL
 #define SDL_SetWindowOpacity SDL_SetWindowOpacity_REAL
+#define SDL_SetWindowParent SDL_SetWindowParent_REAL
 #define SDL_SetWindowPosition SDL_SetWindowPosition_REAL
 #define SDL_SetWindowRelativeMouseMode SDL_SetWindowRelativeMouseMode_REAL
 #define SDL_SetWindowResizable SDL_SetWindowResizable_REAL
@@ -1126,6 +1128,7 @@
 #define SDL_strndup SDL_strndup_REAL
 #define SDL_strnlen SDL_strnlen_REAL
 #define SDL_strnstr SDL_strnstr_REAL
+#define SDL_strpbrk SDL_strpbrk_REAL
 #define SDL_strrchr SDL_strrchr_REAL
 #define SDL_strrev SDL_strrev_REAL
 #define SDL_strstr SDL_strstr_REAL
