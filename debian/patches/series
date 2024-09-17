@@ -1,1 +1,3 @@
-debian/src-render-sdlgpu-shaders-Only-regenerate-shaders-needed-.patch
+render-Fix-detection-of-fxc-dxc-in-build-shaders.sh.patch
+render-Don-t-try-to-rebuild-D3D11-D3D12-Metal-shaders-wit.patch
+render-Make-fix-shaders.sh-work-with-GNU-sed.patch

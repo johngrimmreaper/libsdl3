@@ -1,0 +1,28 @@
+From: Simon McVittie <smcv@debian.org>
+Date: Tue, 17 Sep 2024 11:43:08 +0100
+Subject: render: Fix detection of fxc, dxc in build-shaders.sh
+
+We want `$USE_FXC` to default to the result of evaluating the variable
+`$HAVE_FXC`, not the literal string `HAVE_FXC`, and the same for dxc.
+
+Signed-off-by: Simon McVittie <smcv@debian.org>
+Forwarded: https://github.com/libsdl-org/SDL/pull/10880
+---
+ src/render/gpu/shaders/build-shaders.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/render/gpu/shaders/build-shaders.sh b/src/render/gpu/shaders/build-shaders.sh
+index 3345a0b..81e45cb 100755
+--- a/src/render/gpu/shaders/build-shaders.sh
++++ b/src/render/gpu/shaders/build-shaders.sh
+@@ -10,8 +10,8 @@ which dxc &>/dev/null && HAVE_DXC=1 || HAVE_DXC=0
+ [ "$HAVE_FXC" != 0 ] || echo "fxc not in PATH; D3D11 shaders will not be rebuilt"
+ [ "$HAVE_DXC" != 0 ] || echo "dxc not in PATH; D3D12 shaders will not be rebuilt"
+ 
+-USE_FXC=${USE_FXC:-HAVE_FXC}
+-USE_DXC=${USE_DXC:-HAVE_DXC}
++USE_FXC=${USE_FXC:-$HAVE_FXC}
++USE_DXC=${USE_DXC:-$HAVE_DXC}
+ 
+ spirv_bundle="spir-v.h"
+ dxbc50_bundle="dxbc50.h"
