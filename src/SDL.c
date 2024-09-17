@@ -252,21 +252,14 @@ void SDL_InitMainThread(void)
 {
     SDL_InitTLSData();
     SDL_InitEnvironment();
-    SDL_InitProperties();
-    SDL_InitHints();
     SDL_InitTicks();
     SDL_InitFilesystem();
-    SDL_InitLog();
-    SDL_GetGlobalProperties();
 }
 
 static void SDL_QuitMainThread(void)
 {
-    SDL_QuitLog();
     SDL_QuitFilesystem();
     SDL_QuitTicks();
-    SDL_QuitHints();
-    SDL_QuitProperties();
     SDL_QuitEnvironment();
     SDL_QuitTLSData();
 }
@@ -305,20 +298,6 @@ SDL_bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_EVENTS);
         }
         flags_initialized |= SDL_INIT_EVENTS;
-    }
-
-    // Initialize the timer subsystem
-    if (flags & SDL_INIT_TIMER) {
-        if (SDL_ShouldInitSubsystem(SDL_INIT_TIMER)) {
-            SDL_IncrementSubsystemRefCount(SDL_INIT_TIMER);
-            if (!SDL_InitTimers()) {
-                SDL_DecrementSubsystemRefCount(SDL_INIT_TIMER);
-                goto quit_and_error;
-            }
-        } else {
-            SDL_IncrementSubsystemRefCount(SDL_INIT_TIMER);
-        }
-        flags_initialized |= SDL_INIT_TIMER;
     }
 
     // Initialize the video subsystem
@@ -573,13 +552,6 @@ void SDL_QuitSubSystem(SDL_InitFlags flags)
     }
 #endif
 
-    if (flags & SDL_INIT_TIMER) {
-        if (SDL_ShouldQuitSubsystem(SDL_INIT_TIMER)) {
-            SDL_QuitTimers();
-        }
-        SDL_DecrementSubsystemRefCount(SDL_INIT_TIMER);
-    }
-
     if (flags & SDL_INIT_EVENTS) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_EVENTS)) {
             SDL_QuitEvents();
@@ -632,6 +604,8 @@ void SDL_Quit(void)
     SDL_DBus_Quit();
 #endif
 
+    SDL_QuitTimers();
+
     SDL_SetObjectsInvalid();
     SDL_AssertionsQuit();
 
@@ -643,6 +617,10 @@ void SDL_Quit(void)
      * and the list of initialized subsystems.
      */
     SDL_memset(SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount));
+
+    SDL_QuitLog();
+    SDL_QuitHints();
+    SDL_QuitProperties();
 
     SDL_QuitMainThread();
 
