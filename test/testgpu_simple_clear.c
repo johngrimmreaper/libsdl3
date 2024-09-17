@@ -34,9 +34,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     state->skip_renderer = 1;
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv) || !SDLTest_CommonInit(state)) {
@@ -47,12 +44,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 	gpu_device = SDL_CreateGPUDevice(TESTGPU_SUPPORTED_FORMATS, SDL_TRUE, NULL);
 	if (!gpu_device) {
 		SDL_Log("SDL_CreateGPUDevice failed: %s", SDL_GetError());
-		return -1;
+		return SDL_APP_FAILURE;
 	}
 
 	if (!SDL_ClaimWindowForGPUDevice(gpu_device, state->windows[0])) {
 		SDL_Log("SDL_ClaimWindowForGPUDevice failed: %s", SDL_GetError());
-		return -1;
+		return SDL_APP_FAILURE;
 	}
 
     mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());

@@ -168,6 +168,7 @@ static void SDL_InitDynamicAPI(void);
         jump_table.SDL_LogMessageV(category, priority, fmt, ap);                                                                          \
         va_end(ap);                                                                                                                       \
     }                                                                                                                                     \
+    SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Trace, TRACE)                                                                   \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Verbose, VERBOSE)                                                                   \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Debug, DEBUG)                                                                       \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Info, INFO)                                                                         \
@@ -317,6 +318,7 @@ static void SDLCALL SDL_LogMessage_LOGSDLCALLS(int category, SDL_LogPriority pri
         SDL_LogMessageV_REAL(category, SDL_LOG_PRIORITY_##prio, fmt, ap);                                           \
         va_end(ap);                                                                                                 \
     }
+SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Trace, TRACE)
 SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Verbose, VERBOSE)
 SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Debug, DEBUG)
 SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Info, INFO)
@@ -351,7 +353,7 @@ static Sint32 initialize_jumptable(Uint32 apiver, void *table, Uint32 tablesize)
 // Init our jump table first.
 #if ENABLE_SDL_CALL_LOGGING
     {
-        const char *env = SDL_getenv_REAL("SDL_DYNAPI_LOG_CALLS");
+        const char *env = SDL_getenv_unsafe_REAL("SDL_DYNAPI_LOG_CALLS");
         const SDL_bool log_calls = (env && SDL_atoi_REAL(env));
         if (log_calls) {
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) jump_table.fn = fn##_LOGSDLCALLS;
@@ -461,7 +463,7 @@ extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
 static void SDL_InitDynamicAPILocked(void)
 {
-    const char *libname = SDL_getenv_REAL(SDL_DYNAMIC_API_ENVVAR);
+    const char *libname = SDL_getenv_unsafe_REAL(SDL_DYNAMIC_API_ENVVAR);
     SDL_DYNAPI_ENTRYFN entry = NULL; // funcs from here by default.
     SDL_bool use_internal = SDL_TRUE;
 

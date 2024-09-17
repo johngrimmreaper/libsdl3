@@ -389,7 +389,7 @@ static int Test64Bit(SDL_bool verbose)
 static int TestCPUInfo(SDL_bool verbose)
 {
     if (verbose) {
-        SDL_Log("CPU count: %d\n", SDL_GetCPUCount());
+        SDL_Log("Number of logical CPU cores: %d\n", SDL_GetNumLogicalCPUCores());
         SDL_Log("CPU cache line size: %d\n", SDL_GetCPUCacheLineSize());
         SDL_Log("AltiVec %s\n", SDL_HasAltiVec() ? "detected" : "not detected");
         SDL_Log("MMX %s\n", SDL_HasMMX() ? "detected" : "not detected");
@@ -450,9 +450,6 @@ int main(int argc, char *argv[])
     if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {

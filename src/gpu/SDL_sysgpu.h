@@ -232,7 +232,8 @@ static inline Sint32 BytesPerImage(
 #define MAX_COMPUTE_WRITE_TEXTURES     8
 #define MAX_COMPUTE_WRITE_BUFFERS      8
 #define UNIFORM_BUFFER_SIZE            32768
-#define MAX_BUFFER_BINDINGS            16
+#define MAX_VERTEX_BUFFERS             16
+#define MAX_VERTEX_ATTRIBUTES          16
 #define MAX_COLOR_TARGET_BINDINGS      4
 #define MAX_PRESENT_COUNT              16
 #define MAX_FRAMES_IN_FLIGHT           3
@@ -262,6 +263,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     SDL_GPUShader *blitFrom2DArrayShader,
     SDL_GPUShader *blitFrom3DShader,
     SDL_GPUShader *blitFromCubeShader,
+    SDL_GPUShader *blitFromCubeArrayShader,
     BlitPipelineCacheEntry **blitPipelines,
     Uint32 *blitPipelineCount,
     Uint32 *blitPipelineCapacity);
@@ -276,6 +278,7 @@ void SDL_GPU_BlitCommon(
     SDL_GPUShader *blitFrom2DArrayShader,
     SDL_GPUShader *blitFrom3DShader,
     SDL_GPUShader *blitFromCubeShader,
+    SDL_GPUShader *blitFromCubeArrayShader,
     BlitPipelineCacheEntry **blitPipelines,
     Uint32 *blitPipelineCount,
     Uint32 *blitPipelineCapacity);
@@ -409,7 +412,7 @@ struct SDL_GPUDevice
 
     void (*BindVertexBuffers)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstBinding,
+        Uint32 firstSlot,
         const SDL_GPUBufferBinding *bindings,
         Uint32 numBindings);
 
@@ -690,12 +693,14 @@ struct SDL_GPUDevice
     // Opaque pointer for the Driver
     SDL_GPURenderer *driverData;
 
-    // Store this for SDL_GetGPUDriver()
-    SDL_GPUDriver backend;
+    // Store this for SDL_GetGPUDeviceDriver()
+    const char *backend;
+
+    // Store this for SDL_GetGPUShaderFormats()
+    SDL_GPUShaderFormat shader_formats;
 
     // Store this for SDL_gpu.c's debug layer
     bool debug_mode;
-    SDL_GPUShaderFormat shader_formats;
 };
 
 #define ASSIGN_DRIVER_FUNC(func, name) \
@@ -783,7 +788,6 @@ struct SDL_GPUDevice
 typedef struct SDL_GPUBootstrap
 {
     const char *name;
-    const SDL_GPUDriver backendflag;
     const SDL_GPUShaderFormat shader_formats;
     bool (*PrepareDriver)(SDL_VideoDevice *_this);
     SDL_GPUDevice *(*CreateDevice)(bool debug_mode, bool prefer_low_power, SDL_PropertiesID props);

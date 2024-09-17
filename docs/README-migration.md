@@ -341,6 +341,7 @@ SDL_HasRDTSC() has been removed; there is no replacement. Don't use the RDTSC op
 SDL_SIMDAlloc(), SDL_SIMDRealloc(), and SDL_SIMDFree() have been removed. You can use SDL_aligned_alloc() and SDL_aligned_free() with SDL_GetSIMDAlignment() to get the same functionality.
 
 The following functions have been renamed:
+* SDL_GetCPUCount() => SDL_GetNumLogicalCPUCores()
 * SDL_SIMDGetAlignment() => SDL_GetSIMDAlignment()
 
 ## SDL_endian.h
@@ -1741,6 +1742,8 @@ SDL3 attempts to apply consistency to case-insensitive string functions. In SDL2
 Please note that the case-folding technique used by SDL3 will not produce correct results for the "Turkish 'I'"; this one letter is a surprisingly hard problem in the Unicode world, and since these functions do not specify the human language in use, we have chosen to ignore this problem.
 
 SDL_strtoll(), SDL_strtoull(), SDL_lltoa(), and SDL_ulltoa() use long long values instead of 64-bit values, to match their C runtime counterparts.
+
+SDL_setenv() is not thread-safe and has been renamed SDL_setenv_unsafe().
 
 The following macros have been removed:
 * SDL_TABLESIZE() - use SDL_arraysize() instead
