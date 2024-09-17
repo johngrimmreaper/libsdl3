@@ -177,6 +177,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     SDL_GPUShader *blit_from_2d_array_shader,
     SDL_GPUShader *blit_from_3d_shader,
     SDL_GPUShader *blit_from_cube_shader,
+    SDL_GPUShader *blit_from_cube_array_shader,
     BlitPipelineCacheEntry **blit_pipelines,
     Uint32 *blit_pipeline_count,
     Uint32 *blit_pipeline_capacity)
@@ -211,7 +212,9 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     blit_pipeline_create_info.vertex_shader = blit_vertex_shader;
     if (source_texture_type == SDL_GPU_TEXTURETYPE_CUBE) {
         blit_pipeline_create_info.fragment_shader = blit_from_cube_shader;
-    } else if (source_texture_type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
+    } else if (source_texture_type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
+        blit_pipeline_create_info.fragment_shader = blit_from_cube_array_shader;
+    }  else if (source_texture_type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
         blit_pipeline_create_info.fragment_shader = blit_from_2d_array_shader;
     } else if (source_texture_type == SDL_GPU_TEXTURETYPE_3D) {
         blit_pipeline_create_info.fragment_shader = blit_from_3d_shader;
@@ -259,6 +262,7 @@ void SDL_GPU_BlitCommon(
     SDL_GPUShader *blit_from_2d_array_shader,
     SDL_GPUShader *blit_from_3d_shader,
     SDL_GPUShader *blit_from_cube_shader,
+    SDL_GPUShader *blit_from_cube_array_shader,
     BlitPipelineCacheEntry **blit_pipelines,
     Uint32 *blit_pipeline_count,
     Uint32 *blit_pipeline_capacity)
@@ -283,6 +287,7 @@ void SDL_GPU_BlitCommon(
         blit_from_2d_array_shader,
         blit_from_3d_shader,
         blit_from_cube_shader,
+        blit_from_cube_array_shader,
         blit_pipelines,
         blit_pipeline_count,
         blit_pipeline_capacity);
@@ -363,87 +368,12 @@ void SDL_GPU_BlitCommon(
 
 // Driver Functions
 
-static SDL_GPUDriver SDL_GPUSelectBackend(
-    SDL_VideoDevice *_this,
-    const char *gpudriver,
-    SDL_GPUShaderFormat format_flags)
+#ifndef SDL_GPU_DISABLED
+static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
 {
     Uint32 i;
-
-    // Environment/Properties override...
-    if (gpudriver != NULL) {
-        for (i = 0; backends[i]; i += 1) {
-            if (SDL_strcasecmp(gpudriver, backends[i]->name) == 0) {
-                if (!(backends[i]->shader_formats & format_flags)) {
-                    SDL_LogError(SDL_LOG_CATEGORY_GPU, "Required shader format for backend %s not provided!", gpudriver);
-                    return SDL_GPU_DRIVER_INVALID;
-                }
-                if (backends[i]->PrepareDriver(_this)) {
-                    return backends[i]->backendflag;
-                }
-            }
-        }
-
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "SDL_HINT_GPU_DRIVER %s unsupported!", gpudriver);
-        return SDL_GPU_DRIVER_INVALID;
-    }
-
-    for (i = 0; backends[i]; i += 1) {
-        if ((backends[i]->shader_formats & format_flags) == 0) {
-            // Don't select a backend which doesn't support the app's shaders.
-            continue;
-        }
-        if (backends[i]->PrepareDriver(_this)) {
-            return backends[i]->backendflag;
-        }
-    }
-
-    SDL_LogError(SDL_LOG_CATEGORY_GPU, "No supported SDL_GPU backend found!");
-    return SDL_GPU_DRIVER_INVALID;
-}
-
-SDL_GPUDevice *SDL_CreateGPUDevice(
-    SDL_GPUShaderFormat format_flags,
-    SDL_bool debug_mode,
-    const char *name)
-{
-    SDL_GPUDevice *result;
-    SDL_PropertiesID props = SDL_CreateProperties();
-    if (format_flags & SDL_GPU_SHADERFORMAT_PRIVATE) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL, true);
-    }
-    if (format_flags & SDL_GPU_SHADERFORMAT_SPIRV) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL, true);
-    }
-    if (format_flags & SDL_GPU_SHADERFORMAT_DXBC) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL, true);
-    }
-    if (format_flags & SDL_GPU_SHADERFORMAT_DXIL) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL, true);
-    }
-    if (format_flags & SDL_GPU_SHADERFORMAT_MSL) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL, true);
-    }
-    if (format_flags & SDL_GPU_SHADERFORMAT_METALLIB) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL, true);
-    }
-    SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, debug_mode);
-    SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, name);
-    result = SDL_CreateGPUDeviceWithProperties(props);
-    SDL_DestroyProperties(props);
-    return result;
-}
-
-SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
-{
     SDL_GPUShaderFormat format_flags = 0;
-    bool debug_mode;
-    bool preferLowPower;
-
-    int i;
     const char *gpudriver;
-    SDL_GPUDevice *result = NULL;
-    SDL_GPUDriver selectedBackend;
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
     if (_this == NULL) {
@@ -470,29 +400,142 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
         format_flags |= SDL_GPU_SHADERFORMAT_METALLIB;
     }
 
-    debug_mode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, true);
-    preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL, false);
-
     gpudriver = SDL_GetHint(SDL_HINT_GPU_DRIVER);
     if (gpudriver == NULL) {
         gpudriver = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, NULL);
     }
 
-    selectedBackend = SDL_GPUSelectBackend(_this, gpudriver, format_flags);
-    if (selectedBackend != SDL_GPU_DRIVER_INVALID) {
+    // Environment/Properties override...
+    if (gpudriver != NULL) {
         for (i = 0; backends[i]; i += 1) {
-            if (backends[i]->backendflag == selectedBackend) {
-                result = backends[i]->CreateDevice(debug_mode, preferLowPower, props);
-                if (result != NULL) {
-                    result->backend = backends[i]->backendflag;
-                    result->shader_formats = backends[i]->shader_formats;
-                    result->debug_mode = debug_mode;
-                    break;
+            if (SDL_strcasecmp(gpudriver, backends[i]->name) == 0) {
+                if (!(backends[i]->shader_formats & format_flags)) {
+                    SDL_LogError(SDL_LOG_CATEGORY_GPU, "Required shader format for backend %s not provided!", gpudriver);
+                    return NULL;
+                }
+                if (backends[i]->PrepareDriver(_this)) {
+                    return backends[i];
                 }
             }
         }
+
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "SDL_HINT_GPU_DRIVER %s unsupported!", gpudriver);
+        return NULL;
+    }
+
+    for (i = 0; backends[i]; i += 1) {
+        if ((backends[i]->shader_formats & format_flags) == 0) {
+            // Don't select a backend which doesn't support the app's shaders.
+            continue;
+        }
+        if (backends[i]->PrepareDriver(_this)) {
+            return backends[i];
+        }
+    }
+
+    SDL_LogError(SDL_LOG_CATEGORY_GPU, "No supported SDL_GPU backend found!");
+    return NULL;
+}
+
+static void SDL_GPU_FillProperties(
+    SDL_PropertiesID props,
+    SDL_GPUShaderFormat format_flags,
+    SDL_bool debug_mode,
+    const char *name)
+{
+    if (format_flags & SDL_GPU_SHADERFORMAT_PRIVATE) {
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL, true);
+    }
+    if (format_flags & SDL_GPU_SHADERFORMAT_SPIRV) {
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL, true);
+    }
+    if (format_flags & SDL_GPU_SHADERFORMAT_DXBC) {
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL, true);
+    }
+    if (format_flags & SDL_GPU_SHADERFORMAT_DXIL) {
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL, true);
+    }
+    if (format_flags & SDL_GPU_SHADERFORMAT_MSL) {
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL, true);
+    }
+    if (format_flags & SDL_GPU_SHADERFORMAT_METALLIB) {
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL, true);
+    }
+    SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, debug_mode);
+    SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, name);
+}
+#endif // SDL_GPU_DISABLED
+
+SDL_bool SDL_GPUSupportsShaderFormats(
+    SDL_GPUShaderFormat format_flags,
+    const char *name)
+{
+#ifndef SDL_GPU_DISABLED
+    bool result;
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_GPU_FillProperties(props, format_flags, SDL_FALSE, name);
+    result = SDL_GPUSupportsProperties(props);
+    SDL_DestroyProperties(props);
+    return result;
+#else
+    SDL_SetError("SDL not built with GPU support");
+    return SDL_FALSE;
+#endif
+}
+
+SDL_bool SDL_GPUSupportsProperties(SDL_PropertiesID props)
+{
+#ifndef SDL_GPU_DISABLED
+    return (SDL_GPUSelectBackend(props) != NULL);
+#else
+    SDL_SetError("SDL not built with GPU support");
+    return SDL_FALSE;
+#endif
+}
+
+SDL_GPUDevice *SDL_CreateGPUDevice(
+    SDL_GPUShaderFormat format_flags,
+    SDL_bool debug_mode,
+    const char *name)
+{
+#ifndef SDL_GPU_DISABLED
+    SDL_GPUDevice *result;
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_GPU_FillProperties(props, format_flags, debug_mode, name);
+    result = SDL_CreateGPUDeviceWithProperties(props);
+    SDL_DestroyProperties(props);
+    return result;
+#else
+    SDL_SetError("SDL not built with GPU support");
+    return NULL;
+#endif // SDL_GPU_DISABLED
+}
+
+SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
+{
+#ifndef SDL_GPU_DISABLED
+    bool debug_mode;
+    bool preferLowPower;
+    SDL_GPUDevice *result = NULL;
+    const SDL_GPUBootstrap *selectedBackend;
+
+    selectedBackend = SDL_GPUSelectBackend(props);
+    if (selectedBackend != NULL) {
+        debug_mode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, true);
+        preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL, false);
+
+        result = selectedBackend->CreateDevice(debug_mode, preferLowPower, props);
+        if (result != NULL) {
+            result->backend = selectedBackend->name;
+            result->shader_formats = selectedBackend->shader_formats;
+            result->debug_mode = debug_mode;
+        }
     }
     return result;
+#else
+    SDL_SetError("SDL not built with GPU support");
+    return NULL;
+#endif // SDL_GPU_DISABLED
 }
 
 void SDL_DestroyGPUDevice(SDL_GPUDevice *device)
@@ -502,11 +545,32 @@ void SDL_DestroyGPUDevice(SDL_GPUDevice *device)
     device->DestroyDevice(device);
 }
 
-SDL_GPUDriver SDL_GetGPUDriver(SDL_GPUDevice *device)
+int SDL_GetNumGPUDrivers(void)
 {
-    CHECK_DEVICE_MAGIC(device, SDL_GPU_DRIVER_INVALID);
+    return SDL_arraysize(backends) - 1;
+}
+
+const char * SDL_GetGPUDriver(int index)
+{
+    if (index < 0 || index >= SDL_GetNumGPUDrivers()) {
+        SDL_InvalidParamError("index");
+        return NULL;
+    }
+    return backends[index]->name;
+}
+
+const char * SDL_GetGPUDeviceDriver(SDL_GPUDevice *device)
+{
+    CHECK_DEVICE_MAGIC(device, NULL);
 
     return device->backend;
+}
+
+SDL_GPUShaderFormat SDL_GetGPUShaderFormats(SDL_GPUDevice *device)
+{
+    CHECK_DEVICE_MAGIC(device, SDL_GPU_SHADERFORMAT_INVALID);
+
+    return device->shader_formats;
 }
 
 Uint32 SDL_GPUTextureFormatTexelBlockSize(
@@ -687,16 +751,32 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
                 return NULL;
             }
         }
-        if (graphicsPipelineCreateInfo->vertex_input_state.num_vertex_bindings > 0 && graphicsPipelineCreateInfo->vertex_input_state.vertex_bindings == NULL) {
-            SDL_assert_release(!"Vertex bindings array pointer cannot be NULL!");
+        if (graphicsPipelineCreateInfo->vertex_input_state.num_vertex_buffers > 0 && graphicsPipelineCreateInfo->vertex_input_state.vertex_buffer_descriptions == NULL) {
+            SDL_assert_release(!"Vertex buffer descriptions array pointer cannot be NULL!");
+            return NULL;
+        }
+        if (graphicsPipelineCreateInfo->vertex_input_state.num_vertex_buffers > MAX_VERTEX_BUFFERS) {
+            SDL_assert_release(!"The number of vertex buffer descriptions in a vertex input state must not exceed 16!");
             return NULL;
         }
         if (graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes > 0 && graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes == NULL) {
             SDL_assert_release(!"Vertex attributes array pointer cannot be NULL!");
             return NULL;
         }
+        if (graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes > MAX_VERTEX_ATTRIBUTES) {
+            SDL_assert_release(!"The number of vertex attributes in a vertex input state must not exceed 16!");
+            return NULL;
+        }
+        Uint32 locations[MAX_VERTEX_ATTRIBUTES];
         for (Uint32 i = 0; i < graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes; i += 1) {
             CHECK_VERTEXELEMENTFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes[i].format, NULL);
+
+            locations[i] = graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes[i].location;
+            for (Uint32 j = 0; j < i; j += 1) {
+                if (locations[j] == locations[i]) {
+                    SDL_assert_release(!"Each vertex attribute location in a vertex input state must be unique!");
+                }
+            }
         }
         if (graphicsPipelineCreateInfo->depth_stencil_state.enable_depth_test) {
             CHECK_COMPAREOP_ENUM_INVALID(graphicsPipelineCreateInfo->depth_stencil_state.compare_op, NULL)
@@ -787,6 +867,14 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
             SDL_assert_release(!"For any texture: usage cannot contain both GRAPHICS_STORAGE_READ and SAMPLER");
             failed = true;
         }
+        if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1 &&
+            (createinfo->usage & (SDL_GPU_TEXTUREUSAGE_SAMPLER |
+                                  SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ |
+                                  SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ |
+                                  SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE))) {
+            SDL_assert_release(!"For multisample textures: usage cannot contain SAMPLER or STORAGE flags");
+            failed = true;
+        }
         if (IsDepthFormat(createinfo->format) && (createinfo->usage & ~(SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER))) {
             SDL_assert_release(!"For depth textures: usage cannot contain any flags except for DEPTH_STENCIL_TARGET and SAMPLER");
             failed = true;
@@ -818,6 +906,28 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
                 SDL_assert_release(!"For cube textures: the format is unsupported for the given usage");
                 failed = true;
             }
+        } else if (createinfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
+            // Cubemap array validation
+            if (createinfo->width != createinfo->height) {
+                SDL_assert_release(!"For cube array textures: width and height must be identical");
+                failed = true;
+            }
+            if (createinfo->width > MAX_2D_DIMENSION || createinfo->height > MAX_2D_DIMENSION) {
+                SDL_assert_release(!"For cube array textures: width and height must be <= 16384");
+                failed = true;
+            }
+            if (createinfo->layer_count_or_depth % 6 != 0) {
+                SDL_assert_release(!"For cube array textures: layer_count_or_depth must be a multiple of 6");
+                failed = true;
+            }
+            if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1) {
+                SDL_assert_release(!"For cube array textures: sample_count must be SDL_GPU_SAMPLECOUNT_1");
+                failed = true;
+            }
+            if (!SDL_GPUTextureSupportsFormat(device, createinfo->format, SDL_GPU_TEXTURETYPE_CUBE_ARRAY, createinfo->usage)) {
+                SDL_assert_release(!"For cube array textures: the format is unsupported for the given usage");
+                failed = true;
+            }
         } else if (createinfo->type == SDL_GPU_TEXTURETYPE_3D) {
             // 3D Texture Validation
             if (createinfo->width > MAX_3D_DIMENSION || createinfo->height > MAX_3D_DIMENSION || createinfo->layer_count_or_depth > MAX_3D_DIMENSION) {
@@ -843,16 +953,10 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
                     SDL_assert_release(!"For array textures: usage must not contain DEPTH_STENCIL_TARGET");
                     failed = true;
                 }
-                if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1) {
-                    SDL_assert_release(!"For array textures: sample_count must be SDL_GPU_SAMPLECOUNT_1");
-                    failed = true;
-                }
-            } else {
-                // 2D Texture Validation
-                if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1 && createinfo->num_levels > 1) {
-                    SDL_assert_release(!"For 2D textures: if sample_count is >= SDL_GPU_SAMPLECOUNT_1, then num_levels must be 1");
-                    failed = true;
-                }
+            }
+            if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1 && createinfo->num_levels > 1) {
+                SDL_assert_release(!"For 2D multisample textures: num_levels must be 1");
+                failed = true;
             }
             if (!SDL_GPUTextureSupportsFormat(device, createinfo->format, SDL_GPU_TEXTURETYPE_2D, createinfo->usage)) {
                 SDL_assert_release(!"For 2D textures: the format is unsupported for the given usage");
@@ -1245,13 +1349,50 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
         CHECK_ANY_PASS_IN_PROGRESS("Cannot begin render pass during another pass!", NULL)
 
         for (Uint32 i = 0; i < num_color_targets; i += 1) {
+            TextureCommonHeader *textureHeader = (TextureCommonHeader *)color_target_infos[i].texture;
+
             if (color_target_infos[i].cycle && color_target_infos[i].load_op == SDL_GPU_LOADOP_LOAD) {
                 SDL_assert_release(!"Cannot cycle color target when load op is LOAD!");
             }
+
+            if (color_target_infos[i].store_op == SDL_GPU_STOREOP_RESOLVE || color_target_infos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
+                if (color_target_infos[i].resolve_texture == NULL) {
+                    SDL_assert_release(!"Store op is RESOLVE or RESOLVE_AND_STORE but resolve_texture is NULL!");
+                } else {
+                    TextureCommonHeader *resolveTextureHeader = (TextureCommonHeader *)color_target_infos[i].resolve_texture;
+                    if (textureHeader->info.sample_count == SDL_GPU_SAMPLECOUNT_1) {
+                        SDL_assert_release(!"Store op is RESOLVE or RESOLVE_AND_STORE but texture is not multisample!");
+                    }
+                    if (resolveTextureHeader->info.sample_count != SDL_GPU_SAMPLECOUNT_1) {
+                        SDL_assert_release(!"Resolve texture must have a sample count of 1!");
+                    }
+                    if (resolveTextureHeader->info.format != textureHeader->info.format) {
+                        SDL_assert_release(!"Resolve texture must have the same format as its corresponding color target!");
+                    }
+                    if (resolveTextureHeader->info.type == SDL_GPU_TEXTURETYPE_3D) {
+                        SDL_assert_release(!"Resolve texture must not be of TEXTURETYPE_3D!");
+                    }
+                }
+            }
         }
 
-        if (depth_stencil_target_info != NULL && depth_stencil_target_info->cycle && (depth_stencil_target_info->load_op == SDL_GPU_LOADOP_LOAD || depth_stencil_target_info->load_op == SDL_GPU_LOADOP_LOAD)) {
-            SDL_assert_release(!"Cannot cycle depth target when load op or stencil load op is LOAD!");
+        if (depth_stencil_target_info != NULL) {
+
+            TextureCommonHeader *textureHeader = (TextureCommonHeader *)depth_stencil_target_info->texture;
+            if (!(textureHeader->info.usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET)) {
+                SDL_assert_release(!"Depth target must have been created with the DEPTH_STENCIL_TARGET usage flag!");
+            }
+
+            if (depth_stencil_target_info->cycle && (depth_stencil_target_info->load_op == SDL_GPU_LOADOP_LOAD || depth_stencil_target_info->stencil_load_op == SDL_GPU_LOADOP_LOAD)) {
+                SDL_assert_release(!"Cannot cycle depth target when load op or stencil load op is LOAD!");
+            }
+
+            if (depth_stencil_target_info->store_op == SDL_GPU_STOREOP_RESOLVE ||
+                depth_stencil_target_info->stencil_store_op == SDL_GPU_STOREOP_RESOLVE ||
+                depth_stencil_target_info->store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE ||
+                depth_stencil_target_info->stencil_store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
+                SDL_assert_release(!"RESOLVE store ops are not supported for depth-stencil targets!");
+            }
         }
     }
 
@@ -2294,6 +2435,10 @@ void SDL_BlitGPUTexture(
         if (dstHeader == NULL) {
             SDL_assert_release(!"Blit destination texture must be non-NULL");
             return; // attempting to proceed will crash
+        }
+        if (srcHeader->info.sample_count != SDL_GPU_SAMPLECOUNT_1) {
+            SDL_assert_release(!"Blit source texture must have a sample count of 1");
+            failed = true;
         }
         if ((srcHeader->info.usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) == 0) {
             SDL_assert_release(!"Blit source texture must be created with the SAMPLER usage flag");

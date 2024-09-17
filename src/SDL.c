@@ -49,6 +49,7 @@
 #include "joystick/SDL_joystick_c.h"
 #include "render/SDL_sysrender.h"
 #include "sensor/SDL_sensor_c.h"
+#include "stdlib/SDL_getenv_c.h"
 #include "thread/SDL_thread_c.h"
 #include "video/SDL_pixels_c.h"
 #include "video/SDL_video_c.h"
@@ -250,21 +251,23 @@ void SDL_SetMainReady(void)
 void SDL_InitMainThread(void)
 {
     SDL_InitTLSData();
+    SDL_InitEnvironment();
+    SDL_InitProperties();
+    SDL_InitHints();
     SDL_InitTicks();
     SDL_InitFilesystem();
     SDL_InitLog();
-    SDL_InitProperties();
     SDL_GetGlobalProperties();
-    SDL_InitHints();
 }
 
 static void SDL_QuitMainThread(void)
 {
-    SDL_QuitHints();
-    SDL_QuitProperties();
     SDL_QuitLog();
     SDL_QuitFilesystem();
     SDL_QuitTicks();
+    SDL_QuitHints();
+    SDL_QuitProperties();
+    SDL_QuitEnvironment();
     SDL_QuitTLSData();
 }
 
@@ -330,6 +333,7 @@ SDL_bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_VIDEO);
             if (!SDL_VideoInit(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_VIDEO);
+                SDL_QuitSubSystem(SDL_INIT_EVENTS);
                 goto quit_and_error;
             }
         } else {
@@ -354,6 +358,7 @@ SDL_bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_AUDIO);
             if (!SDL_InitAudio(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_AUDIO);
+                SDL_QuitSubSystem(SDL_INIT_EVENTS);
                 goto quit_and_error;
             }
         } else {
@@ -378,6 +383,7 @@ SDL_bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_JOYSTICK);
             if (!SDL_InitJoysticks()) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_JOYSTICK);
+                SDL_QuitSubSystem(SDL_INIT_EVENTS);
                 goto quit_and_error;
             }
         } else {
@@ -401,6 +407,7 @@ SDL_bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_GAMEPAD);
             if (!SDL_InitGamepads()) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_GAMEPAD);
+                SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
                 goto quit_and_error;
             }
         } else {
@@ -463,6 +470,7 @@ SDL_bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_CAMERA);
             if (!SDL_CameraInit(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_CAMERA);
+                SDL_QuitSubSystem(SDL_INIT_EVENTS);
                 goto quit_and_error;
             }
         } else {

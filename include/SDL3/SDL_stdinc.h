@@ -587,6 +587,7 @@ typedef struct SDL_alignment_test
     void *b;
 } SDL_alignment_test;
 SDL_COMPILE_TIME_ASSERT(struct_alignment, sizeof(SDL_alignment_test) == (2 * sizeof(void *)));
+SDL_COMPILE_TIME_ASSERT(two_s_complement, (int)~(int)0 == (int)(-1));
 #endif /* DOXYGEN_SHOULD_IGNORE_THIS */
 /** \endcond */
 
@@ -977,9 +978,232 @@ extern SDL_DECLSPEC void SDLCALL SDL_aligned_free(void *mem);
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetNumAllocations(void);
 
+/**
+ * A thread-safe set of environment variables
+ *
+ * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetEnvironment
+ * \sa SDL_CreateEnvironment
+ * \sa SDL_GetEnvironmentVariable
+ * \sa SDL_GetEnvironmentVariables
+ * \sa SDL_SetEnvironmentVariable
+ * \sa SDL_UnsetEnvironmentVariable
+ * \sa SDL_DestroyEnvironment
+ */
+typedef struct SDL_Environment SDL_Environment;
+
+/**
+ * Get the process environment.
+ *
+ * This is initialized at application start and is not affected by setenv()
+ * and unsetenv() calls after that point. Use SDL_SetEnvironmentVariable() and
+ * SDL_UnsetEnvironmentVariable() if you want to modify this environment, or
+ * SDL_setenv_unsafe() or SDL_unsetenv_unsafe() if you want changes to persist
+ * in the C runtime environment after SDL_Quit().
+ *
+ * \returns a pointer to the environment for the process or NULL on failure;
+ *          call SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetEnvironmentVariable
+ * \sa SDL_GetEnvironmentVariables
+ * \sa SDL_SetEnvironmentVariable
+ * \sa SDL_UnsetEnvironmentVariable
+ */
+extern SDL_DECLSPEC SDL_Environment * SDLCALL SDL_GetEnvironment(void);
+
+/**
+ * Create a set of environment variables
+ *
+ * \param populated SDL_TRUE to initialize it from the C runtime environment,
+ *                  SDL_FALSE to create an empty environment.
+ * \returns a pointer to the new environment or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety If `populated` is SDL_FALSE, it is safe to call this function
+ *               from any thread, otherwise it is safe if no other threads are
+ *               calling setenv() or unsetenv()
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetEnvironmentVariable
+ * \sa SDL_GetEnvironmentVariables
+ * \sa SDL_SetEnvironmentVariable
+ * \sa SDL_UnsetEnvironmentVariable
+ * \sa SDL_DestroyEnvironment
+ */
+extern SDL_DECLSPEC SDL_Environment * SDLCALL SDL_CreateEnvironment(SDL_bool populated);
+
+/**
+ * Get the value of a variable in the environment.
+ *
+ * \param env the environment to query.
+ * \param name the name of the variable to get.
+ * \returns a pointer to the value of the variable or NULL if it can't be
+ *          found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetEnvironment
+ * \sa SDL_CreateEnvironment
+ * \sa SDL_GetEnvironmentVariables
+ * \sa SDL_SetEnvironmentVariable
+ * \sa SDL_UnsetEnvironmentVariable
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetEnvironmentVariable(SDL_Environment *env, const char *name);
+
+/**
+ * Get all variables in the environment.
+ *
+ * \param env the environment to query.
+ * \returns a NULL terminated array of pointers to environment variables in
+ *          the form "variable=value" or NULL on failure; call SDL_GetError()
+ *          for more information. This is a single allocation that should be
+ *          freed with SDL_free() when it is no longer needed.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetEnvironment
+ * \sa SDL_CreateEnvironment
+ * \sa SDL_GetEnvironmentVariables
+ * \sa SDL_SetEnvironmentVariable
+ * \sa SDL_UnsetEnvironmentVariable
+ */
+extern SDL_DECLSPEC char ** SDLCALL SDL_GetEnvironmentVariables(SDL_Environment *env);
+
+/**
+ * Set the value of a variable in the environment.
+ *
+ * \param env the environment to modify.
+ * \param name the name of the variable to set.
+ * \param value the value of the variable to set.
+ * \param overwrite SDL_TRUE to overwrite the variable if it exists, SDL_FALSE
+ *                  to return success without setting the variable if it
+ *                  already exists.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetEnvironment
+ * \sa SDL_CreateEnvironment
+ * \sa SDL_GetEnvironmentVariable
+ * \sa SDL_GetEnvironmentVariables
+ * \sa SDL_UnsetEnvironmentVariable
+ */
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const char *value, SDL_bool overwrite);
+
+/**
+ * Clear a variable from the environment.
+ *
+ * \param env the environment to modify.
+ * \param name the name of the variable to unset.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetEnvironment
+ * \sa SDL_CreateEnvironment
+ * \sa SDL_GetEnvironmentVariable
+ * \sa SDL_GetEnvironmentVariables
+ * \sa SDL_SetEnvironmentVariable
+ * \sa SDL_UnsetEnvironmentVariable
+ */
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name);
+
+/**
+ * Destroy a set of environment variables.
+ *
+ * \param env the environment to destroy.
+ *
+ * \threadsafety It is safe to call this function from any thread, as long as
+ *               the environment is no longer in use.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateEnvironment
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_DestroyEnvironment(SDL_Environment *env);
+
+/**
+ * Get the value of a variable in the environment.
+ *
+ * This function uses SDL's cached copy of the environment and is thread-safe.
+ *
+ * \param name the name of the variable to get.
+ * \returns a pointer to the value of the variable or NULL if it can't be
+ *          found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
 extern SDL_DECLSPEC const char * SDLCALL SDL_getenv(const char *name);
-extern SDL_DECLSPEC int SDLCALL SDL_setenv(const char *name, const char *value, int overwrite);
-extern SDL_DECLSPEC int SDLCALL SDL_unsetenv(const char *name);
+
+/**
+ * Get the value of a variable in the environment.
+ *
+ * This function bypasses SDL's cached copy of the environment and is not
+ * thread-safe.
+ *
+ * \param name the name of the variable to get.
+ * \returns a pointer to the value of the variable or NULL if it can't be
+ *          found.
+ *
+ * \threadsafety This function is not thread safe, consider using SDL_getenv()
+ *               instead.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_getenv
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_getenv_unsafe(const char *name);
+
+/**
+ * Set the value of a variable in the environment.
+ *
+ * \param name the name of the variable to set.
+ * \param value the value of the variable to set.
+ * \param overwrite 1 to overwrite the variable if it exists, 0 to return
+ *                  success without setting the variable if it already exists.
+ * \returns 0 on success, -1 on error.
+ *
+ * \threadsafety This function is not thread safe, consider using
+ *               SDL_SetEnvironmentVariable() instead.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetEnvironmentVariable
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_setenv_unsafe(const char *name, const char *value, int overwrite);
+
+/**
+ * Clear a variable from the environment.
+ *
+ * \param name the name of the variable to unset.
+ * \returns 0 on success, -1 on error.
+ *
+ * \threadsafety This function is not thread safe, consider using
+ *               SDL_UnsetEnvironmentVariable() instead.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_UnsetEnvironmentVariable
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_unsetenv_unsafe(const char *name);
 
 typedef int (SDLCALL *SDL_CompareCallback)(const void *a, const void *b);
 extern SDL_DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size, SDL_CompareCallback compare);
@@ -1499,21 +1723,21 @@ extern SDL_DECLSPEC int SDLCALL SDL_wcsncasecmp(const wchar_t *str1, const wchar
 /**
  * Parse a `long` from a wide string.
  *
- * This function makes fewer guarantees than the C runtime `wcstol`:
+ * If `str` starts with whitespace, then those whitespace characters are
+ * skipped before attempting to parse the number.
  *
- * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for
- *   other bases is unspecified.
- * - It is unspecified what this function returns when the parsed integer does
- *   not fit inside a `long`.
+ * If the parsed number does not fit inside a `long`, the result is clamped to
+ * the minimum and maximum representable `long` values.
  *
  * \param str The null-terminated wide string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid wide character
  *             (i.e. the next character after the parsed number) will be
  *             written to this pointer.
- * \param base The base of the integer to read. The values 0, 10 and 16 are
- *             supported. If 0, the base will be inferred from the integer's
- *             prefix.
- * \returns The parsed `long`.
+ * \param base The base of the integer to read. Supported values are 0 and 2
+ *             to 36 inclusive. If 0, the base will be inferred from the
+ *             number's prefix (0x for hexadecimal, 0 for octal, decimal
+ *             otherwise).
+ * \returns The parsed `long`, or 0 if no number could be parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1721,21 +1945,21 @@ extern SDL_DECLSPEC double SDLCALL SDL_atof(const char *str);
 /**
  * Parse a `long` from a string.
  *
- * This function makes fewer guarantees than the C runtime `strtol`:
+ * If `str` starts with whitespace, then those whitespace characters are
+ * skipped before attempting to parse the number.
  *
- * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for
- *   other bases is unspecified.
- * - It is unspecified what this function returns when the parsed integer does
- *   not fit inside a `long`.
+ * If the parsed number does not fit inside a `long`, the result is clamped to
+ * the minimum and maximum representable `long` values.
  *
  * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character (i.e.
  *             the next character after the parsed number) will be written to
  *             this pointer.
- * \param base The base of the integer to read. The values 0, 10 and 16 are
- *             supported. If 0, the base will be inferred from the integer's
- *             prefix.
- * \returns The parsed `long`.
+ * \param base The base of the integer to read. Supported values are 0 and 2
+ *             to 36 inclusive. If 0, the base will be inferred from the
+ *             number's prefix (0x for hexadecimal, 0 for octal, decimal
+ *             otherwise).
+ * \returns The parsed `long`, or 0 if no number could be parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1755,21 +1979,21 @@ extern SDL_DECLSPEC long SDLCALL SDL_strtol(const char *str, char **endp, int ba
 /**
  * Parse an `unsigned long` from a string.
  *
- * This function makes fewer guarantees than the C runtime `strtoul`:
+ * If `str` starts with whitespace, then those whitespace characters are
+ * skipped before attempting to parse the number.
  *
- * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for
- *   other bases is unspecified.
- * - It is unspecified what this function returns when the parsed integer does
- *   not fit inside an `unsigned long`.
+ * If the parsed number does not fit inside an `unsigned long`, the result is
+ * clamped to the maximum representable `unsigned long` value.
  *
  * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character (i.e.
  *             the next character after the parsed number) will be written to
  *             this pointer.
- * \param base The base of the integer to read. The values 0, 10 and 16 are
- *             supported. If 0, the base will be inferred from the integer's
- *             prefix.
- * \returns The parsed `unsigned long`.
+ * \param base The base of the integer to read. Supported values are 0 and 2
+ *             to 36 inclusive. If 0, the base will be inferred from the
+ *             number's prefix (0x for hexadecimal, 0 for octal, decimal
+ *             otherwise).
+ * \returns The parsed `unsigned long`, or 0 if no number could be parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1788,21 +2012,21 @@ extern SDL_DECLSPEC unsigned long SDLCALL SDL_strtoul(const char *str, char **en
 /**
  * Parse a `long long` from a string.
  *
- * This function makes fewer guarantees than the C runtime `strtoll`:
+ * If `str` starts with whitespace, then those whitespace characters are
+ * skipped before attempting to parse the number.
  *
- * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for
- *   other bases is unspecified.
- * - It is unspecified what this function returns when the parsed integer does
- *   not fit inside a `long long`.
+ * If the parsed number does not fit inside a `long long`, the result is
+ * clamped to the minimum and maximum representable `long long` values.
  *
  * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character (i.e.
  *             the next character after the parsed number) will be written to
  *             this pointer.
- * \param base The base of the integer to read. The values 0, 10 and 16 are
- *             supported. If 0, the base will be inferred from the integer's
- *             prefix.
- * \returns The parsed `long long`.
+ * \param base The base of the integer to read. Supported values are 0 and 2
+ *             to 36 inclusive. If 0, the base will be inferred from the
+ *             number's prefix (0x for hexadecimal, 0 for octal, decimal
+ *             otherwise).
+ * \returns The parsed `long long`, or 0 if no number could be parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1821,21 +2045,22 @@ extern SDL_DECLSPEC long long SDLCALL SDL_strtoll(const char *str, char **endp, 
 /**
  * Parse an `unsigned long long` from a string.
  *
- * This function makes fewer guarantees than the C runtime `strtoull`:
+ * If `str` starts with whitespace, then those whitespace characters are
+ * skipped before attempting to parse the number.
  *
- * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for
- *   other bases is unspecified.
- * - It is unspecified what this function returns when the parsed integer does
- *   not fit inside a `long long`.
+ * If the parsed number does not fit inside an `unsigned long long`, the
+ * result is clamped to the maximum representable `unsigned long long` value.
  *
  * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character (i.e.
  *             the next character after the parsed number) will be written to
  *             this pointer.
- * \param base The base of the integer to read. The values 0, 10 and 16 are
- *             supported. If 0, the base will be inferred from the integer's
- *             prefix.
- * \returns The parsed `unsigned long long`.
+ * \param base The base of the integer to read. Supported values are 0 and 2
+ *             to 36 inclusive. If 0, the base will be inferred from the
+ *             number's prefix (0x for hexadecimal, 0 for octal, decimal
+ *             otherwise).
+ * \returns The parsed `unsigned long long`, or 0 if no number could be
+ *          parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1865,7 +2090,7 @@ extern SDL_DECLSPEC unsigned long long SDLCALL SDL_strtoull(const char *str, cha
  * \param endp If not NULL, the address of the first invalid character (i.e.
  *             the next character after the parsed number) will be written to
  *             this pointer.
- * \returns The parsed `double`.
+ * \returns The parsed `double`, or 0 if no number could be parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
