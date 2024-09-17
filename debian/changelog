@@ -1,8 +1,15 @@
 libsdl3 (3.1.2+git20240917~231ea07+ds-1) UNRELEASED; urgency=medium
 
   * New upstream snapshot
+  * d/rules: Fix invocation of build-shaders.sh for new upstream snapshot
+  * d/p/render-Fix-detection-of-fxc-dxc-in-build-shaders.sh.patch,
+    d/p/render-Don-t-try-to-rebuild-D3D11-D3D12-Metal-shaders-wit.patch,
+    d/p/render-Make-fix-shaders.sh-work-with-GNU-sed.patch:
+    Replace patch to shader rebuild script with potentially upstreamable
+    patches
+  * Update symbols file
 
- -- Simon McVittie <smcv@debian.org>  Thu, 12 Sep 2024 13:36:21 +0100
+ -- Simon McVittie <smcv@debian.org>  Tue, 17 Sep 2024 12:04:43 +0100
 
 libsdl3 (3.1.2+git20240903~b1b4a9c+ds-1) experimental; urgency=medium
 
