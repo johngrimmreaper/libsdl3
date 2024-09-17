@@ -1,4 +1,4 @@
-libsdl3 (3.1.2+git20240917~231ea07+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.1.2+git20240917~8481d1a+ds-1) UNRELEASED; urgency=medium
 
   * New upstream snapshot
   * d/rules: Fix invocation of build-shaders.sh for new upstream snapshot
