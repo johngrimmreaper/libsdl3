@@ -303,9 +303,10 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
  * A type representing an atomic integer value.
  *
  * This can be used to manage a value that is synchronized across multiple
- * CPUs without a race condition; when an app sets a value with SDL_AtomicSet
- * all other threads, regardless of the CPU it is running on, will see that
- * value when retrieved with SDL_AtomicGet, regardless of CPU caches, etc.
+ * CPUs without a race condition; when an app sets a value with
+ * SDL_SetAtomicInt all other threads, regardless of the CPU it is running on,
+ * will see that value when retrieved with SDL_GetAtomicInt, regardless of CPU
+ * caches, etc.
  *
  * This is also useful for atomic compare-and-swap operations: a thread can
  * change the value as long as its current value matches expectations. When
@@ -316,14 +317,14 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
  * this!).
  *
  * This is a struct so people don't accidentally use numeric operations on it
- * directly. You have to use SDL_Atomic* functions.
+ * directly. You have to use SDL atomic functions.
  *
  * \since This struct is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicCompareAndSwap
- * \sa SDL_AtomicGet
- * \sa SDL_AtomicSet
- * \sa SDL_AtomicAdd
+ * \sa SDL_CompareAndSwapAtomicInt
+ * \sa SDL_GetAtomicInt
+ * \sa SDL_SetAtomicInt
+ * \sa SDL_AddAtomicInt
  */
 typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
 
@@ -342,9 +343,10 @@ typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicCompareAndSwapPointer
+ * \sa SDL_GetAtomicInt
+ * \sa SDL_SetAtomicInt
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, int oldval, int newval);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, int oldval, int newval);
 
 /**
  * Set an atomic variable to a value.
@@ -362,9 +364,9 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, 
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicGet
+ * \sa SDL_GetAtomicInt
  */
-extern SDL_DECLSPEC int SDLCALL SDL_AtomicSet(SDL_AtomicInt *a, int v);
+extern SDL_DECLSPEC int SDLCALL SDL_SetAtomicInt(SDL_AtomicInt *a, int v);
 
 /**
  * Get the value of an atomic variable.
@@ -379,9 +381,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicSet(SDL_AtomicInt *a, int v);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicSet
+ * \sa SDL_SetAtomicInt
  */
-extern SDL_DECLSPEC int SDLCALL SDL_AtomicGet(SDL_AtomicInt *a);
+extern SDL_DECLSPEC int SDLCALL SDL_GetAtomicInt(SDL_AtomicInt *a);
 
 /**
  * Add to an atomic variable.
@@ -402,7 +404,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicGet(SDL_AtomicInt *a);
  * \sa SDL_AtomicDecRef
  * \sa SDL_AtomicIncRef
  */
-extern SDL_DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
+extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
 
 #ifndef SDL_AtomicIncRef
 
@@ -418,7 +420,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
  *
  * \sa SDL_AtomicDecRef
  */
-#define SDL_AtomicIncRef(a)    SDL_AtomicAdd(a, 1)
+#define SDL_AtomicIncRef(a)    SDL_AddAtomicInt(a, 1)
 #endif
 
 #ifndef SDL_AtomicDecRef
@@ -436,8 +438,94 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
  *
  * \sa SDL_AtomicIncRef
  */
-#define SDL_AtomicDecRef(a)    (SDL_AtomicAdd(a, -1) == 1)
+#define SDL_AtomicDecRef(a)    (SDL_AddAtomicInt(a, -1) == 1)
 #endif
+
+/**
+ * A type representing an atomic unsigned 32-bit value.
+ *
+ * This can be used to manage a value that is synchronized across multiple
+ * CPUs without a race condition; when an app sets a value with
+ * SDL_SetAtomicU32 all other threads, regardless of the CPU it is running on,
+ * will see that value when retrieved with SDL_GetAtomicU32, regardless of CPU
+ * caches, etc.
+ *
+ * This is also useful for atomic compare-and-swap operations: a thread can
+ * change the value as long as its current value matches expectations. When
+ * done in a loop, one can guarantee data consistency across threads without a
+ * lock (but the usual warnings apply: if you don't know what you're doing, or
+ * you don't do it carefully, you can confidently cause any number of
+ * disasters with this, so in most cases, you _should_ use a mutex instead of
+ * this!).
+ *
+ * This is a struct so people don't accidentally use numeric operations on it
+ * directly. You have to use SDL atomic functions.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_CompareAndSwapAtomicU32
+ * \sa SDL_GetAtomicU32
+ * \sa SDL_SetAtomicU32
+ * \sa SDL_AddAtomicU32
+ */
+typedef struct SDL_AtomicU32 { Uint32 value; } SDL_AtomicU32;
+
+/**
+ * Set an atomic variable to a new value if it is currently an old value.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicU32 variable to be modified.
+ * \param oldval the old value.
+ * \param newval the new value.
+ * \returns SDL_TRUE if the atomic variable was set, SDL_FALSE otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetAtomicU32
+ * \sa SDL_SetAtomicU32
+ */
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval);
+
+/**
+ * Set an atomic variable to a value.
+ *
+ * This function also acts as a full memory barrier.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicU32 variable to be modified.
+ * \param v the desired value.
+ * \returns the previous value of the atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetAtomicU32
+ */
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_SetAtomicU32(SDL_AtomicU32 *a, Uint32 v);
+
+/**
+ * Get the value of an atomic variable.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicU32 variable.
+ * \returns the current value of an atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetAtomicU32
+ */
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAtomicU32(SDL_AtomicU32 *a);
 
 /**
  * Set a pointer to a new value if it is currently an old value.
@@ -454,11 +542,11 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicCompareAndSwap
- * \sa SDL_AtomicGetPointer
- * \sa SDL_AtomicSetPointer
+ * \sa SDL_CompareAndSwapAtomicInt
+ * \sa SDL_GetAtomicPointer
+ * \sa SDL_SetAtomicPointer
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwapPointer(void **a, void *oldval, void *newval);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CompareAndSwapAtomicPointer(void **a, void *oldval, void *newval);
 
 /**
  * Set a pointer to a value atomically.
@@ -474,10 +562,10 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwapPointer(void **a, v
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicCompareAndSwapPointer
- * \sa SDL_AtomicGetPointer
+ * \sa SDL_CompareAndSwapAtomicPointer
+ * \sa SDL_GetAtomicPointer
  */
-extern SDL_DECLSPEC void * SDLCALL SDL_AtomicSetPointer(void **a, void *v);
+extern SDL_DECLSPEC void * SDLCALL SDL_SetAtomicPointer(void **a, void *v);
 
 /**
  * Get the value of a pointer atomically.
@@ -492,10 +580,10 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AtomicSetPointer(void **a, void *v);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicCompareAndSwapPointer
- * \sa SDL_AtomicSetPointer
+ * \sa SDL_CompareAndSwapAtomicPointer
+ * \sa SDL_SetAtomicPointer
  */
-extern SDL_DECLSPEC void * SDLCALL SDL_AtomicGetPointer(void **a);
+extern SDL_DECLSPEC void * SDLCALL SDL_GetAtomicPointer(void **a);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
