@@ -1,0 +1,95 @@
+From: Simon McVittie <smcv@debian.org>
+Date: Tue, 17 Sep 2024 11:36:29 +0100
+Subject: render: Integrate fix-shaders.sh into build-shaders.sh
+
+By writing the fxc and dxc output to a temporary file and then
+converting that temporary file to the desired filename, we avoid
+the incompatible semantics of sed -i on GNU systems (sed -i does not
+create a backup filename, and does not take an argument unless it is
+"bundled") and macOS (sed -i requires an argument, possibly empty).
+
+Resolves: https://github.com/libsdl-org/SDL/issues/10878
+Signed-off-by: Simon McVittie <smcv@debian.org>
+Forwarded: https://github.com/libsdl-org/SDL/pull/10879
+---
+ src/render/gpu/shaders/.gitignore       |  1 +
+ src/render/gpu/shaders/build-shaders.sh | 25 +++++++++++++++++++------
+ src/render/gpu/shaders/fix-shaders.sh   |  6 ------
+ 3 files changed, 20 insertions(+), 12 deletions(-)
+ delete mode 100755 src/render/gpu/shaders/fix-shaders.sh
+
+diff --git a/src/render/gpu/shaders/.gitignore b/src/render/gpu/shaders/.gitignore
+index 036ddc2..2741428 100644
+--- a/src/render/gpu/shaders/.gitignore
++++ b/src/render/gpu/shaders/.gitignore
+@@ -1,3 +1,4 @@
+ *.hlsl
+ *.metal
+ *.spv
++*.tmp.h
+diff --git a/src/render/gpu/shaders/build-shaders.sh b/src/render/gpu/shaders/build-shaders.sh
+index 8821e9f..9b019e5 100755
+--- a/src/render/gpu/shaders/build-shaders.sh
++++ b/src/render/gpu/shaders/build-shaders.sh
+@@ -27,7 +27,10 @@ rm -f "$spirv_bundle"
+ [ "$USE_SPIRV_CROSS" != 0 ] && [ "$USE_DXC" != 0 ] && rm -f "$dxil60_bundle"
+ 
+ make-header() {
+-    xxd -i "$1" | sed -e 's/^unsigned /const unsigned /g' > "$1.h"
++    xxd -i "$1" | sed \
++        -e 's/^unsigned /const unsigned /g' \
++        -e 's,^const,static const,' \
++        > "$1.h"
+ }
+ 
+ compile-hlsl-dxbc() {
+@@ -36,8 +39,14 @@ compile-hlsl-dxbc() {
+     local output_basename="$3"
+     local var_name="$(echo "$output_basename" | sed -e 's/\./_/g')"
+ 
+-    fxc "$src" /E main /T $2 /Fh "$output_basename.h" || exit $?
+-    sed -i "s/g_main/$var_name/;s/\r//g" "$output_basename.h"
++    fxc "$src" /E main /T $2 /Fh "$output_basename.tmp.h" || exit $?
++    sed \
++        -e "s/g_main/$var_name/;s/\r//g" \
++        -e 's,^const,static const,' \
++        -e 's,const unsigned,const signed,' \
++        < "$output_basename.tmp.h" \
++        > "$output_basename.h"
++    rm -f "$output_basename.tmp.h"
+ }
+ 
+ compile-hlsl-dxil() {
+@@ -46,8 +55,13 @@ compile-hlsl-dxil() {
+     local output_basename="$3"
+     local var_name="$(echo "$output_basename" | sed -e 's/\./_/g')"
+ 
+-    dxc "$src" -E main -T $2 -Fh "$output_basename.h" -O3 || exit $?
+-    sed -i "s/g_main/$var_name/;s/\r//g" "$output_basename.h"
++    dxc "$src" -E main -T $2 -Fh "$output_basename.tmp.h" -O3 || exit $?
++    sed \
++        -e "s/g_main/$var_name/;s/\r//g" \
++        -e 's,^const,static const,' \
++        < "$output_basename.tmp.h" \
++        > "$output_basename.h"
++    rm -f "$output_basename.tmp.h"
+ }
+ 
+ for i in *.vert *.frag; do
+@@ -90,4 +104,3 @@ for i in *.vert *.frag; do
+     make-header "$metal"
+     echo "#include \"$metal.h\"" >> "$metal_bundle"
+ done
+-./fix-shaders.sh
+diff --git a/src/render/gpu/shaders/fix-shaders.sh b/src/render/gpu/shaders/fix-shaders.sh
+deleted file mode 100755
+index 61d8138..0000000
+--- a/src/render/gpu/shaders/fix-shaders.sh
++++ /dev/null
+@@ -1,6 +0,0 @@
+-#!/bin/sh
+-#
+-# Update generated shader code to fix compiler warnings
+-
+-sed -i '' 's,^const,static const,' *.h
+-sed -i '' 's,const unsigned,const signed,' *.dxbc.h

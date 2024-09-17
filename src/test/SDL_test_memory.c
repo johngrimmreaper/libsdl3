@@ -78,12 +78,12 @@ static SDL_AtomicInt s_lock;
 
 #define LOCK_ALLOCATOR()                               \
     do {                                               \
-        if (SDL_AtomicCompareAndSwap(&s_lock, 0, 1)) { \
+        if (SDL_CompareAndSwapAtomicInt(&s_lock, 0, 1)) { \
             break;                                     \
         }                                              \
         SDL_CPUPauseInstruction();                     \
     } while (SDL_TRUE)
-#define UNLOCK_ALLOCATOR() do { SDL_AtomicSet(&s_lock, 0); } while (0)
+#define UNLOCK_ALLOCATOR() do { SDL_SetAtomicInt(&s_lock, 0); } while (0)
 
 static unsigned int get_allocation_bucket(void *mem)
 {
@@ -299,7 +299,7 @@ void SDLTest_TrackAllocations(void)
 #ifdef SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
     do {
         /* Don't use SDL_GetHint: SDL_malloc is off limits. */
-        const char *env_trackmem = SDL_getenv("SDL_TRACKMEM_SYMBOL_NAMES");
+        const char *env_trackmem = SDL_getenv_unsafe("SDL_TRACKMEM_SYMBOL_NAMES");
         if (env_trackmem) {
             if (SDL_strcasecmp(env_trackmem, "1") == 0 || SDL_strcasecmp(env_trackmem, "yes") == 0 || SDL_strcasecmp(env_trackmem, "true") == 0) {
                 s_unwind_symbol_names = SDL_TRUE;

@@ -228,7 +228,7 @@ static void loop(void *arg)
         case SDL_EVENT_KEY_UP:
             switch (event.key.key) {
             case SDLK_LSHIFT:
-                isRect = (event.key.state == SDL_PRESSED);
+                isRect = event.key.down;
                 if (active) {
                     active->isRect = isRect;
                 }
@@ -287,9 +287,6 @@ int main(int argc, char *argv[])
     if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {

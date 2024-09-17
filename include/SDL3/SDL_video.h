@@ -743,8 +743,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetWindowDisplayScale(SDL_Window *window);
  * taken effect.
  *
  * When the new mode takes effect, an SDL_EVENT_WINDOW_RESIZED and/or an
- * SDL_EVENT_WINDOOW_PIXEL_SIZE_CHANGED event will be emitted with the new
- * mode dimensions.
+ * SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event will be emitted with the new mode
+ * dimensions.
  *
  * \param window the window to affect.
  * \param mode a pointer to the display mode to use, which can be NULL for
@@ -1215,11 +1215,6 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_VIVANTE_SURFACE_POINTER`: the EGLSurface associated with
  *   the window
  *
- * On UWP:
- *
- * - `SDL_PROP_WINDOW_WINRT_WINDOW_POINTER`: the IInspectable CoreWindow
- *   associated with the window
- *
  * On Windows:
  *
  * - `SDL_PROP_WINDOW_WIN32_HWND_POINTER`: the HWND associated with the window
@@ -1286,7 +1281,6 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_VIVANTE_DISPLAY_POINTER                     "SDL.window.vivante.display"
 #define SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER                      "SDL.window.vivante.window"
 #define SDL_PROP_WINDOW_VIVANTE_SURFACE_POINTER                     "SDL.window.vivante.surface"
-#define SDL_PROP_WINDOW_WINRT_WINDOW_POINTER                        "SDL.window.winrt.window"
 #define SDL_PROP_WINDOW_WIN32_HWND_POINTER                          "SDL.window.win32.hwnd"
 #define SDL_PROP_WINDOW_WIN32_HDC_POINTER                           "SDL.window.win32.hdc"
 #define SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER                      "SDL.window.win32.instance"
@@ -1570,7 +1564,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetWindowAspectRatio(SDL_Window *window
 /**
  * Get the size of a window's borders (decorations) around the client area.
  *
- * Note: If this function fails (returns -1), the size values will be
+ * Note: If this function fails (returns SDL_FALSE), the size values will be
  * initialized to 0, 0, 0, 0 (if a non-NULL pointer is provided), as if the
  * window in question was borderless.
  *
@@ -1580,7 +1574,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetWindowAspectRatio(SDL_Window *window
  * window has been presented and composited, so that the window system has a
  * chance to decorate the window and provide the border dimensions to SDL.
  *
- * This function also returns -1 if getting the information is not supported.
+ * This function also returns SDL_FALSE if getting the information is not
+ * supported.
  *
  * \param window the window to query the size values of the border
  *               (decorations) from.
@@ -2194,7 +2189,8 @@ extern SDL_DECLSPEC const SDL_Rect * SDLCALL SDL_GetWindowMouseRect(SDL_Window *
  * The parameter `opacity` will be clamped internally between 0.0f
  * (transparent) and 1.0f (opaque).
  *
- * This function also returns -1 if setting the opacity isn't supported.
+ * This function also returns SDL_FALSE if setting the opacity isn't
+ * supported.
  *
  * \param window the window which will be made transparent or opaque.
  * \param opacity the opacity value (0.0f - transparent, 1.0f - opaque).
@@ -2224,23 +2220,47 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetWindowOpacity(SDL_Window *window, fl
 extern SDL_DECLSPEC float SDLCALL SDL_GetWindowOpacity(SDL_Window *window);
 
 /**
- * Set the window as a modal to a parent window.
+ * Set the window as a child of a parent window.
  *
- * If the window is already modal to an existing window, it will be reparented
- * to the new owner. Setting the parent window to null unparents the modal
- * window and removes modal status.
+ * If the window is already the child of an existing window, it will be
+ * reparented to the new owner. Setting the parent window to NULL unparents
+ * the window and removes child window status.
  *
- * Setting a window as modal to a parent that is a descendent of the modal
- * window results in undefined behavior.
+ * Attempting to set the parent of a window that is currently in the modal
+ * state will fail. Use SDL_SetWindowModalFor() to cancel the modal status
+ * before attempting to change the parent.
  *
- * \param modal_window the window that should be set modal.
- * \param parent_window the parent window for the modal window.
+ * Setting a parent window that is currently the sibling or descendent of the
+ * child window results in undefined behavior.
+ *
+ * \param window the window that should become the child of a parent.
+ * \param parent the new parent window for the child window.
  * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
  *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetWindowModal
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetWindowParent(SDL_Window *window, SDL_Window *parent);
+
+/**
+ * Toggle the state of the window as modal.
+ *
+ * To enable modal status on a window, the window must currently be the child
+ * window of a parent, or toggling modal status on will fail.
+ *
+ * \param window the window on which to set the modal state.
+ * \param modal SDL_TRUE to toggle modal status on, SDL_FALSE to toggle it
+ *              off.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetWindowParent
+ */
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetWindowModal(SDL_Window *window, SDL_bool modal);
 
 /**
  * Set whether the window may have input focus.

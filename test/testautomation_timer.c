@@ -20,15 +20,8 @@ static int g_timerCallbackCalled = 0;
 
 /* Fixture */
 
-static void timerSetUp(void *arg)
+static void SDLCALL timerSetUp(void **arg)
 {
-    /* Start SDL timer subsystem */
-    SDL_bool ret = SDL_InitSubSystem(SDL_INIT_TIMER);
-    SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_TIMER)");
-    SDLTest_AssertCheck(ret == SDL_TRUE, "Check result from SDL_InitSubSystem(SDL_INIT_TIMER)");
-    if (!ret) {
-        SDLTest_LogError("%s", SDL_GetError());
-    }
 }
 
 /* Test case functions */
@@ -36,7 +29,7 @@ static void timerSetUp(void *arg)
 /**
  * Call to SDL_GetPerformanceCounter
  */
-static int timer_getPerformanceCounter(void *arg)
+static int SDLCALL timer_getPerformanceCounter(void *arg)
 {
     Uint64 result;
 
@@ -50,7 +43,7 @@ static int timer_getPerformanceCounter(void *arg)
 /**
  * Call to SDL_GetPerformanceFrequency
  */
-static int timer_getPerformanceFrequency(void *arg)
+static int SDLCALL timer_getPerformanceFrequency(void *arg)
 {
     Uint64 result;
 
@@ -64,7 +57,7 @@ static int timer_getPerformanceFrequency(void *arg)
 /**
  * Call to SDL_Delay and SDL_GetTicks
  */
-static int timer_delayAndGetTicks(void *arg)
+static int SDLCALL timer_delayAndGetTicks(void *arg)
 {
     const int testDelay = 100;
     const int marginOfError = 25;
@@ -126,7 +119,7 @@ static Uint32 SDLCALL timerTestCallback(void *param, SDL_TimerID timerID, Uint32
 /**
  * Call to SDL_AddTimer and SDL_RemoveTimer
  */
-static int timer_addRemoveTimer(void *arg)
+static int SDLCALL timer_addRemoveTimer(void *arg)
 {
 #ifdef SDL_PLATFORM_EMSCRIPTEN
     SDLTest_Log("Timer callbacks on Emscripten require a main loop to handle events");

@@ -285,7 +285,7 @@ static void HandleMouseButton(SDL_MouseButtonEvent *event)
             continue;
         }
         if (event->which == mouse_state->instance_id) {
-            if (event->state) {
+            if (event->down) {
                 mouse_state->button_state |= SDL_BUTTON(event->button);
             } else {
                 mouse_state->button_state &= ~SDL_BUTTON(event->button);
@@ -498,9 +498,6 @@ static void loop(void)
 int main(int argc, char *argv[])
 {
     int i;
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Log all events, including mouse motion */
     SDL_SetHint(SDL_HINT_EVENT_LOGGING, "2");

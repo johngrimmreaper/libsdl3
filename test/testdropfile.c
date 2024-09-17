@@ -34,9 +34,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     for (i = 1; i < argc;) {
         int consumed;
 
@@ -57,7 +54,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     if (!SDLTest_CommonInit(state)) {
         goto onerror;
     }
-    dialog = SDL_calloc(sizeof(dropfile_dialog), 1);
+    dialog = SDL_calloc(1, sizeof(dropfile_dialog));
     if (!dialog) {
         goto onerror;
     }
@@ -70,7 +67,7 @@ onerror:
     return SDL_APP_FAILURE;
 }
 
-SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event)
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     dropfile_dialog *dialog = appstate;
     if (event->type == SDL_EVENT_DROP_BEGIN) {

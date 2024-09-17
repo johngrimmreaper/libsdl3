@@ -94,7 +94,6 @@
 #include <SDL3/SDL_mutex.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_iostream.h>
-#include <SDL3/SDL_thread.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -142,19 +141,20 @@ typedef enum SDL_AudioFormat
         /* SDL_DEFINE_AUDIO_FORMAT(1, 1, 0, 32), */
     SDL_AUDIO_F32LE     = 0x8120u,  /**< 32-bit floating point samples */
         /* SDL_DEFINE_AUDIO_FORMAT(1, 0, 1, 32), */
-    SDL_AUDIO_F32BE     = 0x9120u   /**< As above, but big-endian byte order */
+    SDL_AUDIO_F32BE     = 0x9120u,  /**< As above, but big-endian byte order */
         /* SDL_DEFINE_AUDIO_FORMAT(1, 1, 1, 32), */
-} SDL_AudioFormat;
 
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-#define SDL_AUDIO_S16    SDL_AUDIO_S16LE
-#define SDL_AUDIO_S32    SDL_AUDIO_S32LE
-#define SDL_AUDIO_F32    SDL_AUDIO_F32LE
-#else
-#define SDL_AUDIO_S16    SDL_AUDIO_S16BE
-#define SDL_AUDIO_S32    SDL_AUDIO_S32BE
-#define SDL_AUDIO_F32    SDL_AUDIO_F32BE
-#endif
+    /* These represent the current system's byteorder. */
+    #if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    SDL_AUDIO_S16 = SDL_AUDIO_S16LE,
+    SDL_AUDIO_S32 = SDL_AUDIO_S32LE,
+    SDL_AUDIO_F32 = SDL_AUDIO_F32LE
+    #else
+    SDL_AUDIO_S16 = SDL_AUDIO_S16BE,
+    SDL_AUDIO_S32 = SDL_AUDIO_S32BE,
+    SDL_AUDIO_F32 = SDL_AUDIO_F32BE
+    #endif
+} SDL_AudioFormat;
 
 
 /**
@@ -753,10 +753,10 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetAudioDeviceGain(SDL_AudioDeviceID devid
  * Audio devices default to a gain of 1.0f (no change in output).
  *
  * Physical devices may not have their gain changed, only logical devices, and
- * this function will always return -1 when used on physical devices. While it
- * might seem attractive to adjust several logical devices at once in this
- * way, it would allow an app or library to interfere with another portion of
- * the program's otherwise-isolated devices.
+ * this function will always return SDL_FALSE when used on physical devices.
+ * While it might seem attractive to adjust several logical devices at once in
+ * this way, it would allow an app or library to interfere with another
+ * portion of the program's otherwise-isolated devices.
  *
  * This is applied, along with any per-audiostream gain, during playback to
  * the hardware, and can be continuously changed to create various effects. On

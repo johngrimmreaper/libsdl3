@@ -13,7 +13,7 @@
 /**
  * Call to SDL_GetRealtimeClock
  */
-static int time_getRealtimeClock(void *arg)
+static int SDLCALL time_getRealtimeClock(void *arg)
 {
     int result;
     SDL_Time ticks;
@@ -28,7 +28,7 @@ static int time_getRealtimeClock(void *arg)
 /**
  * Test bidirectional SDL_DateTime conversions.
  */
-static int time_dateTimeConversion(void *arg)
+static int SDLCALL time_dateTimeConversion(void *arg)
 {
     int result;
     SDL_Time ticks[2];
@@ -103,7 +103,7 @@ static int time_dateTimeConversion(void *arg)
 /**
  * Test time utility functions.
  */
-static int time_dateTimeUtilities(void *arg)
+static int SDLCALL time_dateTimeUtilities(void *arg)
 {
     int result;
 
@@ -196,15 +196,15 @@ static int time_dateTimeUtilities(void *arg)
 
 /* Time test cases */
 static const SDLTest_TestCaseReference timeTest1 = {
-    (SDLTest_TestCaseFp)time_getRealtimeClock, "time_getRealtimeClock", "Call to SDL_GetRealtimeClockTicks", TEST_ENABLED
+    time_getRealtimeClock, "time_getRealtimeClock", "Call to SDL_GetRealtimeClockTicks", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference timeTest2 = {
-    (SDLTest_TestCaseFp)time_dateTimeConversion, "time_dateTimeConversion", "Call to SDL_TimeToDateTime/SDL_DateTimeToTime", TEST_ENABLED
+    time_dateTimeConversion, "time_dateTimeConversion", "Call to SDL_TimeToDateTime/SDL_DateTimeToTime", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference timeTest3 = {
-    (SDLTest_TestCaseFp)time_dateTimeUtilities, "time_dateTimeUtilities", "Call to SDL_TimeToDateTime/SDL_DateTimeToTime", TEST_ENABLED
+    time_dateTimeUtilities, "time_dateTimeUtilities", "Call to SDL_TimeToDateTime/SDL_DateTimeToTime", TEST_ENABLED
 };
 
 /* Sequence of Timer test cases */

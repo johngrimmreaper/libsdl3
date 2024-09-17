@@ -86,11 +86,14 @@ The following structures have been renamed:
 - SDL_atomic_t => SDL_AtomicInt
 
 The following functions have been renamed:
-* SDL_AtomicCAS() => SDL_AtomicCompareAndSwap()
-* SDL_AtomicCASPtr() => SDL_AtomicCompareAndSwapPointer()
-* SDL_AtomicGetPtr() => SDL_AtomicGetPointer()
+* SDL_AtomicAdd() => SDL_AddAtomicInt()
+* SDL_AtomicCAS() => SDL_CompareAndSwapAtomicInt()
+* SDL_AtomicCASPtr() => SDL_CompareAndSwapAtomicPointer()
+* SDL_AtomicGet() => SDL_GetAtomicInt()
+* SDL_AtomicGetPtr() => SDL_GetAtomicPointer()
 * SDL_AtomicLock() => SDL_LockSpinlock()
-* SDL_AtomicSetPtr() => SDL_AtomicSetPointer()
+* SDL_AtomicSet() => SDL_SetAtomicInt()
+* SDL_AtomicSetPtr() => SDL_SetAtomicPointer()
 * SDL_AtomicTryLock() => SDL_TryLockSpinlock()
 * SDL_AtomicUnlock() => SDL_UnlockSpinlock()
 
@@ -341,6 +344,7 @@ SDL_HasRDTSC() has been removed; there is no replacement. Don't use the RDTSC op
 SDL_SIMDAlloc(), SDL_SIMDRealloc(), and SDL_SIMDFree() have been removed. You can use SDL_aligned_alloc() and SDL_aligned_free() with SDL_GetSIMDAlignment() to get the same functionality.
 
 The following functions have been renamed:
+* SDL_GetCPUCount() => SDL_GetNumLogicalCPUCores()
 * SDL_SIMDGetAlignment() => SDL_GetSIMDAlignment()
 
 ## SDL_endian.h
@@ -359,6 +363,8 @@ The following functions have been removed:
 * SDL_GetErrorMsg() - Can be implemented as `SDL_strlcpy(errstr, SDL_GetError(), maxlen);`
 
 ## SDL_events.h
+
+SDL_PRESSED and SDL_RELEASED have been removed. For the most part you can replace uses of these with SDL_TRUE and SDL_FALSE respectively. Events which had a field `state` to represent these values have had those fields changed to SDL_bool `down`, e.g. `event.key.state` is now `event.key.down`.
 
 The timestamp member of the SDL_Event structure now represents nanoseconds, and is populated with SDL_GetTicksNS()
 
@@ -596,6 +602,8 @@ SDL_bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 product_i
 
 The inputType and outputType fields of SDL_GamepadBinding have been renamed input_type and output_type.
 
+SDL_GetGamepadTouchpadFinger() takes a pointer to SDL_bool for the finger state instead of a pointer to Uint8.
+
 The following enums have been renamed:
 * SDL_GameControllerAxis => SDL_GamepadAxis
 * SDL_GameControllerBindType => SDL_GamepadBindingType
@@ -671,7 +679,7 @@ The following symbols have been renamed:
 * SDL_CONTROLLER_AXIS_INVALID => SDL_GAMEPAD_AXIS_INVALID
 * SDL_CONTROLLER_AXIS_LEFTX => SDL_GAMEPAD_AXIS_LEFTX
 * SDL_CONTROLLER_AXIS_LEFTY => SDL_GAMEPAD_AXIS_LEFTY
-* SDL_CONTROLLER_AXIS_MAX => SDL_GAMEPAD_AXIS_MAX
+* SDL_CONTROLLER_AXIS_MAX => SDL_GAMEPAD_AXIS_COUNT
 * SDL_CONTROLLER_AXIS_RIGHTX => SDL_GAMEPAD_AXIS_RIGHTX
 * SDL_CONTROLLER_AXIS_RIGHTY => SDL_GAMEPAD_AXIS_RIGHTY
 * SDL_CONTROLLER_AXIS_TRIGGERLEFT => SDL_GAMEPAD_AXIS_LEFT_TRIGGER
@@ -691,7 +699,7 @@ The following symbols have been renamed:
 * SDL_CONTROLLER_BUTTON_INVALID => SDL_GAMEPAD_BUTTON_INVALID
 * SDL_CONTROLLER_BUTTON_LEFTSHOULDER => SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
 * SDL_CONTROLLER_BUTTON_LEFTSTICK => SDL_GAMEPAD_BUTTON_LEFT_STICK
-* SDL_CONTROLLER_BUTTON_MAX => SDL_GAMEPAD_BUTTON_MAX
+* SDL_CONTROLLER_BUTTON_MAX => SDL_GAMEPAD_BUTTON_COUNT
 * SDL_CONTROLLER_BUTTON_MISC1 => SDL_GAMEPAD_BUTTON_MISC1
 * SDL_CONTROLLER_BUTTON_PADDLE1 => SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1
 * SDL_CONTROLLER_BUTTON_PADDLE2 => SDL_GAMEPAD_BUTTON_LEFT_PADDLE1
@@ -836,6 +844,9 @@ The following hints have been removed:
 * SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING - SDL now properly handles the 0x406D1388 Exception if no debugger intercepts it, preventing its propagation.
 * SDL_HINT_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS - Slim Reader/Writer Locks are always used if available
 * SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4 - replaced with SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4, defaulting to SDL_TRUE
+* SDL_HINT_WINRT_HANDLE_BACK_BUTTON - WinRT support was removed in SDL3.
+* SDL_HINT_WINRT_PRIVACY_POLICY_LABEL - WinRT support was removed in SDL3.
+* SDL_HINT_WINRT_PRIVACY_POLICY_URL - WinRT support was removed in SDL3.
 * SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING
 * SDL_HINT_AUDIO_DEVICE_APP_NAME - replaced by either using the appname param to SDL_SetAppMetadata() or setting SDL_PROP_APP_METADATA_NAME_STRING with SDL_SetAppMetadataProperty()
 
@@ -887,6 +898,7 @@ The following symbols have been renamed:
 The following symbols have been removed:
 * SDL_INIT_NOPARACHUTE
 * SDL_INIT_EVERYTHING - you should only initialize the subsystems you are using
+* SDL_INIT_TIMER - no longer needed before calling SDL_AddTimer()
 
 ## SDL_joystick.h
 
@@ -920,7 +932,7 @@ The functions SDL_GetJoysticks(), SDL_GetJoystickNameForID(), SDL_GetJoystickPat
 
 SDL_AttachVirtualJoystick() now returns the joystick instance ID instead of a device index, and returns 0 if there was an error.
 
-SDL_VirtualJoystickDesc no longer takes a struct version; if we need to extend this in the future, we'll make a second struct and a second SDL_AttachVirtualJoystickEx-style function that uses it. Just zero the struct and don't set a version.
+SDL_VirtualJoystickDesc version should not be set to SDL_VIRTUAL_JOYSTICK_DESC_VERSION, instead the structure should be initialized using SDL_INIT_INTERFACE().
 
 The following functions have been renamed:
 * SDL_JoystickAttachVirtualEx() => SDL_AttachVirtualJoystick()
@@ -983,7 +995,7 @@ The following functions have been removed:
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickNameForID()
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickPathForID()
 * SDL_NumJoysticks() - replaced with SDL_GetJoysticks()
-* SDL_VIRTUAL_JOYSTICK_DESC_VERSION - no longer needed, version info has been removed from SDL_VirtualJoystickDesc.
+* SDL_VIRTUAL_JOYSTICK_DESC_VERSION - no longer needed
 
 The following symbols have been removed:
 * SDL_JOYBALLMOTION
@@ -998,6 +1010,8 @@ Text input is no longer automatically enabled when initializing video, you shoul
 The text input state hase been changed to be window-specific. SDL_StartTextInput(), SDL_StopTextInput(), SDL_TextInputActive(), and SDL_ClearComposition() all now take a window parameter.
 
 SDL_GetDefaultKeyFromScancode(), SDL_GetKeyFromScancode(), and SDL_GetScancodeFromKey() take an SDL_Keymod parameter and use that to provide the correct result based on keyboard modifier state.
+
+SDL_GetKeyboardState() returns a pointer to SDL_bool instead of Uint8.
 
 The following functions have been renamed:
 * SDL_IsScreenKeyboardShown() => SDL_ScreenKeyboardShown()
@@ -1107,6 +1121,9 @@ The following functions have been renamed:
 * SDL_LogSetOutputFunction() => SDL_SetLogOutputFunction()
 * SDL_LogSetPriority() => SDL_SetLogPriority()
 
+The following symbols have been renamed:
+* SDL_NUM_LOG_PRIORITIES => SDL_LOG_PRIORITY_COUNT
+
 ## SDL_main.h
 
 SDL3 doesn't have a static libSDLmain to link against anymore.
@@ -1118,14 +1135,20 @@ Using it is really simple: Just `#include <SDL3/SDL_main.h>` in the source file 
 Several platform-specific entry point functions have been removed as unnecessary. If for some reason you explicitly need them, here are easy replacements:
 
 ```c
-#define SDL_WinRTRunApp(MAIN_FUNC, RESERVED)  SDL_RunApp(0, NULL, MAIN_FUNC, RESERVED)
 #define SDL_UIKitRunApp(ARGC, ARGV, MAIN_FUNC)  SDL_RunApp(ARGC, ARGV, MAIN_FUNC, NULL)
 #define SDL_GDKRunApp(MAIN_FUNC, RESERVED)  SDL_RunApp(0, NULL, MAIN_FUNC, RESERVED)
 ```
 
+The following functions have been removed:
+* SDL_WinRTRunApp() - WinRT support was removed in SDL3.
+
+
 ## SDL_messagebox.h
 
 The buttonid field of SDL_MessageBoxButtonData has been renamed buttonID.
+
+The following symbols have been renamed:
+* SDL_MESSAGEBOX_COLOR_MAX => SDL_MESSAGEBOX_COLOR_COUNT
 
 ## SDL_metal.h
 
@@ -1147,6 +1170,7 @@ The following functions have been removed:
 * SDL_GetRelativeMouseMode() - replaced with SDL_GetWindowRelativeMouseMode()
 
 The following symbols have been renamed:
+* SDL_NUM_SYSTEM_CURSORS => SDL_SYSTEM_CURSOR_COUNT
 * SDL_SYSTEM_CURSOR_ARROW => SDL_SYSTEM_CURSOR_DEFAULT
 * SDL_SYSTEM_CURSOR_HAND => SDL_SYSTEM_CURSOR_POINTER
 * SDL_SYSTEM_CURSOR_IBEAM => SDL_SYSTEM_CURSOR_TEXT
@@ -1275,7 +1299,6 @@ The following platform preprocessor macros have been renamed:
 | `__VITA__`        | `SDL_PLATFORM_VITA`       |
 | `__WIN32__`       | `SDL_PLATFORM_WIN32`      |
 | `__WINGDK__`      | `SDL_PLATFORM_WINGDK`     |
-| `__WINRT__`       | `SDL_PLATFORM_WINRT`      |
 | `__XBOXONE__`     | `SDL_PLATFORM_XBOXONE`    |
 | `__XBOXSERIES__`  | `SDL_PLATFORM_XBOXSERIES` |
 
@@ -1288,6 +1311,8 @@ The following platform preprocessor macros have been removed:
 * `__NACL__`
 * `__PNACL__`
 * `__WINDOWS__`
+* `__WINRT__`
+
 
 ## SDL_quit.h
 
@@ -1568,7 +1593,7 @@ SDL_IOStream *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
         return NULL;
     }
 
-    SDL_zero(iface);
+    SDL_INIT_INTERFACE(&iface);
     /* There's no stdio_size because SDL_GetIOSize emulates it the same way we'd do it for stdio anyhow. */
     iface.seek = stdio_seek;
     iface.read = stdio_read;
@@ -1637,6 +1662,7 @@ The following symbols have been removed:
 * SDL_SCANCODE_APP2
 
 The following symbols have been renamed:
+* SDL_NUM_SCANCODES => SDL_SCANCODE_COUNT
 * SDL_SCANCODE_AUDIOFASTFORWARD => SDL_SCANCODE_MEDIA_FAST_FORWARD
 * SDL_SCANCODE_AUDIOMUTE => SDL_SCANCODE_MUTE
 * SDL_SCANCODE_AUDIONEXT => SDL_SCANCODE_MEDIA_NEXT_TRACK
@@ -1718,6 +1744,10 @@ SDL3 attempts to apply consistency to case-insensitive string functions. In SDL2
 - The ctype.h replacement SDL_is*() functions (SDL_isalpha, SDL_isdigit, etc) only work on low-ASCII characters and ignore user locale, assuming English. This makes these functions consistent in SDL3, but applications need to be careful to understand their limits.
 
 Please note that the case-folding technique used by SDL3 will not produce correct results for the "Turkish 'I'"; this one letter is a surprisingly hard problem in the Unicode world, and since these functions do not specify the human language in use, we have chosen to ignore this problem.
+
+SDL_strtoll(), SDL_strtoull(), SDL_lltoa(), and SDL_ulltoa() use long long values instead of 64-bit values, to match their C runtime counterparts.
+
+SDL_setenv() is not thread-safe and has been renamed SDL_setenv_unsafe().
 
 The following macros have been removed:
 * SDL_TABLESIZE() - use SDL_arraysize() instead
@@ -1850,10 +1880,12 @@ SDL_RequestAndroidPermission is no longer a blocking call; the caller now provid
 SDL_iPhoneSetAnimationCallback() and SDL_iPhoneSetEventPump() have been renamed to SDL_SetiOSAnimationCallback() and SDL_SetiOSEventPump(), respectively. SDL2 has had macros to provide this new name with the old symbol since the introduction of the iPad, but now the correctly-named symbol is the only option.
 
 The following functions have been removed:
+* SDL_GetWinRTFSPathUNICODE() - WinRT support was removed in SDL3.
+* SDL_GetWinRTFSPathUTF8() - WinRT support was removed in SDL3.
 * SDL_RenderGetD3D11Device() - replaced with the "SDL.renderer.d3d11.device" property
 * SDL_RenderGetD3D12Device() - replaced with the "SDL.renderer.d3d12.device" property
 * SDL_RenderGetD3D9Device() - replaced with the "SDL.renderer.d3d9.device" property
-* SDL_GetWinRTFSPathUNICODE() - Use SDL_GetWinRTFSPath() and SDL_iconv_string to convert from UTF-8 to UTF-16.
+* SDL_WinRTGetDeviceFamily() - WinRT support was removed in SDL3.
 
 The following functions have been renamed:
 * SDL_AndroidBackButton() => SDL_SendAndroidBackButton()
@@ -1874,8 +1906,6 @@ The following functions have been renamed:
 * SDL_LinuxSetThreadPriorityAndPolicy() => SDL_SetLinuxThreadPriorityAndPolicy(), returns SDL_bool
 * SDL_OnApplicationDidBecomeActive() => SDL_OnApplicationDidEnterForeground()
 * SDL_OnApplicationWillResignActive() => SDL_OnApplicationWillEnterBackground()
-* SDL_WinRTGetDeviceFamily() => SDL_GetWinRTDeviceFamily()
-* SDL_GetWinRTFSPathUTF8() => SDL_GetWinRTFSPath()
 * SDL_iOSSetAnimationCallback() => SDL_SetiOSAnimationCallback(), returns SDL_bool
 * SDL_iOSSetEventPump() => SDL_SetiOSEventPump()
 * SDL_iPhoneSetAnimationCallback() => SDL_SetiOSAnimationCallback(), returns SDL_bool
@@ -2173,6 +2203,7 @@ The following functions have been removed:
 * SDL_SetWindowData() - use SDL_GetWindowProperties() instead
 * SDL_CreateWindowFrom() - use SDL_CreateWindowWithProperties() with the properties that allow you to wrap an existing window
 * SDL_SetWindowInputFocus() - use SDL_RaiseWindow() instead
+* SDL_SetWindowModalFor() - use SDL_SetWindowParent() with SDL_SetWindowModal() instead
 
 The SDL_Window id type is named SDL_WindowID
 

@@ -1,1 +1,2 @@
-debian/src-render-sdlgpu-shaders-Only-regenerate-shaders-needed-.patch
+render-Integrate-fix-shaders.sh-into-build-shaders.sh.patch
+build-Fix-testprocess-invocation-during-as-installed-test.patch
