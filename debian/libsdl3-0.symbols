@@ -4,6 +4,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_AcquireCameraFrame@SDL3_0.0.0 3.1.0~
  SDL_AcquireGPUCommandBuffer@SDL3_0.0.0 3.1.2+git20240902~
  SDL_AcquireGPUSwapchainTexture@SDL3_0.0.0 3.1.2+git20240902~
+ SDL_AddAtomicInt@SDL3_0.0.0 3.1.2+git20240917~
  SDL_AddEventWatch@SDL3_0.0.0 3.1.0~
  SDL_AddGamepadMapping@SDL3_0.0.0 3.1.0~
  SDL_AddGamepadMappingsFromFile@SDL3_0.0.0 3.1.0~
@@ -13,13 +14,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_AddTimer@SDL3_0.0.0 3.1.0~
  SDL_AddTimerNS@SDL3_0.0.0 3.1.2+git20240730~
  SDL_AddVulkanRenderSemaphores@SDL3_0.0.0 3.1.0~
- SDL_AtomicAdd@SDL3_0.0.0 3.1.0~
- SDL_AtomicCompareAndSwap@SDL3_0.0.0 3.1.0~
- SDL_AtomicCompareAndSwapPointer@SDL3_0.0.0 3.1.0~
- SDL_AtomicGet@SDL3_0.0.0 3.1.0~
- SDL_AtomicGetPointer@SDL3_0.0.0 3.1.2+git20240902~
- SDL_AtomicSet@SDL3_0.0.0 3.1.0~
- SDL_AtomicSetPointer@SDL3_0.0.0 3.1.2+git20240902~
  SDL_AttachVirtualJoystick@SDL3_0.0.0 3.1.0~
  SDL_AudioDevicePaused@SDL3_0.0.0 3.1.0~
  SDL_BeginGPUComputePass@SDL3_0.0.0 3.1.2+git20240902~
@@ -66,6 +60,9 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_CloseJoystick@SDL3_0.0.0 3.1.0~
  SDL_CloseSensor@SDL3_0.0.0 3.1.0~
  SDL_CloseStorage@SDL3_0.0.0 3.1.0~
+ SDL_CompareAndSwapAtomicInt@SDL3_0.0.0 3.1.2+git20240917~
+ SDL_CompareAndSwapAtomicPointer@SDL3_0.0.0 3.1.2+git20240917~
+ SDL_CompareAndSwapAtomicU32@SDL3_0.0.0 3.1.2+git20240917~
  SDL_ComposeCustomBlendMode@SDL3_0.0.0 3.1.0~
  SDL_ConvertAudioSamples@SDL3_0.0.0 3.1.0~
  SDL_ConvertEventToRenderCoordinates@SDL3_0.0.0 3.1.0~
@@ -207,6 +204,9 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetAppMetadataProperty@SDL3_0.0.0 3.1.2+git20240730~
  SDL_GetAssertionHandler@SDL3_0.0.0 3.1.0~
  SDL_GetAssertionReport@SDL3_0.0.0 3.1.0~
+ SDL_GetAtomicInt@SDL3_0.0.0 3.1.2+git20240917~
+ SDL_GetAtomicPointer@SDL3_0.0.0 3.1.2+git20240917~
+ SDL_GetAtomicU32@SDL3_0.0.0 3.1.2+git20240917~
  SDL_GetAudioDeviceChannelMap@SDL3_0.0.0 3.1.2+git20240730~
  SDL_GetAudioDeviceFormat@SDL3_0.0.0 3.1.0~
  SDL_GetAudioDeviceGain@SDL3_0.0.0 3.1.2+git20240730~
@@ -758,6 +758,9 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetAppMetadata@SDL3_0.0.0 3.1.2+git20240730~
  SDL_SetAppMetadataProperty@SDL3_0.0.0 3.1.2+git20240730~
  SDL_SetAssertionHandler@SDL3_0.0.0 3.1.0~
+ SDL_SetAtomicInt@SDL3_0.0.0 3.1.2+git20240917~
+ SDL_SetAtomicPointer@SDL3_0.0.0 3.1.2+git20240917~
+ SDL_SetAtomicU32@SDL3_0.0.0 3.1.2+git20240917~
  SDL_SetAudioDeviceGain@SDL3_0.0.0 3.1.2+git20240730~
  SDL_SetAudioPostmixCallback@SDL3_0.0.0 3.1.0~
  SDL_SetAudioStreamFormat@SDL3_0.0.0 3.1.0~
