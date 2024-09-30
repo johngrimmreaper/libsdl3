@@ -164,7 +164,7 @@ static void SDL_EVDEV_UpdateKeyboardMute(void)
     }
 }
 
-SDL_bool SDL_EVDEV_Init(void)
+bool SDL_EVDEV_Init(void)
 {
     if (!_this) {
         _this = (SDL_EVDEV_PrivateData *)SDL_calloc(1, sizeof(*_this));
@@ -352,9 +352,9 @@ void SDL_EVDEV_Poll(void)
                     }
 
                     /* BTN_TOUCH event value 1 indicates there is contact with
-                       a touchscreen or trackpad (earlist finger's current
+                       a touchscreen or trackpad (earliest finger's current
                        position is sent in EV_ABS ABS_X/ABS_Y, switching to
-                       next finger after earlist is released) */
+                       next finger after earliest is released) */
                     if (item->is_touchscreen && event->code == BTN_TOUCH) {
                         if (item->touchscreen_data->max_slots == 1) {
                             if (event->value) {

@@ -248,6 +248,7 @@ SDL3_0.0.0 {
     SDL_GetCameraSupportedFormats;
     SDL_GetCameras;
     SDL_GetClipboardData;
+    SDL_GetClipboardMimeTypes;
     SDL_GetClipboardText;
     SDL_GetClosestFullscreenDisplayMode;
     SDL_GetCurrentAudioDriver;
@@ -817,6 +818,7 @@ SDL3_0.0.0 {
     SDL_SetHapticGain;
     SDL_SetHint;
     SDL_SetHintWithPriority;
+    SDL_SetInitialized;
     SDL_SetJoystickEventsEnabled;
     SDL_SetJoystickLED;
     SDL_SetJoystickPlayerIndex;
@@ -895,6 +897,8 @@ SDL3_0.0.0 {
     SDL_SetX11EventHook;
     SDL_SetiOSAnimationCallback;
     SDL_SetiOSEventPump;
+    SDL_ShouldInit;
+    SDL_ShouldQuit;
     SDL_ShowAndroidToast;
     SDL_ShowCursor;
     SDL_ShowMessageBox;
@@ -1093,6 +1097,7 @@ SDL3_0.0.0 {
     SDL_memset;
     SDL_modf;
     SDL_modff;
+    SDL_murmur3_32;
     SDL_pow;
     SDL_powf;
     SDL_qsort;

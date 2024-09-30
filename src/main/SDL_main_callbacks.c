@@ -69,7 +69,7 @@ static void SDL_DispatchMainCallbackEvents(void)
     }
 }
 
-static SDL_bool SDLCALL SDL_MainCallbackEventWatcher(void *userdata, SDL_Event *event)
+static bool SDLCALL SDL_MainCallbackEventWatcher(void *userdata, SDL_Event *event)
 {
     if (ShouldDispatchImmediately(event)) {
         // Make sure any currently queued events are processed then dispatch this before continuing
@@ -130,10 +130,10 @@ SDL_AppResult SDL_IterateMainCallbacks(bool pump_events)
     return rc;
 }
 
-void SDL_QuitMainCallbacks(void)
+void SDL_QuitMainCallbacks(SDL_AppResult result)
 {
     SDL_RemoveEventWatch(SDL_MainCallbackEventWatcher, NULL);
-    SDL_main_quit_callback(SDL_main_appstate);
+    SDL_main_quit_callback(SDL_main_appstate, result);
     SDL_main_appstate = NULL;  // just in case.
 
     // for symmetry, you should explicitly Quit what you Init, but we might come through here uninitialized and SDL_Quit() will clear everything anyhow.

@@ -21,8 +21,9 @@
 #include "SDL_internal.h"
 
 #include "../SDL_hashtable.h"
+#include "SDL_getenv_c.h"
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WINDOWS)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -30,7 +31,7 @@
 #include "../core/android/SDL_android.h"
 #endif
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WINDOWS)
 #define HAVE_WIN32_ENVIRONMENT
 #elif defined(HAVE_GETENV) && \
       (defined(HAVE_SETENV) || defined(HAVE_PUTENV)) && \
@@ -66,7 +67,7 @@ SDL_Environment *SDL_GetEnvironment(void)
     return SDL_environment;
 }
 
-SDL_bool SDL_InitEnvironment(void)
+bool SDL_InitEnvironment(void)
 {
     return (SDL_GetEnvironment() != NULL);
 }
@@ -81,7 +82,7 @@ void SDL_QuitEnvironment(void)
     }
 }
 
-SDL_Environment *SDL_CreateEnvironment(SDL_bool populated)
+SDL_Environment *SDL_CreateEnvironment(bool populated)
 {
     SDL_Environment *env = SDL_calloc(1, sizeof(*env));
     if (!env) {
@@ -221,7 +222,7 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
     return result;
 }
 
-SDL_bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const char *value, SDL_bool overwrite)
+bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const char *value, bool overwrite)
 {
     bool result = false;
 
@@ -263,7 +264,7 @@ SDL_bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, cons
     return result;
 }
 
-SDL_bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
+bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
 {
     bool result = false;
 
