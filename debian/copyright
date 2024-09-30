@@ -170,6 +170,12 @@ Files: src/video/haiku/SDL_bkeyboard.cc
 Copyright: 1997-2012 Sam Lantinga
 License: LGPL-2.1+
 
+Files:
+ src/video/x11/edid.h
+Copyright:
+ 2007 Red Hat, Inc.
+License: Expat
+
 Files: src/video/yuv2rgb/*
 Copyright: 2016 Adrien Descamps
 License: BSD-3-clause
