@@ -116,7 +116,7 @@ bool SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormat format, SDL_
 static bool ZombieWaitDevice(SDL_Camera *device)
 {
     if (!SDL_GetAtomicInt(&device->shutdown)) {
-        // !!! FIXME: this is bad for several reasons (uses double, could be precalculated, doesn't track elasped time).
+        // !!! FIXME: this is bad for several reasons (uses double, could be precalculated, doesn't track elapsed time).
         const double duration = ((double) device->actual_spec.framerate_denominator / ((double) device->actual_spec.framerate_numerator));
         SDL_Delay((Uint32) (duration * 1000.0));
     }
@@ -650,7 +650,7 @@ void SDL_CloseCamera(SDL_Camera *camera)
     ClosePhysicalCamera(device);
 }
 
-SDL_bool SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec)
+bool SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec)
 {
     bool result;
 
@@ -1407,7 +1407,7 @@ static void NukeCameraHashItem(const void *key, const void *value, void *data)
     // no-op, keys and values in this hashtable are treated as Plain Old Data and don't get freed here.
 }
 
-SDL_bool SDL_CameraInit(const char *driver_name)
+bool SDL_CameraInit(const char *driver_name)
 {
     if (SDL_GetCurrentCameraDriver()) {
         SDL_QuitCamera(); // shutdown driver if already running.

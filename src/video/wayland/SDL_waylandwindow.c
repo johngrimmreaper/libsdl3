@@ -48,6 +48,11 @@
 #include <libdecor.h>
 #endif
 
+static double GetWindowScale(SDL_Window *window)
+{
+    return (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) || window->internal->scale_to_display ? window->internal->scale_factor : 1.0;
+}
+
 // These are point->pixel->point round trip safe; the inverse is not round trip safe due to rounding.
 static int PointToPixel(SDL_Window *window, int point)
 {
@@ -55,12 +60,12 @@ static int PointToPixel(SDL_Window *window, int point)
      * Wayland scale units are in units of 1/120, so the offset is required to correct for
      * rounding errors when using certain scale values.
      */
-    return SDL_max((int)SDL_lround((double)point * window->internal->scale_factor + 1e-6), 1);
+    return SDL_max((int)SDL_lround((double)point * GetWindowScale(window) + 1e-6), 1);
 }
 
 static int PixelToPoint(SDL_Window *window, int pixel)
 {
-    return SDL_max((int)SDL_lround((double)pixel / window->internal->scale_factor), 1);
+    return SDL_max((int)SDL_lround((double)pixel / GetWindowScale(window)), 1);
 }
 
 /* According to the Wayland spec:
@@ -295,6 +300,7 @@ static void SetSurfaceOpaqueRegion(SDL_WindowData *wind, bool is_opaque)
 static void ConfigureWindowGeometry(SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
+    const double scale_factor = GetWindowScale(window);
     const int old_pixel_width = data->current.pixel_width;
     const int old_pixel_height = data->current.pixel_height;
     int window_width, window_height;
@@ -381,7 +387,7 @@ static void ConfigureWindowGeometry(SDL_Window *window)
                 wp_viewport_set_destination(data->viewport, window_width, window_height);
             } else if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
                 // Don't change this if the DPI awareness flag is unset, as an application may have set this manually on a custom or external surface.
-                wl_surface_set_buffer_scale(data->surface, (int32_t)data->scale_factor);
+                wl_surface_set_buffer_scale(data->surface, (int32_t)scale_factor);
             }
 
             // Clamp the physical window size to the system minimum required size.
@@ -392,8 +398,8 @@ static void ConfigureWindowGeometry(SDL_Window *window)
                 data->pointer_scale.x = 1.0;
                 data->pointer_scale.y = 1.0;
             } else {
-                data->pointer_scale.x = data->scale_factor;
-                data->pointer_scale.y = data->scale_factor;
+                data->pointer_scale.x = scale_factor;
+                data->pointer_scale.y = scale_factor;
             }
         }
     }
@@ -617,7 +623,7 @@ static void UpdateWindowFullscreen(SDL_Window *window, bool fullscreen)
             SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_ENTER, false);
 
             /* Set the output for exclusive fullscreen windows when entering fullscreen from a
-             * compositor event, or if the fullscreen paramaters were changed between the initial
+             * compositor event, or if the fullscreen parameters were changed between the initial
              * fullscreen request and now, to ensure that the window is on the correct output,
              * as requested by the client.
              */
@@ -1345,11 +1351,6 @@ static void Wayland_HandlePreferredScaleChanged(SDL_WindowData *window_data, dou
 {
     const double old_factor = window_data->scale_factor;
 
-    if (!(window_data->sdlwindow->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) && !window_data->scale_to_display) {
-        // Scale will always be 1, just ignore this
-        return;
-    }
-
     // Round the scale factor if viewports aren't available.
     if (!window_data->viewport) {
         factor = SDL_ceil(factor);
@@ -1372,8 +1373,10 @@ static void Wayland_HandlePreferredScaleChanged(SDL_WindowData *window_data, dou
             }
         }
 
-        ConfigureWindowGeometry(window_data->sdlwindow);
-        CommitLibdecorFrame(window_data->sdlwindow);
+        if (window_data->sdlwindow->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY || window_data->scale_to_display) {
+            ConfigureWindowGeometry(window_data->sdlwindow);
+            CommitLibdecorFrame(window_data->sdlwindow);
+        }
     }
 }
 
@@ -1587,11 +1590,11 @@ bool Wayland_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Win
     SDL_WindowData *child_data = window->internal;
     SDL_WindowData *parent_data = parent_window ? parent_window->internal : NULL;
 
-    child_data->reparenting_required = SDL_FALSE;
+    child_data->reparenting_required = false;
 
     if (parent_data && parent_data->surface_status != WAYLAND_SURFACE_STATUS_SHOWN) {
         // Need to wait for the parent to become mapped, or it's the same as setting a null parent.
-        child_data->reparenting_required = SDL_TRUE;
+        child_data->reparenting_required = true;
         return true;
     }
 
@@ -2398,7 +2401,7 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
         data->scale_to_display = window->parent->internal->scale_to_display;
         data->scale_factor = window->parent->internal->scale_factor;
         EnsurePopupPositionIsValid(window, &window->x, &window->y);
-    } else if ((window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) || c->scale_to_display_enabled) {
+    } else {
         for (int i = 0; i < _this->num_displays; i++) {
             data->scale_factor = SDL_max(data->scale_factor, _this->displays[i]->internal->scale_factor);
         }
@@ -2719,7 +2722,7 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
         return SDL_SetError("wayland: failed to allocate SHM buffer for the icon");
     }
 
-    SDL_PremultiplyAlpha(icon->w, icon->h, icon->format, icon->pixels, icon->pitch, SDL_PIXELFORMAT_ARGB8888, wind->icon.shm_data, icon->w * 4, SDL_TRUE);
+    SDL_PremultiplyAlpha(icon->w, icon->h, icon->format, icon->pixels, icon->pitch, SDL_PIXELFORMAT_ARGB8888, wind->icon.shm_data, icon->w * 4, true);
 
     wind->xdg_toplevel_icon_v1 = xdg_toplevel_icon_manager_v1_create_icon(_this->internal->xdg_toplevel_icon_manager_v1);
     xdg_toplevel_icon_v1_add_buffer(wind->xdg_toplevel_icon_v1, wind->icon.wl_buffer, 1);

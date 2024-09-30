@@ -1525,7 +1525,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
     const char *utfvalue = (*env)->GetStringUTFChars(env, value, NULL);
 
     // This is only called at startup, to initialize the environment
-    SDL_setenv_unsafe(utfname, utfvalue, 1);
+    // Note that we call setenv() directly to avoid affecting SDL environments
+    setenv(utfname, utfvalue, 1); // This should NOT be SDL_setenv()
 
     (*env)->ReleaseStringUTFChars(env, name, utfname);
     (*env)->ReleaseStringUTFChars(env, value, utfvalue);
@@ -1829,7 +1830,7 @@ Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, SDL_IOWhence whence)
     return (Sint64) AAsset_seek64((AAsset *)userdata, offset, (int)whence);
 }
 
-SDL_bool Android_JNI_FileClose(void *userdata)
+bool Android_JNI_FileClose(void *userdata)
 {
     AAsset_close((AAsset *)userdata);
     return true;
@@ -2029,7 +2030,7 @@ void Android_JNI_HapticStop(int device_id)
 // See SDLActivity.java for constants.
 #define COMMAND_SET_KEEP_SCREEN_ON 5
 
-SDL_bool SDL_SendAndroidMessage(Uint32 command, int param)
+bool SDL_SendAndroidMessage(Uint32 command, int param)
 {
     if (command < 0x8000) {
         return SDL_InvalidParamError("command");
@@ -2211,19 +2212,19 @@ bool SDL_IsAndroidTablet(void)
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsTablet);
 }
 
-SDL_bool SDL_IsAndroidTV(void)
+bool SDL_IsAndroidTV(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsAndroidTV);
 }
 
-SDL_bool SDL_IsChromebook(void)
+bool SDL_IsChromebook(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsChromebook);
 }
 
-SDL_bool SDL_IsDeXMode(void)
+bool SDL_IsDeXMode(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsDeXMode);
@@ -2420,7 +2421,7 @@ const char *SDL_GetAndroidCachePath(void)
     return s_AndroidCachePath;
 }
 
-SDL_bool SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xOffset, int yOffset)
+bool SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xOffset, int yOffset)
 {
     return Android_JNI_ShowToast(message, duration, gravity, xOffset, yOffset);
 }
@@ -2519,7 +2520,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
-SDL_bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata)
+bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata)
 {
     if (!permission) {
         return SDL_InvalidParamError("permission");
@@ -2563,7 +2564,7 @@ bool Android_JNI_ShowToast(const char *message, int duration, int gravity, int x
     bool result;
     JNIEnv *env = Android_JNI_GetEnv();
     jstring jmessage = (*env)->NewStringUTF(env, message);
-    result = (*env)->CallStaticIntMethod(env, mActivityClass, midShowToast, jmessage, duration, gravity, xOffset, yOffset);
+    result = (*env)->CallStaticBooleanMethod(env, mActivityClass, midShowToast, jmessage, duration, gravity, xOffset, yOffset);
     (*env)->DeleteLocalRef(env, jmessage);
     return result;
 }
@@ -2631,7 +2632,7 @@ bool Android_JNI_OpenURL(const char *url)
     bool result;
     JNIEnv *env = Android_JNI_GetEnv();
     jstring jurl = (*env)->NewStringUTF(env, url);
-    result = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenURL, jurl);
+    result = (*env)->CallStaticBooleanMethod(env, mActivityClass, midOpenURL, jurl);
     (*env)->DeleteLocalRef(env, jurl);
     return result;
 }

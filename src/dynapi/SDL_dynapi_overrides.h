@@ -273,6 +273,7 @@
 #define SDL_GetCameraSupportedFormats SDL_GetCameraSupportedFormats_REAL
 #define SDL_GetCameras SDL_GetCameras_REAL
 #define SDL_GetClipboardData SDL_GetClipboardData_REAL
+#define SDL_GetClipboardMimeTypes SDL_GetClipboardMimeTypes_REAL
 #define SDL_GetClipboardText SDL_GetClipboardText_REAL
 #define SDL_GetClosestFullscreenDisplayMode SDL_GetClosestFullscreenDisplayMode_REAL
 #define SDL_GetCurrentAudioDriver SDL_GetCurrentAudioDriver_REAL
@@ -842,6 +843,7 @@
 #define SDL_SetHapticGain SDL_SetHapticGain_REAL
 #define SDL_SetHint SDL_SetHint_REAL
 #define SDL_SetHintWithPriority SDL_SetHintWithPriority_REAL
+#define SDL_SetInitialized SDL_SetInitialized_REAL
 #define SDL_SetJoystickEventsEnabled SDL_SetJoystickEventsEnabled_REAL
 #define SDL_SetJoystickLED SDL_SetJoystickLED_REAL
 #define SDL_SetJoystickPlayerIndex SDL_SetJoystickPlayerIndex_REAL
@@ -920,6 +922,8 @@
 #define SDL_SetX11EventHook SDL_SetX11EventHook_REAL
 #define SDL_SetiOSAnimationCallback SDL_SetiOSAnimationCallback_REAL
 #define SDL_SetiOSEventPump SDL_SetiOSEventPump_REAL
+#define SDL_ShouldInit SDL_ShouldInit_REAL
+#define SDL_ShouldQuit SDL_ShouldQuit_REAL
 #define SDL_ShowAndroidToast SDL_ShowAndroidToast_REAL
 #define SDL_ShowCursor SDL_ShowCursor_REAL
 #define SDL_ShowMessageBox SDL_ShowMessageBox_REAL
@@ -1030,7 +1034,7 @@
 #define SDL_aligned_free SDL_aligned_free_REAL
 #define SDL_asin SDL_asin_REAL
 #define SDL_asinf SDL_asinf_REAL
-#define SDL_asprintf    SDL_asprintf_REAL
+#define SDL_asprintf SDL_asprintf_REAL
 #define SDL_atan SDL_atan_REAL
 #define SDL_atan2 SDL_atan2_REAL
 #define SDL_atan2f SDL_atan2f_REAL
@@ -1118,6 +1122,7 @@
 #define SDL_memset4 SDL_memset4_REAL
 #define SDL_modf SDL_modf_REAL
 #define SDL_modff SDL_modff_REAL
+#define SDL_murmur3_32 SDL_murmur3_32_REAL
 #define SDL_pow SDL_pow_REAL
 #define SDL_powf SDL_powf_REAL
 #define SDL_qsort SDL_qsort_REAL
