@@ -238,6 +238,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetCameraSupportedFormats@SDL3_0.0.0 3.1.2+git20240730~
  SDL_GetCameras@SDL3_0.0.0 3.1.2+git20240730~
  SDL_GetClipboardData@SDL3_0.0.0 3.1.0~
+ SDL_GetClipboardMimeTypes@SDL3_0.0.0 3.1.2+git20240930~
  SDL_GetClipboardText@SDL3_0.0.0 3.1.0~
  SDL_GetClosestFullscreenDisplayMode@SDL3_0.0.0 3.1.0~
  SDL_GetCurrentAudioDriver@SDL3_0.0.0 3.1.0~
@@ -795,6 +796,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetHapticGain@SDL3_0.0.0 3.1.0~
  SDL_SetHint@SDL3_0.0.0 3.1.0~
  SDL_SetHintWithPriority@SDL3_0.0.0 3.1.0~
+ SDL_SetInitialized@SDL3_0.0.0 3.1.2+git20240930~
  SDL_SetJoystickEventsEnabled@SDL3_0.0.0 3.1.0~
  SDL_SetJoystickLED@SDL3_0.0.0 3.1.0~
  SDL_SetJoystickPlayerIndex@SDL3_0.0.0 3.1.0~
@@ -870,6 +872,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetWindowSurfaceVSync@SDL3_0.0.0 3.1.2+git20240730~
  SDL_SetWindowTitle@SDL3_0.0.0 3.1.0~
  SDL_SetX11EventHook@SDL3_0.0.0 3.1.0~
+ SDL_ShouldInit@SDL3_0.0.0 3.1.2+git20240930~
+ SDL_ShouldQuit@SDL3_0.0.0 3.1.2+git20240930~
  SDL_ShowCursor@SDL3_0.0.0 3.1.0~
  SDL_ShowMessageBox@SDL3_0.0.0 3.1.0~
  SDL_ShowOpenFileDialog@SDL3_0.0.0 3.1.0~
@@ -1066,6 +1070,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_memset@SDL3_0.0.0 3.1.0~
  SDL_modf@SDL3_0.0.0 3.1.0~
  SDL_modff@SDL3_0.0.0 3.1.0~
+ SDL_murmur3_32@SDL3_0.0.0 3.1.2+git20240930~
  SDL_pow@SDL3_0.0.0 3.1.0~
  SDL_powf@SDL3_0.0.0 3.1.0~
  SDL_qsort@SDL3_0.0.0 3.1.0~
