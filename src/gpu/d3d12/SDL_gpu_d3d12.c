@@ -26,7 +26,6 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../../video/directx/SDL_d3d12.h"
 #include "../SDL_sysgpu.h"
-#include "SDL_hashtable.h"
 
 #ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
 #define HAVE_IDXGIINFOQUEUE
@@ -554,6 +553,8 @@ typedef struct D3D12WindowData
 
     D3D12TextureContainer textureContainers[MAX_FRAMES_IN_FLIGHT];
     SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
+    Uint32 width;
+    Uint32 height;
     bool needsSwapchainRecreate;
 } D3D12WindowData;
 
@@ -575,8 +576,8 @@ struct D3D12Renderer
     IDXGIInfoQueue *dxgiInfoQueue;
 #endif
     IDXGIAdapter1 *adapter;
-    void *dxgi_dll;
-    void *dxgidebug_dll;
+    SDL_SharedObject *dxgi_dll;
+    SDL_SharedObject *dxgidebug_dll;
 #endif
     ID3D12Debug *d3d12Debug;
     bool supportsTearing;
@@ -6331,6 +6332,8 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
         }
     }
 
+    windowData->width = w;
+    windowData->height = h;
     windowData->needsSwapchainRecreate = false;
     return true;
 }
@@ -6381,6 +6384,9 @@ static bool D3D12_INTERNAL_CreateSwapchain(
 #endif
 
     swapchainFormat = SwapchainCompositionToTextureFormat[swapchainComposition];
+
+    int w, h;
+    SDL_GetWindowSizeInPixels(windowData->window, &w, &h);
 
     // Initialize the swapchain buffer descriptor
     swapchainDesc.Width = 0;
@@ -6477,6 +6483,8 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     windowData->swapchainComposition = swapchainComposition;
     windowData->swapchainColorSpace = SwapchainCompositionToColorSpace[swapchainComposition];
     windowData->frameCounter = 0;
+    windowData->width = w;
+    windowData->height = h;
 
     // Precache blit pipelines for the swapchain format
     for (Uint32 i = 0; i < 5; i += 1) {
@@ -6907,7 +6915,9 @@ static SDL_GPUCommandBuffer *D3D12_AcquireCommandBuffer(
 static bool D3D12_AcquireSwapchainTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_Window *window,
-    SDL_GPUTexture **swapchainTexture)
+    SDL_GPUTexture **swapchainTexture,
+    Uint32 *swapchainTextureWidth,
+    Uint32 *swapchainTextureHeight)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     D3D12Renderer *renderer = d3d12CommandBuffer->renderer;
@@ -6916,6 +6926,12 @@ static bool D3D12_AcquireSwapchainTexture(
     HRESULT res;
 
     *swapchainTexture = NULL;
+    if (swapchainTextureWidth) {
+        *swapchainTextureWidth = 0;
+    }
+    if (swapchainTextureHeight) {
+        *swapchainTextureHeight = 0;
+    }
 
     windowData = D3D12_INTERNAL_FetchWindowData(window);
     if (windowData == NULL) {
@@ -6926,6 +6942,13 @@ static bool D3D12_AcquireSwapchainTexture(
         if (!D3D12_INTERNAL_ResizeSwapchain(renderer, windowData)) {
             return false;
         }
+    }
+
+    if (swapchainTextureWidth) {
+        *swapchainTextureWidth = windowData->width;
+    }
+    if (swapchainTextureHeight) {
+        *swapchainTextureHeight = windowData->height;
     }
 
     if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
@@ -7739,8 +7762,8 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     return true;
 #else
-    void *d3d12Dll;
-    void *dxgiDll;
+    SDL_SharedObject *d3d12Dll;
+    SDL_SharedObject *dxgiDll;
     PFN_D3D12_CREATE_DEVICE D3D12CreateDeviceFunc;
     PFN_CREATE_DXGI_FACTORY1 CreateDXGIFactoryFunc;
     HRESULT res;

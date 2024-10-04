@@ -52,6 +52,7 @@
 #include "stdlib/SDL_getenv_c.h"
 #include "thread/SDL_thread_c.h"
 #include "video/SDL_pixels_c.h"
+#include "video/SDL_surface_c.h"
 #include "video/SDL_video_c.h"
 #include "filesystem/SDL_filesystem_c.h"
 
@@ -715,6 +716,19 @@ bool SDL_IsTablet(void)
 #elif defined(SDL_PLATFORM_IOS)
     extern bool SDL_IsIPad(void);
     return SDL_IsIPad();
+#else
+    return false;
+#endif
+}
+
+bool SDL_IsTV(void)
+{
+#ifdef SDL_PLATFORM_ANDROID
+    extern bool SDL_IsAndroidTV(void);
+    return SDL_IsAndroidTV();
+#elif defined(SDL_PLATFORM_IOS)
+    extern bool SDL_IsAppleTV(void);
+    return SDL_IsAppleTV();
 #else
     return false;
 #endif

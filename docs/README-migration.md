@@ -998,7 +998,9 @@ The following functions have been removed:
 * SDL_VIRTUAL_JOYSTICK_DESC_VERSION - no longer needed
 
 The following symbols have been removed:
+* SDL_IPHONE_MAX_GFORCE
 * SDL_JOYBALLMOTION
+
 
 The following structures have been renamed:
 * SDL_JoystickGUID => SDL_GUID
@@ -1103,6 +1105,8 @@ The following symbols have been renamed:
 * SDLK_z => SDLK_Z
 
 ## SDL_loadso.h
+
+Shared object handles are now `SDL_SharedObject *`, an opaque type, instead of `void *`. This is just for type-safety and there is no functional difference.
 
 SDL_LoadFunction() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to the appropriate function type. You can define SDL_FUNCTION_POINTER_IS_VOID_POINTER in your project to restore the previous behavior.
 
@@ -1886,6 +1890,8 @@ SDL_RequestAndroidPermission is no longer a blocking call; the caller now provid
 
 SDL_iPhoneSetAnimationCallback() and SDL_iPhoneSetEventPump() have been renamed to SDL_SetiOSAnimationCallback() and SDL_SetiOSEventPump(), respectively. SDL2 has had macros to provide this new name with the old symbol since the introduction of the iPad, but now the correctly-named symbol is the only option.
 
+SDL_IsAndroidTV() has been renamed SDL_IsTV() and is no longer Android-specific; an app running on an Apple TV device will also return true, for example.
+
 The following functions have been removed:
 * SDL_GetWinRTFSPathUNICODE() - WinRT support was removed in SDL3.
 * SDL_GetWinRTFSPathUTF8() - WinRT support was removed in SDL3.
@@ -1909,6 +1915,7 @@ The following functions have been renamed:
 * SDL_Direct3D9GetAdapterIndex() => SDL_GetDirect3D9AdapterIndex()
 * SDL_GDKGetDefaultUser() => SDL_GetGDKDefaultUser(), returns bool
 * SDL_GDKGetTaskQueue() => SDL_GetGDKTaskQueue(), returns bool
+* SDL_IsAndroidTV() => SDL_IsTV()
 * SDL_LinuxSetThreadPriority() => SDL_SetLinuxThreadPriority(), returns bool
 * SDL_LinuxSetThreadPriorityAndPolicy() => SDL_SetLinuxThreadPriorityAndPolicy(), returns bool
 * SDL_OnApplicationDidBecomeActive() => SDL_OnApplicationDidEnterForeground()
@@ -2234,11 +2241,11 @@ The following symbols have been renamed:
 * SDL_WINDOWEVENT_RESIZED => SDL_EVENT_WINDOW_RESIZED
 * SDL_WINDOWEVENT_RESTORED => SDL_EVENT_WINDOW_RESTORED
 * SDL_WINDOWEVENT_SHOWN => SDL_EVENT_WINDOW_SHOWN
-* SDL_WINDOWEVENT_SIZE_CHANGED => SDL_EVENT_WINDOW_SIZE_CHANGED
 * SDL_WINDOW_ALLOW_HIGHDPI => SDL_WINDOW_HIGH_PIXEL_DENSITY
 * SDL_WINDOW_INPUT_GRABBED => SDL_WINDOW_MOUSE_GRABBED
 
 The following symbols have been removed:
+* SDL_WINDOWEVENT_SIZE_CHANGED - handle the SDL_EVENT_WINDOW_RESIZED and SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED events instead
 * SDL_WINDOWEVENT_TAKE_FOCUS
 
 The following window operations are now considered to be asynchronous requests and should not be assumed to succeed unless

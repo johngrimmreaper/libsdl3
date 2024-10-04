@@ -18,7 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "SDL_internal.h"
 #include "SDL_hashtable.h"
 
@@ -56,10 +55,12 @@ struct SDL_HashTable
     bool stackable;
 };
 
-SDL_HashTable *SDL_CreateHashTable(void *data, const Uint32 num_buckets, const SDL_HashTable_HashFn hashfn,
-                                   const SDL_HashTable_KeyMatchFn keymatchfn,
-                                   const SDL_HashTable_NukeFn nukefn,
-                                   const bool stackable)
+SDL_HashTable *SDL_CreateHashTable(void *data,
+                                   Uint32 num_buckets,
+                                   SDL_HashTable_HashFn hashfn,
+                                   SDL_HashTable_KeyMatchFn keymatchfn,
+                                   SDL_HashTable_NukeFn nukefn,
+                                   bool stackable)
 {
     SDL_HashTable *table;
 
@@ -429,13 +430,21 @@ bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, const v
     HT_ASSERT(item <= end);
 
     if (item == end) {
-        *_key = NULL;
-        *_value = NULL;
+        if (_key) {
+            *_key = NULL;
+        }
+        if (_value) {
+            *_value = NULL;
+        }
         return false;
     }
 
-    *_key = item->key;
-    *_value = item->value;
+    if (_key) {
+        *_key = item->key;
+    }
+    if (_value) {
+        *_value = item->value;
+    }
     *iter = item;
 
     return true;

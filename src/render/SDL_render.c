@@ -149,6 +149,8 @@ static const SDL_RenderDriver *render_drivers[] = {
 
 static SDL_Renderer *SDL_renderers;
 
+static const int rect_index_order[] = { 0, 1, 2, 0, 2, 3 };
+
 void SDL_QuitRender(void)
 {
     while (SDL_renderers) {
@@ -352,7 +354,7 @@ bool SDL_FlushRenderer(SDL_Renderer *renderer)
     return true;
 }
 
-void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, const size_t alignment, size_t *offset)
+void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, size_t numbytes, size_t alignment, size_t *offset)
 {
     const size_t needed = renderer->vertex_data_used + numbytes + alignment;
     const size_t current_offset = renderer->vertex_data_used;
@@ -625,7 +627,6 @@ static bool QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect *rects, co
                 const int num_indices = 6 * count;
                 const int size_indices = 4;
                 int cur_index = 0;
-                const int *rect_index_order = renderer->rect_index_order;
 
                 for (i = 0; i < count; ++i) {
                     float minx, miny, maxx, maxy;
@@ -1066,16 +1067,6 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     UpdatePixelClipRect(renderer, &renderer->main_view);
     UpdateMainViewDimensions(renderer);
 
-    // Default value, if not specified by the renderer back-end
-    if (renderer->rect_index_order[0] == 0 && renderer->rect_index_order[1] == 0) {
-        renderer->rect_index_order[0] = 0;
-        renderer->rect_index_order[1] = 1;
-        renderer->rect_index_order[2] = 2;
-        renderer->rect_index_order[3] = 0;
-        renderer->rect_index_order[4] = 2;
-        renderer->rect_index_order[5] = 3;
-    }
-
     // new textures start at zero, so we start at 1 so first render doesn't flush by accident.
     renderer->render_command_generation = 1;
 
@@ -1371,6 +1362,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     if (!texture) {
         return NULL;
     }
+    texture->refcount = 1;
     SDL_SetObjectValid(texture, SDL_OBJECT_TYPE_TEXTURE, true);
     texture->colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, default_colorspace);
     texture->format = format;
@@ -2814,6 +2806,10 @@ bool SDL_RenderCoordinatesFromWindow(SDL_Renderer *renderer, float window_x, flo
         render_y = ((render_y - dst->y) * src->h) / dst->h;
     }
 
+    const SDL_RenderViewState *view = &renderer->main_view;
+    render_x = (render_x / view->scale.x) - view->viewport.x;
+    render_y = (render_y / view->scale.y) - view->viewport.y;
+
     if (x) {
         *x = render_x;
     }
@@ -2826,6 +2822,10 @@ bool SDL_RenderCoordinatesFromWindow(SDL_Renderer *renderer, float window_x, flo
 bool SDL_RenderCoordinatesToWindow(SDL_Renderer *renderer, float x, float y, float *window_x, float *window_y)
 {
     CHECK_RENDERER_MAGIC(renderer, false);
+
+    const SDL_RenderViewState *view = &renderer->main_view;
+    x = (view->viewport.x + x) * view->scale.x;
+    y = (view->viewport.y + y) * view->scale.y;
 
     // Convert from render coordinates to pixels within the window
     if (renderer->logical_presentation_mode != SDL_LOGICAL_PRESENTATION_DISABLED) {
@@ -2869,6 +2869,7 @@ bool SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *even
                 }
 
                 // Convert from pixels within the view to render coordinates
+                scale = (scale / renderer->main_view.scale.x);
                 event->motion.xrel *= scale;
             }
             if (event->motion.yrel != 0.0f) {
@@ -2883,6 +2884,7 @@ bool SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *even
                 }
 
                 // Convert from pixels within the view to render coordinates
+                scale = (scale / renderer->main_view.scale.y);
                 event->motion.yrel *= scale;
             }
         }
@@ -2910,6 +2912,26 @@ bool SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *even
                 return false;
             }
             SDL_RenderCoordinatesFromWindow(renderer, event->tfinger.x * w, event->tfinger.y * h, &event->tfinger.x, &event->tfinger.y);
+        }
+    } else if (event->type == SDL_EVENT_PEN_MOTION) {
+        SDL_Window *window = SDL_GetWindowFromID(event->pmotion.windowID);
+        if (window == renderer->window) {
+            SDL_RenderCoordinatesFromWindow(renderer, event->pmotion.x, event->pmotion.y, &event->pmotion.x, &event->pmotion.y);
+        }
+    } else if ((event->type == SDL_EVENT_PEN_DOWN) || (event->type == SDL_EVENT_PEN_UP)) {
+        SDL_Window *window = SDL_GetWindowFromID(event->ptouch.windowID);
+        if (window == renderer->window) {
+            SDL_RenderCoordinatesFromWindow(renderer, event->ptouch.x, event->ptouch.y, &event->ptouch.x, &event->ptouch.y);
+        }
+    } else if ((event->type == SDL_EVENT_PEN_BUTTON_DOWN) || (event->type == SDL_EVENT_PEN_BUTTON_UP)) {
+        SDL_Window *window = SDL_GetWindowFromID(event->pbutton.windowID);
+        if (window == renderer->window) {
+            SDL_RenderCoordinatesFromWindow(renderer, event->pbutton.x, event->pbutton.y, &event->pbutton.x, &event->pbutton.y);
+        }
+    } else if (event->type == SDL_EVENT_PEN_AXIS) {
+        SDL_Window *window = SDL_GetWindowFromID(event->paxis.windowID);
+        if (window == renderer->window) {
+            SDL_RenderCoordinatesFromWindow(renderer, event->paxis.x, event->paxis.y, &event->paxis.x, &event->paxis.y);
         }
     } else if (event->type == SDL_EVENT_DROP_POSITION ||
                event->type == SDL_EVENT_DROP_FILE ||
@@ -3806,7 +3828,7 @@ static bool SDL_RenderTextureInternal(SDL_Renderer *renderer, SDL_Texture *textu
         float uv[8];
         const int uv_stride = 2 * sizeof(float);
         const int num_vertices = 4;
-        const int *indices = renderer->rect_index_order;
+        const int *indices = rect_index_order;
         const int num_indices = 6;
         const int size_indices = 4;
         float minu, minv, maxu, maxv;
@@ -3967,7 +3989,7 @@ bool SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
         float uv[8];
         const int uv_stride = 2 * sizeof(float);
         const int num_vertices = 4;
-        const int *indices = renderer->rect_index_order;
+        const int *indices = rect_index_order;
         const int num_indices = 6;
         const int size_indices = 4;
         float minu, minv, maxu, maxv;
@@ -4055,7 +4077,7 @@ static bool SDL_RenderTextureTiled_Wrap(SDL_Renderer *renderer, SDL_Texture *tex
     float uv[8];
     const int uv_stride = 2 * sizeof(float);
     const int num_vertices = 4;
-    const int *indices = renderer->rect_index_order;
+    const int *indices = rect_index_order;
     const int num_indices = 6;
     const int size_indices = 4;
     float minu, minv, maxu, maxv;
@@ -4979,11 +5001,9 @@ bool SDL_RenderPresent(SDL_Renderer *renderer)
     return true;
 }
 
-static bool SDL_DestroyTextureInternal(SDL_Texture *texture, bool is_destroying)
+static void SDL_DestroyTextureInternal(SDL_Texture *texture, bool is_destroying)
 {
     SDL_Renderer *renderer;
-
-    CHECK_TEXTURE_MAGIC(texture, false);
 
     SDL_DestroyProperties(texture->props);
 
@@ -5025,11 +5045,16 @@ static bool SDL_DestroyTextureInternal(SDL_Texture *texture, bool is_destroying)
     texture->locked_surface = NULL;
 
     SDL_free(texture);
-    return true;
 }
 
 void SDL_DestroyTexture(SDL_Texture *texture)
 {
+    CHECK_TEXTURE_MAGIC(texture, );
+
+    if (--texture->refcount > 0) {
+        return;
+    }
+
     SDL_DestroyTextureInternal(texture, false /* is_destroying */);
 }
 
