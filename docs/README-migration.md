@@ -1174,6 +1174,7 @@ The following functions have been removed:
 * SDL_GetRelativeMouseMode() - replaced with SDL_GetWindowRelativeMouseMode()
 
 The following symbols have been renamed:
+* SDL_BUTTON => SDL_BUTTON_MASK
 * SDL_NUM_SYSTEM_CURSORS => SDL_SYSTEM_CURSOR_COUNT
 * SDL_SYSTEM_CURSOR_ARROW => SDL_SYSTEM_CURSOR_DEFAULT
 * SDL_SYSTEM_CURSOR_HAND => SDL_SYSTEM_CURSOR_POINTER
@@ -2028,6 +2029,7 @@ SDL_CreateThread and SDL_CreateThreadWithProperties now take beginthread/endthre
 SDL_GetTLS() and SDL_SetTLS() take a pointer to a TLS ID, and will automatically initialize it in a thread-safe way as needed.
 
 The following functions have been renamed:
+* SDL_SetThreadPriority() => SDL_SetCurrentThreadPriority()
 * SDL_TLSCleanup() => SDL_CleanupTLS()
 * SDL_TLSGet() => SDL_GetTLS()
 * SDL_TLSSet() => SDL_SetTLS(), returns bool
