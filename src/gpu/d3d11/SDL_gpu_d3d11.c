@@ -480,6 +480,8 @@ typedef struct D3D11WindowData
     SDL_GPUSwapchainComposition swapchainComposition;
     DXGI_FORMAT swapchainFormat;
     DXGI_COLOR_SPACE_TYPE swapchainColorSpace;
+    Uint32 width;
+    Uint32 height;
     SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
     Uint32 frameCounter;
     bool needsSwapchainRecreate;
@@ -735,9 +737,9 @@ struct D3D11Renderer
     IDXGIInfoQueue *dxgiInfoQueue;
 #endif
 
-    void *d3d11_dll;
-    void *dxgi_dll;
-    void *dxgidebug_dll;
+    SDL_SharedObject *d3d11_dll;
+    SDL_SharedObject *dxgi_dll;
+    SDL_SharedObject *dxgidebug_dll;
 
     Uint8 debugMode;
     BOOL supportsTearing;
@@ -5250,6 +5252,8 @@ static bool D3D11_INTERNAL_CreateSwapchain(
     windowData->texture.container = &windowData->textureContainer;
     windowData->texture.containerIndex = 0;
 
+    windowData->width = w;
+    windowData->height = h;
     return true;
 }
 
@@ -5288,6 +5292,8 @@ static bool D3D11_INTERNAL_ResizeSwapchain(
 
     windowData->textureContainer.header.info.width = w;
     windowData->textureContainer.header.info.height = h;
+    windowData->width = w;
+    windowData->height = h;
     windowData->needsSwapchainRecreate = !result;
     return result;
 }
@@ -5469,7 +5475,9 @@ static void D3D11_ReleaseWindow(
 static bool D3D11_AcquireSwapchainTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_Window *window,
-    SDL_GPUTexture **swapchainTexture)
+    SDL_GPUTexture **swapchainTexture,
+    Uint32 *swapchainTextureWidth,
+    Uint32 *swapchainTextureHeight)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11Renderer *renderer = (D3D11Renderer *)d3d11CommandBuffer->renderer;
@@ -5477,6 +5485,12 @@ static bool D3D11_AcquireSwapchainTexture(
     HRESULT res;
 
     *swapchainTexture = NULL;
+    if (swapchainTextureWidth) {
+        *swapchainTextureWidth = 0;
+    }
+    if (swapchainTextureHeight) {
+        *swapchainTextureHeight = 0;
+    }
 
     windowData = D3D11_INTERNAL_FetchWindowData(window);
     if (windowData == NULL) {
@@ -5487,6 +5501,13 @@ static bool D3D11_AcquireSwapchainTexture(
         if (!D3D11_INTERNAL_ResizeSwapchain(renderer, windowData)) {
             return false;
         }
+    }
+
+    if (swapchainTextureWidth) {
+        *swapchainTextureWidth = windowData->width;
+    }
+    if (swapchainTextureHeight) {
+        *swapchainTextureHeight = windowData->height;
     }
 
     if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
@@ -5865,7 +5886,8 @@ static bool D3D11_SupportsTextureFormat(
 
 static bool D3D11_PrepareDriver(SDL_VideoDevice *this)
 {
-    void *d3d11_dll, *dxgi_dll;
+    SDL_SharedObject *d3d11_dll;
+    SDL_SharedObject *dxgi_dll;
     PFN_D3D11_CREATE_DEVICE D3D11CreateDeviceFunc;
     D3D_FEATURE_LEVEL levels[] = { D3D_FEATURE_LEVEL_11_1 };
     PFN_CREATE_DXGI_FACTORY1 CreateDxgiFactoryFunc;
