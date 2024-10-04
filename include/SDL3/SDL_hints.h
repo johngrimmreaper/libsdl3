@@ -1655,6 +1655,17 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_STEAMDECK "SDL_JOYSTICK_HIDAPI_STEAMDECK"
 
 /**
+ * A variable controlling whether the HIDAPI driver for HORI licensed Steam
+ * controllers should be used.
+ *
+ * This variable can be set to the following values: "0" - HIDAPI driver is
+ * not used "1" - HIDAPI driver is used
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_STEAM_HORI "SDL_JOYSTICK_HIDAPI_STEAM_HORI"
+
+/**
  * A variable controlling whether the HIDAPI driver for Nintendo Switch
  * controllers should be used.
  *
@@ -1730,8 +1741,8 @@ extern "C" {
  * - "0": HIDAPI driver is not used.
  * - "1": HIDAPI driver is used.
  *
- * This driver doesn't work with the dolphinbar, so the default is SDL_FALSE
- * for now.
+ * This driver doesn't work with the dolphinbar, so the default is false for
+ * now.
  *
  * This hint should be set before enumerating controllers.
  *
@@ -2497,11 +2508,11 @@ extern "C" {
  * system while relative mode is active, in case the desired confinement state
  * became out-of-sync due to interference from other running programs.
  *
- * The variable can be integers representing miliseconds between each refresh.
- * A value of zero means SDL will not automatically refresh the confinement.
- * The default value varies depending on the operating system, this variable
- * might not have any effects on inapplicable platforms such as those without
- * a cursor.
+ * The variable can be integers representing milliseconds between each
+ * refresh. A value of zero means SDL will not automatically refresh the
+ * confinement. The default value varies depending on the operating system,
+ * this variable might not have any effects on inapplicable platforms such as
+ * those without a cursor.
  *
  * This hint can be set anytime.
  *
@@ -2991,7 +3002,7 @@ extern "C" {
  * - "1": Force SDL_THREAD_PRIORITY_TIME_CRITICAL to a realtime scheduling
  *   policy
  *
- * This hint should be set before calling SDL_SetThreadPriority()
+ * This hint should be set before calling SDL_SetCurrentThreadPriority()
  *
  * \since This hint is available since SDL 3.0.0.
  */
@@ -2999,22 +3010,22 @@ extern "C" {
 
 /**
  * A string specifying additional information to use with
- * SDL_SetThreadPriority.
+ * SDL_SetCurrentThreadPriority.
  *
- * By default SDL_SetThreadPriority will make appropriate system changes in
- * order to apply a thread priority. For example on systems using pthreads the
- * scheduler policy is changed automatically to a policy that works well with
- * a given priority. Code which has specific requirements can override SDL's
- * default behavior with this hint.
+ * By default SDL_SetCurrentThreadPriority will make appropriate system
+ * changes in order to apply a thread priority. For example on systems using
+ * pthreads the scheduler policy is changed automatically to a policy that
+ * works well with a given priority. Code which has specific requirements can
+ * override SDL's default behavior with this hint.
  *
  * pthread hint values are "current", "other", "fifo" and "rr". Currently no
  * other platform hint values are defined but may be in the future.
  *
  * On Linux, the kernel may send SIGKILL to realtime tasks which exceed the
  * distro configured execution budget for rtkit. This budget can be queried
- * through RLIMIT_RTTIME after calling SDL_SetThreadPriority().
+ * through RLIMIT_RTTIME after calling SDL_SetCurrentThreadPriority().
  *
- * This hint should be set before calling SDL_SetThreadPriority()
+ * This hint should be set before calling SDL_SetCurrentThreadPriority()
  *
  * \since This hint is available since SDL 3.0.0.
  */
@@ -4049,8 +4060,8 @@ typedef enum SDL_HintPriority
  * \param name the hint to set.
  * \param value the value of the hint variable.
  * \param priority the SDL_HintPriority level for the hint.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -4060,7 +4071,7 @@ typedef enum SDL_HintPriority
  * \sa SDL_ResetHint
  * \sa SDL_SetHint
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority);
 
 /**
  * Set a hint with normal priority.
@@ -4071,8 +4082,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name, c
  *
  * \param name the hint to set.
  * \param value the value of the hint variable.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -4082,7 +4093,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name, c
  * \sa SDL_ResetHint
  * \sa SDL_SetHintWithPriority
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name, const char *value);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetHint(const char *name, const char *value);
 
 /**
  * Reset a hint to the default value.
@@ -4092,8 +4103,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name, const char *v
  * change.
  *
  * \param name the hint to set.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -4102,7 +4113,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name, const char *v
  * \sa SDL_SetHint
  * \sa SDL_ResetHints
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
+extern SDL_DECLSPEC bool SDLCALL SDL_ResetHint(const char *name);
 
 /**
  * Reset all hints to the default values.
@@ -4154,7 +4165,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetHint(const char *name);
  * \sa SDL_GetHint
  * \sa SDL_SetHint
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bool default_value);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetHintBoolean(const char *name, bool default_value);
 
 /**
  * A callback used to send notifications of hint value changes.
@@ -4187,8 +4198,8 @@ typedef void(SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const 
  * \param callback An SDL_HintCallback function that will be called when the
  *                 hint value changes.
  * \param userdata a pointer to pass to the callback function.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -4196,7 +4207,7 @@ typedef void(SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const 
  *
  * \sa SDL_RemoveHintCallback
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata);
+extern SDL_DECLSPEC bool SDLCALL SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata);
 
 /**
  * Remove a function watching a particular hint.

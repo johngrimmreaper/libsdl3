@@ -222,6 +222,9 @@
 #define SDL_EndThreadFunction NULL
 #endif
 
+/* Enable internal definitions in SDL API headers */
+#define SDL_INTERNAL
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_intrin.h>
 
@@ -234,6 +237,7 @@ extern "C" {
 #endif
 
 #include "SDL_utils_c.h"
+#include "SDL_hashtable.h"
 
 // Do any initialization that needs to happen before threads are started
 extern void SDL_InitMainThread(void);
@@ -241,9 +245,9 @@ extern void SDL_InitMainThread(void);
 /* The internal implementations of these functions have up to nanosecond precision.
    We can expose these functions as part of the API if we want to later.
 */
-extern SDL_bool SDLCALL SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS);
-extern SDL_bool SDLCALL SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
-extern SDL_bool SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
+extern bool SDLCALL SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS);
+extern bool SDLCALL SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
+extern bool SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus

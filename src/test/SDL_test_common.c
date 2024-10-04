@@ -264,13 +264,13 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
     }
     if (SDL_strcasecmp(argv[index], "--fullscreen") == 0) {
         state->window_flags |= SDL_WINDOW_FULLSCREEN;
-        state->fullscreen_exclusive = SDL_TRUE;
+        state->fullscreen_exclusive = true;
         state->num_windows = 1;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--fullscreen-desktop") == 0) {
         state->window_flags |= SDL_WINDOW_FULLSCREEN;
-        state->fullscreen_exclusive = SDL_FALSE;
+        state->fullscreen_exclusive = false;
         state->num_windows = 1;
         return 1;
     }
@@ -344,7 +344,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         return 2;
     }
     if (SDL_strcasecmp(argv[index], "--usable-bounds") == 0) {
-        state->fill_usable_bounds = SDL_TRUE;
+        state->fill_usable_bounds = true;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--geometry") == 0) {
@@ -448,7 +448,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--auto-scale-content") == 0) {
-        state->auto_scale_content = SDL_TRUE;
+        state->auto_scale_content = true;
 
         if (state->logical_presentation == SDL_LOGICAL_PRESENTATION_DISABLED) {
             state->logical_presentation = SDL_LOGICAL_PRESENTATION_STRETCH;
@@ -478,21 +478,6 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         }
         if (SDL_strcasecmp(argv[index], "integer_scale") == 0) {
             state->logical_presentation = SDL_LOGICAL_PRESENTATION_INTEGER_SCALE;
-            return 2;
-        }
-        return -1;
-    }
-    if (SDL_strcasecmp(argv[index], "--logical-scale-quality") == 0) {
-        ++index;
-        if (!argv[index]) {
-            return -1;
-        }
-        if (SDL_strcasecmp(argv[index], "nearest") == 0) {
-            state->logical_scale_mode = SDL_SCALEMODE_NEAREST;
-            return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "linear") == 0) {
-            state->logical_scale_mode = SDL_SCALEMODE_LINEAR;
             return 2;
         }
         return -1;
@@ -562,7 +547,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--flash-on-focus-loss") == 0) {
-        state->flash_on_focus_loss = SDL_TRUE;
+        state->flash_on_focus_loss = true;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--grab") == 0) {
@@ -578,7 +563,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--hide-cursor") == 0) {
-        state->hide_cursor = SDL_TRUE;
+        state->hide_cursor = true;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--gpu") == 0) {
@@ -708,7 +693,6 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, SDL_InitFlags flags)
     state->window_w = DEFAULT_WINDOW_WIDTH;
     state->window_h = DEFAULT_WINDOW_HEIGHT;
     state->logical_presentation = SDL_LOGICAL_PRESENTATION_DISABLED;
-    state->logical_scale_mode = SDL_SCALEMODE_LINEAR;
     state->num_windows = 1;
     state->audio_freq = 22050;
     state->audio_format = SDL_AUDIO_S16;
@@ -803,18 +787,18 @@ void SDLTest_CommonLogUsage(SDLTest_CommonState *state, const char *argv0, const
     }
 }
 
-SDL_bool SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **argv)
+bool SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, int argc, char **argv)
 {
     int i = 1;
     while (i < argc) {
         const int consumed = SDLTest_CommonArg(state, i);
         if (consumed <= 0) {
             SDLTest_CommonLogUsage(state, argv[0], NULL);
-            return SDL_FALSE;
+            return false;
         }
         i += consumed;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 static void SDLTest_PrintDisplayOrientation(char *text, size_t maxlen, SDL_DisplayOrientation orientation)
@@ -1034,12 +1018,12 @@ static void SDLTest_PrintButtonMask(char *text, size_t maxlen, SDL_MouseButtonFl
     int i;
     int count = 0;
     for (i = 1; i <= 32; ++i) {
-        const Uint32 flag = SDL_BUTTON(i);
+        const Uint32 flag = SDL_BUTTON_MASK(i);
         if ((flags & flag) == flag) {
             if (count > 0) {
                 SDL_snprintfcat(text, maxlen, " | ");
             }
-            SDL_snprintfcat(text, maxlen, "SDL_BUTTON(%d)", i);
+            SDL_snprintfcat(text, maxlen, "SDL_BUTTON_MASK(%d)", i);
             ++count;
         }
     }
@@ -1078,21 +1062,6 @@ static void SDLTest_PrintLogicalPresentation(char *text, size_t maxlen, SDL_Rend
         break;
     default:
         SDL_snprintfcat(text, maxlen, "0x%8.8x", logical_presentation);
-        break;
-    }
-}
-
-static void SDLTest_PrintScaleMode(char *text, size_t maxlen, SDL_ScaleMode scale_mode)
-{
-    switch (scale_mode) {
-    case SDL_SCALEMODE_NEAREST:
-        SDL_snprintfcat(text, maxlen, "NEAREST");
-        break;
-    case SDL_SCALEMODE_LINEAR:
-        SDL_snprintfcat(text, maxlen, "LINEAR");
-        break;
-    default:
-        SDL_snprintfcat(text, maxlen, "0x%8.8x", scale_mode);
         break;
     }
 }
@@ -1192,7 +1161,7 @@ static SDL_HitTestResult SDLCALL SDLTest_ExampleHitTestCallback(SDL_Window *win,
     return SDL_HITTEST_NORMAL;
 }
 
-SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
+bool SDLTest_CommonInit(SDLTest_CommonState *state)
 {
     int i, j, m, n, w, h;
     char text[1024];
@@ -1216,7 +1185,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
         if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
             SDL_Log("Couldn't initialize video driver: %s\n",
                     SDL_GetError());
-            return SDL_FALSE;
+            return false;
         }
         if (state->verbose & VERBOSE_VIDEO) {
             SDL_Log("Video driver: %s\n",
@@ -1367,9 +1336,9 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
         }
 
         {
-            SDL_bool include_high_density_modes = SDL_FALSE;
+            bool include_high_density_modes = false;
             if (state->window_flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
-                include_high_density_modes = SDL_TRUE;
+                include_high_density_modes = true;
             }
             SDL_GetClosestFullscreenDisplayMode(state->displayID, state->window_w, state->window_h, state->refresh_rate, include_high_density_modes, &state->fullscreen_mode);
         }
@@ -1385,7 +1354,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
                                        sizeof(*state->targets));
         if (!state->windows || !state->renderers) {
             SDL_Log("Out of memory!\n");
-            return SDL_FALSE;
+            return false;
         }
         for (i = 0; i < state->num_windows; ++i) {
             char title[1024];
@@ -1424,7 +1393,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
             if (!state->windows[i]) {
                 SDL_Log("Couldn't create window: %s\n",
                         SDL_GetError());
-                return SDL_FALSE;
+                return false;
             }
             if (state->window_minW || state->window_minH) {
                 SDL_SetWindowMinimumSize(state->windows[i], state->window_minW, state->window_minH);
@@ -1445,7 +1414,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
                 if (state->fullscreen_exclusive) {
                     SDL_SetWindowFullscreenMode(state->windows[i], &state->fullscreen_mode);
                 }
-                SDL_SetWindowFullscreen(state->windows[i], SDL_TRUE);
+                SDL_SetWindowFullscreen(state->windows[i], true);
             }
 
             /* Add resize/drag areas for windows that are borderless and resizable */
@@ -1471,7 +1440,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
                 if (!state->renderers[i]) {
                     SDL_Log("Couldn't create renderer: %s\n",
                             SDL_GetError());
-                    return SDL_FALSE;
+                    return false;
                 }
                 if (state->logical_w == 0 || state->logical_h == 0) {
                     state->logical_w = state->window_w;
@@ -1480,9 +1449,9 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
                 if (state->render_vsync) {
                     SDL_SetRenderVSync(state->renderers[i], state->render_vsync);
                 }
-                if (!SDL_SetRenderLogicalPresentation(state->renderers[i], state->logical_w, state->logical_h, state->logical_presentation, state->logical_scale_mode)) {
+                if (!SDL_SetRenderLogicalPresentation(state->renderers[i], state->logical_w, state->logical_h, state->logical_presentation)) {
                     SDL_Log("Couldn't set logical presentation: %s\n", SDL_GetError());
-                    return SDL_FALSE;
+                    return false;
                 }
                 if (state->scale != 0.0f) {
                     SDL_SetRenderScale(state->renderers[i], state->scale, state->scale);
@@ -1519,7 +1488,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
         if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
             SDL_Log("Couldn't initialize audio driver: %s\n",
                     SDL_GetError());
-            return SDL_FALSE;
+            return false;
         }
         if (state->verbose & VERBOSE_AUDIO) {
             SDL_Log("Audio driver: %s\n",
@@ -1530,7 +1499,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
         state->audio_id = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec);
         if (!state->audio_id) {
             SDL_Log("Couldn't open audio: %s\n", SDL_GetError());
-            return SDL_FALSE;
+            return false;
         }
     }
 
@@ -1538,7 +1507,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
         SDL_InitSubSystem(SDL_INIT_CAMERA);
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
 static const char *SystemThemeName(void)
@@ -2108,7 +2077,7 @@ static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
 
             flags = SDL_GetWindowFlags(window);
             if (flags & SDL_WINDOW_FULLSCREEN) {
-                SDL_SetWindowFullscreen(window, SDL_FALSE);
+                SDL_SetWindowFullscreen(window, false);
                 SDL_Delay(15);
             }
 
@@ -2121,9 +2090,9 @@ static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
                 new_mode.displayID = displays[index];
                 if (!SDL_SetWindowFullscreenMode(window, &new_mode)) {
                     /* Try again with a default mode */
-                    SDL_bool include_high_density_modes = SDL_FALSE;
+                    bool include_high_density_modes = false;
                     if (state->window_flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
-                        include_high_density_modes = SDL_TRUE;
+                        include_high_density_modes = true;
                     }
                     if (SDL_GetClosestFullscreenDisplayMode(displays[index], state->window_w, state->window_h, state->refresh_rate, include_high_density_modes, &new_mode)) {
                         SDL_SetWindowFullscreenMode(window, &new_mode);
@@ -2133,7 +2102,7 @@ static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
             if (!mode) {
                 SDL_SetWindowPosition(window, rect.x, rect.y);
             }
-            SDL_SetWindowFullscreen(window, SDL_TRUE);
+            SDL_SetWindowFullscreen(window, true);
         }
     }
     SDL_free(displays);
@@ -2184,9 +2153,9 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
     }
     case SDL_EVENT_KEY_DOWN:
     {
-        SDL_bool withControl = !!(event->key.mod & SDL_KMOD_CTRL);
-        SDL_bool withShift = !!(event->key.mod & SDL_KMOD_SHIFT);
-        SDL_bool withAlt = !!(event->key.mod & SDL_KMOD_ALT);
+        bool withControl = !!(event->key.mod & SDL_KMOD_CTRL);
+        bool withShift = !!(event->key.mod & SDL_KMOD_SHIFT);
+        bool withAlt = !!(event->key.mod & SDL_KMOD_ALT);
 
         switch (event->key.key) {
             /* Add hotkeys here */
@@ -2404,8 +2373,8 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
             if (withShift) {
                 SDL_Window *window = SDL_GetWindowFromEvent(event);
                 if (window) {
-                    const SDL_bool shouldCapture = !(SDL_GetWindowFlags(window) & SDL_WINDOW_MOUSE_CAPTURE);
-                    const SDL_bool rc = SDL_CaptureMouse(shouldCapture);
+                    const bool shouldCapture = !(SDL_GetWindowFlags(window) & SDL_WINDOW_MOUSE_CAPTURE);
+                    const bool rc = SDL_CaptureMouse(shouldCapture);
                     SDL_Log("%sapturing mouse %s!\n", shouldCapture ? "C" : "Unc", rc ? "succeeded" : "failed");
                 }
             }
@@ -2426,9 +2395,9 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
                 if (window) {
                     SDL_WindowFlags flags = SDL_GetWindowFlags(window);
                     if (flags & SDL_WINDOW_ALWAYS_ON_TOP) {
-                        SDL_SetWindowAlwaysOnTop(window, SDL_FALSE);
+                        SDL_SetWindowAlwaysOnTop(window, false);
                     } else {
-                        SDL_SetWindowAlwaysOnTop(window, SDL_TRUE);
+                        SDL_SetWindowAlwaysOnTop(window, true);
                     }
                 }
             }
@@ -2451,9 +2420,9 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
                     if (!(flags & SDL_WINDOW_FULLSCREEN) ||
                         !SDL_GetWindowFullscreenMode(window)) {
                         SDL_SetWindowFullscreenMode(window, &state->fullscreen_mode);
-                        SDL_SetWindowFullscreen(window, SDL_TRUE);
+                        SDL_SetWindowFullscreen(window, true);
                     } else {
-                        SDL_SetWindowFullscreen(window, SDL_FALSE);
+                        SDL_SetWindowFullscreen(window, false);
                     }
                 }
             } else if (withAlt) {
@@ -2464,9 +2433,9 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
                     if (!(flags & SDL_WINDOW_FULLSCREEN) ||
                         SDL_GetWindowFullscreenMode(window)) {
                         SDL_SetWindowFullscreenMode(window, NULL);
-                        SDL_SetWindowFullscreen(window, SDL_TRUE);
+                        SDL_SetWindowFullscreen(window, true);
                     } else {
-                        SDL_SetWindowFullscreen(window, SDL_FALSE);
+                        SDL_SetWindowFullscreen(window, false);
                     }
                 }
             }
@@ -2478,7 +2447,7 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
                 SDL_Window *window = SDL_GetWindowFromEvent(event);
                 if (window) {
                     const SDL_WindowFlags flags = SDL_GetWindowFlags(window);
-                    const SDL_bool b = (flags & SDL_WINDOW_BORDERLESS) ? SDL_TRUE : SDL_FALSE;
+                    const bool b = (flags & SDL_WINDOW_BORDERLESS) ? true : false;
                     SDL_SetWindowBordered(window, b);
                 }
             }
@@ -2587,7 +2556,6 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     SDL_DisplayID windowDisplayID = SDL_GetDisplayForWindow(window);
     const char *name;
     SDL_RendererLogicalPresentation logical_presentation;
-    SDL_ScaleMode logical_scale_mode;
 
     /* Video */
 
@@ -2638,12 +2606,9 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
-    SDL_GetRenderLogicalPresentation(renderer, &w, &h, &logical_presentation, &logical_scale_mode);
+    SDL_GetRenderLogicalPresentation(renderer, &w, &h, &logical_presentation);
     (void)SDL_snprintf(text, sizeof(text), "SDL_GetRenderLogicalPresentation: %dx%d ", w, h);
     SDLTest_PrintLogicalPresentation(text, sizeof(text), logical_presentation);
-    SDL_snprintfcat(text, sizeof(text), ", ");
-    SDLTest_PrintScaleMode(text, sizeof(text), logical_scale_mode);
-    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     /* Window */

@@ -220,10 +220,10 @@ static void WIN_CheckWParamMouseButton(Uint64 timestamp, bool bwParamMousePresse
         }
     }
 
-    if (data->focus_click_pending & SDL_BUTTON(button)) {
+    if (data->focus_click_pending & SDL_BUTTON_MASK(button)) {
         // Ignore the button click for activation
         if (!bwParamMousePressed) {
-            data->focus_click_pending &= ~SDL_BUTTON(button);
+            data->focus_click_pending &= ~SDL_BUTTON_MASK(button);
             WIN_UpdateClipCursor(data->window);
         }
         if (WIN_ShouldIgnoreFocusClick(data)) {
@@ -231,9 +231,9 @@ static void WIN_CheckWParamMouseButton(Uint64 timestamp, bool bwParamMousePresse
         }
     }
 
-    if (bwParamMousePressed && !(mouseFlags & SDL_BUTTON(button))) {
+    if (bwParamMousePressed && !(mouseFlags & SDL_BUTTON_MASK(button))) {
         SDL_SendMouseButton(timestamp, data->window, mouseID, button, true);
-    } else if (!bwParamMousePressed && (mouseFlags & SDL_BUTTON(button))) {
+    } else if (!bwParamMousePressed && (mouseFlags & SDL_BUTTON_MASK(button))) {
         SDL_SendMouseButton(timestamp, data->window, mouseID, button, false);
     }
 }
@@ -651,10 +651,10 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
                     }
                 }
 
-                if (windowdata->focus_click_pending & SDL_BUTTON(button)) {
+                if (windowdata->focus_click_pending & SDL_BUTTON_MASK(button)) {
                     // Ignore the button click for activation
                     if (!down) {
-                        windowdata->focus_click_pending &= ~SDL_BUTTON(button);
+                        windowdata->focus_click_pending &= ~SDL_BUTTON_MASK(button);
                         WIN_UpdateClipCursor(window);
                     }
                     if (WIN_ShouldIgnoreFocusClick(windowdata)) {
@@ -1278,7 +1278,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         bool virtual_key = false;
         Uint16 rawcode = 0;
         SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam, &rawcode, &virtual_key);
-        const SDL_bool *keyboardState = SDL_GetKeyboardState(NULL);
+        const bool *keyboardState = SDL_GetKeyboardState(NULL);
 
         if (virtual_key || !data->videodata->raw_keyboard_enabled || data->window->text_input_active) {
             if (code == SDL_SCANCODE_PRINTSCREEN && !keyboardState[code]) {
@@ -2236,7 +2236,7 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
 #endif
     int new_messages = 0;
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    const SDL_bool *keystate;
+    const bool *keystate;
     SDL_Window *focusWindow;
 #endif
 
@@ -2370,7 +2370,7 @@ static BOOL CALLBACK WIN_ResourceNameCallback(HMODULE hModule, LPCTSTR lpType, L
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 // Register the class for this application
-SDL_bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
+bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 {
     WNDCLASSEX wcex;
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

@@ -55,7 +55,7 @@ struct SDL_PrivateAudioData
 
 typedef struct AAUDIO_Data
 {
-    void *handle;
+    SDL_SharedObject *handle;
 #define SDL_PROC(ret, func, params) ret (*func) params;
 #include "SDL_aaudiofuncs.h"
 } AAUDIO_Data;
@@ -386,7 +386,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
 }
 
 // !!! FIXME: make this non-blocking!
-static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, const char *permission, SDL_bool granted)
+static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, const char *permission, bool granted)
 {
     SDL_SetAtomicInt((SDL_AtomicInt *) userdata, granted ? 1 : -1);
 }

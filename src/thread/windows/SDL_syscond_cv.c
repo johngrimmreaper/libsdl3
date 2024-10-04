@@ -119,7 +119,7 @@ static bool SDL_WaitConditionTimeoutNS_cv(SDL_Condition *_cond, SDL_Mutex *_mute
         mutex->count = 0;
         mutex->owner = 0;
 
-        result = pSleepConditionVariableSRW(&cond->cond, &mutex->srw, timeout, 0);
+        result = (pSleepConditionVariableSRW(&cond->cond, &mutex->srw, timeout, 0) == TRUE);
 
         // The mutex is owned by us again, regardless of status of the wait
         SDL_assert(mutex->count == 0 && mutex->owner == 0);
@@ -130,7 +130,7 @@ static bool SDL_WaitConditionTimeoutNS_cv(SDL_Condition *_cond, SDL_Mutex *_mute
 
         SDL_assert(SDL_mutex_impl_active.Type == SDL_MUTEX_CS);
 
-        result = pSleepConditionVariableCS(&cond->cond, &mutex->cs, timeout);
+        result = (pSleepConditionVariableCS(&cond->cond, &mutex->cs, timeout) == TRUE);
     }
 
     return result;
@@ -216,7 +216,7 @@ void SDL_BroadcastCondition(SDL_Condition *cond)
     SDL_cond_impl_active.Broadcast(cond);
 }
 
-SDL_bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
+bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
 {
     if (!cond || !mutex) {
         return true;

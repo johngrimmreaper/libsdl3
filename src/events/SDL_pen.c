@@ -142,7 +142,7 @@ const char *SDL_GetPenName(SDL_PenID instance_id)
     return result;
 }
 
-SDL_bool SDL_GetPenInfo(SDL_PenID instance_id, SDL_PenInfo *info)
+bool SDL_GetPenInfo(SDL_PenID instance_id, SDL_PenInfo *info)
 {
     SDL_LockRWLockForReading(pen_device_rwlock);
     const SDL_Pen *pen = FindPenByInstanceId(instance_id);
@@ -349,7 +349,7 @@ void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window 
 
     if (send_event) {
         const SDL_EventType evtype = down ? SDL_EVENT_PEN_DOWN : SDL_EVENT_PEN_UP;
-        if (send_event && SDL_EventEnabled(evtype)) {
+        if (SDL_EventEnabled(evtype)) {
             SDL_Event event;
             SDL_zero(event);
             event.ptouch.type = evtype;

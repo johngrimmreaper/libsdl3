@@ -1,3 +1,14 @@
+libsdl3 (3.1.3~git20241004.1~bd4cd34+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot
+  * d/p/testprocess-Disable-process_testStdinToStdout-for-now.patch:
+    Disable a failing test while it's investigated upstream
+  * d/libsdl3-0.symbols:
+    Bump version to 3.1.3~ for all symbols, since this is a semi-frozen
+    API/ABI milestone
+
+ -- Simon McVittie <smcv@debian.org>  Fri, 04 Oct 2024 17:50:01 +0100
+
 libsdl3 (3.1.2+git20240917~8481d1a+ds-1) experimental; urgency=medium
 
   * New upstream snapshot

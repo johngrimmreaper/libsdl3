@@ -22,7 +22,6 @@
 
 #include "SDL_keymap_c.h"
 #include "SDL_keyboard_c.h"
-#include "../SDL_hashtable.h"
 
 struct SDL_Keymap
 {
@@ -933,7 +932,7 @@ static const char *SDL_scancode_names[SDL_SCANCODE_COUNT] =
     /* 290 */ "EndCall",
 };
 
-SDL_bool SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
+bool SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
 {
     if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
         return SDL_InvalidParamError("scancode");

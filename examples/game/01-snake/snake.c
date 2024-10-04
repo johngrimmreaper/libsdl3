@@ -94,7 +94,7 @@ static int are_cells_full_(SnakeContext *ctx)
 
 static void new_food_pos_(SnakeContext *ctx)
 {
-    while (SDL_TRUE) {
+    while (true) {
         const char x = (char) SDL_rand(SNAKE_GAME_WIDTH);
         const char y = (char) SDL_rand(SNAKE_GAME_HEIGHT);
         if (snake_cell_at(ctx, x, y) == SNAKE_CELL_NOTHING) {
@@ -320,7 +320,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     return SDL_APP_CONTINUE;
 }
 
-void SDL_AppQuit(void *appstate)
+void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     if (appstate != NULL) {
         AppState *as = (AppState *)appstate;

@@ -429,6 +429,7 @@
 #define SDL_MESSAGEBOX_COLOR_MAX SDL_MESSAGEBOX_COLOR_COUNT
 
 /* ##SDL_mouse.h */
+#define SDL_BUTTON SDL_BUTTON_MASK
 #define SDL_FreeCursor SDL_DestroyCursor
 #define SDL_NUM_SYSTEM_CURSORS SDL_SYSTEM_CURSOR_COUNT
 #define SDL_SYSTEM_CURSOR_ARROW SDL_SYSTEM_CURSOR_DEFAULT
@@ -590,7 +591,10 @@
 #define SDL_SensorUpdate SDL_UpdateSensors
 
 /* ##SDL_stdinc.h */
+#define SDL_FALSE false
 #define SDL_TABLESIZE SDL_arraysize
+#define SDL_TRUE true
+#define SDL_bool bool
 #define SDL_size_add_overflow SDL_size_add_check_overflow
 #define SDL_size_mul_overflow SDL_size_mul_check_overflow
 #define SDL_strtokr SDL_strtok_r
@@ -641,6 +645,7 @@
 #define SDL_iPhoneSetEventPump SDL_SetiOSEventPump
 
 /* ##SDL_thread.h */
+#define SDL_SetThreadPriority SDL_SetCurrentThreadPriority
 #define SDL_TLSCleanup SDL_CleanupTLS
 #define SDL_TLSGet SDL_GetTLS
 #define SDL_TLSSet SDL_SetTLS
@@ -1063,6 +1068,7 @@
 #define SDL_MESSAGEBOX_COLOR_MAX SDL_MESSAGEBOX_COLOR_MAX_renamed_SDL_MESSAGEBOX_COLOR_COUNT
 
 /* ##SDL_mouse.h */
+#define SDL_BUTTON SDL_BUTTON_renamed_SDL_BUTTON_MASK
 #define SDL_FreeCursor SDL_FreeCursor_renamed_SDL_DestroyCursor
 #define SDL_NUM_SYSTEM_CURSORS SDL_NUM_SYSTEM_CURSORS_renamed_SDL_SYSTEM_CURSOR_COUNT
 #define SDL_SYSTEM_CURSOR_ARROW SDL_SYSTEM_CURSOR_ARROW_renamed_SDL_SYSTEM_CURSOR_DEFAULT
@@ -1224,7 +1230,10 @@
 #define SDL_SensorUpdate SDL_SensorUpdate_renamed_SDL_UpdateSensors
 
 /* ##SDL_stdinc.h */
+#define SDL_FALSE SDL_FALSE_renamed_false
 #define SDL_TABLESIZE SDL_TABLESIZE_renamed_SDL_arraysize
+#define SDL_TRUE SDL_TRUE_renamed_true
+#define SDL_bool SDL_bool_renamed_bool
 #define SDL_size_add_overflow SDL_size_add_overflow_renamed_SDL_size_add_check_overflow
 #define SDL_size_mul_overflow SDL_size_mul_overflow_renamed_SDL_size_mul_check_overflow
 #define SDL_strtokr SDL_strtokr_renamed_SDL_strtok_r
@@ -1275,6 +1284,7 @@
 #define SDL_iPhoneSetEventPump SDL_iPhoneSetEventPump_renamed_SDL_iOSSetEventPump
 
 /* ##SDL_thread.h */
+#define SDL_SetThreadPriority SDL_SetThreadPriority_renamed_SDL_SetCurrentThreadPriority
 #define SDL_TLSCleanup SDL_TLSCleanup_renamed_SDL_CleanupTLS
 #define SDL_TLSGet SDL_TLSGet_renamed_SDL_GetTLS
 #define SDL_TLSSet SDL_TLSSet_renamed_SDL_SetTLS
