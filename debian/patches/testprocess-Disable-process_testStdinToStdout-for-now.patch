@@ -1,0 +1,23 @@
+From: Simon McVittie <smcv@debian.org>
+Date: Fri, 4 Oct 2024 17:40:23 +0100
+Subject: testprocess: Disable process_testStdinToStdout for now
+
+Bug: https://github.com/libsdl-org/SDL/issues/11006
+Forwarded: not-needed, investigation in progress upstream
+---
+ test/testprocess.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/test/testprocess.c b/test/testprocess.c
+index 5f47010..38e33f4 100644
+--- a/test/testprocess.c
++++ b/test/testprocess.c
+@@ -982,7 +982,7 @@ static const SDLTest_TestCaseReference processTestKill = {
+ };
+ 
+ static const SDLTest_TestCaseReference processTestStdinToStdout = {
+-    process_testStdinToStdout, "process_testStdinToStdout", "Test writing to stdin and reading from stdout", TEST_ENABLED
++    process_testStdinToStdout, "process_testStdinToStdout", "Test writing to stdin and reading from stdout", TEST_DISABLED
+ };
+ 
+ static const SDLTest_TestCaseReference processTestStdinToStderr = {
