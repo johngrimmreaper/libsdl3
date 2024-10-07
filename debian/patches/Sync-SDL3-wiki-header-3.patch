@@ -1,0 +1,24 @@
+From: SDL Wiki Bot <icculus-sdlwikibot@icculus.org>
+Date: Sun, 6 Oct 2024 22:58:06 +0000
+Subject: Sync SDL3 wiki -> header
+
+'[ci skip]'
+
+Origin: upstream, 3.1.4, commit:cbb9a16367d50ceb5c9c371675c9cebad4d9534e
+---
+ include/SDL3/SDL_video.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/SDL3/SDL_video.h b/include/SDL3/SDL_video.h
+index 4310f03..bd116a8 100644
+--- a/include/SDL3/SDL_video.h
++++ b/include/SDL3/SDL_video.h
+@@ -939,7 +939,7 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
+  * corresponding UnloadLibrary function is called by SDL_DestroyWindow().
+  *
+  * If SDL_WINDOW_VULKAN is specified and there isn't a working Vulkan driver,
+- * SDL_CreateWindow() will fail because SDL_Vulkan_LoadLibrary() will fail.
++ * SDL_CreateWindow() will fail, because SDL_Vulkan_LoadLibrary() will fail.
+  *
+  * If SDL_WINDOW_METAL is specified on an OS that does not support Metal,
+  * SDL_CreateWindow() will fail.

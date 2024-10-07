@@ -1,0 +1,33 @@
+From: "Ryan C. Gordon" <icculus@icculus.org>
+Date: Fri, 4 Oct 2024 16:55:33 -0400
+Subject: docs: Wrote CategoryVulkan.
+
+Origin: upstream, 3.1.4, commit:8c3f88b49552a5273748be55b906d671a692ddff
+---
+ include/SDL3/SDL_vulkan.h | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/include/SDL3/SDL_vulkan.h b/include/SDL3/SDL_vulkan.h
+index 6c77774..b6b54f8 100644
+--- a/include/SDL3/SDL_vulkan.h
++++ b/include/SDL3/SDL_vulkan.h
+@@ -23,6 +23,19 @@
+  * # CategoryVulkan
+  *
+  * Functions for creating Vulkan surfaces on SDL windows.
++ *
++ * For the most part, Vulkan operates independent of SDL, but it benefits from
++ * a little support during setup.
++ *
++ * Use SDL_Vulkan_GetInstanceExtensions() to get platform-specific bits for
++ * creating a VkInstance, then SDL_Vulkan_GetVkGetInstanceProcAddr() to get
++ * the appropriate function for querying Vulkan entry points. Then
++ * SDL_Vulkan_CreateSurface() will get you the final pieces you need to
++ * prepare for rendering into an SDL_Window with Vulkan.
++ *
++ * Unlike OpenGL, most of the details of "context" creation and window buffer
++ * swapping are handled by the Vulkan API directly, so SDL doesn't provide
++ * Vulkan equivalents of SDL_GL_SwapWindow(), etc; they aren't necessary.
+  */
+ 
+ #ifndef SDL_vulkan_h_
