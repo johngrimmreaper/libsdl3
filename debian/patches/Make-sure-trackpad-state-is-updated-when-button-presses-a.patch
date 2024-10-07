@@ -1,0 +1,92 @@
+From: Sam Lantinga <slouken@libsdl.org>
+Date: Sun, 6 Oct 2024 14:28:06 -0700
+Subject: Make sure trackpad state is updated when button presses are
+ delivered
+
+Bug: https://github.com/libsdl-org/SDL/issues/11085
+Origin: upstream, 3.1.4, commit:65539bc4f73aa4a8879922bad6a755faffa6349f
+---
+ src/joystick/hidapi/SDL_hidapi_ps4.c | 24 ++++++++++++------------
+ src/joystick/hidapi/SDL_hidapi_ps5.c |  6 ++++--
+ 2 files changed, 16 insertions(+), 14 deletions(-)
+
+diff --git a/src/joystick/hidapi/SDL_hidapi_ps4.c b/src/joystick/hidapi/SDL_hidapi_ps4.c
+index 512187f..b9da380 100644
+--- a/src/joystick/hidapi/SDL_hidapi_ps4.c
++++ b/src/joystick/hidapi/SDL_hidapi_ps4.c
+@@ -1014,6 +1014,18 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
+     int touchpad_x, touchpad_y;
+     Uint64 timestamp = SDL_GetTicksNS();
+ 
++    if (size > 9 && ctx->report_touchpad && ctx->enhanced_reports) {
++        touchpad_down = ((packet->ucTouchpadCounter1 & 0x80) == 0);
++        touchpad_x = packet->rgucTouchpadData1[0] | (((int)packet->rgucTouchpadData1[1] & 0x0F) << 8);
++        touchpad_y = (packet->rgucTouchpadData1[1] >> 4) | ((int)packet->rgucTouchpadData1[2] << 4);
++        SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0, touchpad_down, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_down ? 1.0f : 0.0f);
++
++        touchpad_down = ((packet->ucTouchpadCounter2 & 0x80) == 0);
++        touchpad_x = packet->rgucTouchpadData2[0] | (((int)packet->rgucTouchpadData2[1] & 0x0F) << 8);
++        touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
++        SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, touchpad_down, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_down ? 1.0f : 0.0f);
++    }
++
+     if (ctx->last_state.rgucButtonsHatAndCounter[0] != packet->rgucButtonsHatAndCounter[0]) {
+         {
+             Uint8 data = (packet->rgucButtonsHatAndCounter[0] >> 4);
+@@ -1123,18 +1135,6 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
+         SDL_SendJoystickPowerInfo(joystick, state, percent);
+     }
+ 
+-    if (size > 9 && ctx->report_touchpad && ctx->enhanced_reports) {
+-        touchpad_down = ((packet->ucTouchpadCounter1 & 0x80) == 0);
+-        touchpad_x = packet->rgucTouchpadData1[0] | (((int)packet->rgucTouchpadData1[1] & 0x0F) << 8);
+-        touchpad_y = (packet->rgucTouchpadData1[1] >> 4) | ((int)packet->rgucTouchpadData1[2] << 4);
+-        SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0, touchpad_down, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_down ? 1.0f : 0.0f);
+-
+-        touchpad_down = ((packet->ucTouchpadCounter2 & 0x80) == 0);
+-        touchpad_x = packet->rgucTouchpadData2[0] | (((int)packet->rgucTouchpadData2[1] & 0x0F) << 8);
+-        touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
+-        SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, touchpad_down, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_down ? 1.0f : 0.0f);
+-    }
+-
+     if (size > 9 && ctx->report_sensors) {
+         Uint16 tick;
+         Uint16 delta;
+diff --git a/src/joystick/hidapi/SDL_hidapi_ps5.c b/src/joystick/hidapi/SDL_hidapi_ps5.c
+index dc35636..b462eab 100644
+--- a/src/joystick/hidapi/SDL_hidapi_ps5.c
++++ b/src/joystick/hidapi/SDL_hidapi_ps5.c
+@@ -1411,6 +1411,8 @@ static void HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
+         SDL_SendJoystickPowerInfo(joystick, state, percent);
+     }
+ 
++    HIDAPI_DriverPS5_HandleStatePacketCommon(joystick, dev, ctx, (PS5StatePacketCommon_t *)packet, timestamp);
++
+     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
+ }
+ 
+@@ -1433,6 +1435,8 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
+         SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, touchpad_down, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_down ? 1.0f : 0.0f);
+     }
+ 
++    HIDAPI_DriverPS5_HandleStatePacketCommon(joystick, dev, ctx, (PS5StatePacketCommon_t *)packet, timestamp);
++
+     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
+ }
+ 
+@@ -1517,7 +1521,6 @@ static bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
+             if (size == 10 || size == 78) {
+                 HIDAPI_DriverPS5_HandleSimpleStatePacket(joystick, device->dev, ctx, (PS5SimpleStatePacket_t *)&data[1], timestamp);
+             } else {
+-                HIDAPI_DriverPS5_HandleStatePacketCommon(joystick, device->dev, ctx, (PS5StatePacketCommon_t *)&data[1], timestamp);
+                 if (ctx->use_alternate_report) {
+                     HIDAPI_DriverPS5_HandleStatePacketAlt(joystick, device->dev, ctx, (PS5StatePacketAlt_t *)&data[1], timestamp);
+                 } else {
+@@ -1529,7 +1532,6 @@ static bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
+             // This is the extended report, we can enable effects now in default mode
+             HIDAPI_DriverPS5_UpdateEnhancedModeOnEnhancedReport(ctx);
+ 
+-            HIDAPI_DriverPS5_HandleStatePacketCommon(joystick, device->dev, ctx, (PS5StatePacketCommon_t *)&data[2], timestamp);
+             if (ctx->use_alternate_report) {
+                 HIDAPI_DriverPS5_HandleStatePacketAlt(joystick, device->dev, ctx, (PS5StatePacketAlt_t *)&data[2], timestamp);
+             } else {

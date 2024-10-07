@@ -1,0 +1,23 @@
+From: SDL Wiki Bot <icculus-sdlwikibot@icculus.org>
+Date: Sun, 6 Oct 2024 23:03:29 +0000
+Subject: Sync SDL3 wiki -> header
+
+[ci skip]
+
+Origin: upstream, 3.1.4, commit:d0ef58b442ca9c9da829348bb704588aeedeacd1
+---
+ include/SDL3/SDL_video.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/SDL3/SDL_video.h b/include/SDL3/SDL_video.h
+index bd116a8..0cf2d9c 100644
+--- a/include/SDL3/SDL_video.h
++++ b/include/SDL3/SDL_video.h
+@@ -961,6 +961,7 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
+  *
+  * \since This function is available since SDL 3.0.0.
+  *
++ * \sa SDL_CreateWindowAndRenderer
+  * \sa SDL_CreatePopupWindow
+  * \sa SDL_CreateWindowWithProperties
+  * \sa SDL_DestroyWindow

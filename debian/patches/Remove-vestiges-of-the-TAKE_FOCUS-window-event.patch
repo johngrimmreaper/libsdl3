@@ -1,0 +1,45 @@
+From: Frank Praznik <frank.praznik@gmail.com>
+Date: Sun, 6 Oct 2024 10:02:53 -0400
+Subject: Remove vestiges of the TAKE_FOCUS window event
+
+The event was removed, so remove the rename define and update the coccinelle script.
+
+Origin: upstream, 3.1.4, commit:c9ffa3f9e1256cc87e300ce4fdf6b195756ed059
+---
+ build-scripts/SDL_migration.cocci | 2 +-
+ include/SDL3/SDL_oldnames.h       | 2 --
+ 2 files changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/build-scripts/SDL_migration.cocci b/build-scripts/SDL_migration.cocci
+index 74da953..8e2dcc1 100644
+--- a/build-scripts/SDL_migration.cocci
++++ b/build-scripts/SDL_migration.cocci
+@@ -2062,7 +2062,7 @@ expression e;
+ @@
+ @@
+ - SDL_WINDOWEVENT_TAKE_FOCUS
+-+ SDL_EVENT_WINDOW_TAKE_FOCUS
+++ /* FIXME MIGRATION: SDL_WINDOWEVENT_TAKE_FOCUS has been removed; there is no replacement. */ 0
+ @@
+ @@
+ - SDL_WINDOWEVENT_HIT_TEST
+diff --git a/include/SDL3/SDL_oldnames.h b/include/SDL3/SDL_oldnames.h
+index bd79d59..c99dd95 100644
+--- a/include/SDL3/SDL_oldnames.h
++++ b/include/SDL3/SDL_oldnames.h
+@@ -170,7 +170,6 @@
+ #define SDL_WINDOWEVENT_RESTORED SDL_EVENT_WINDOW_RESTORED
+ #define SDL_WINDOWEVENT_SHOWN SDL_EVENT_WINDOW_SHOWN
+ #define SDL_WINDOWEVENT_SIZE_CHANGED SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
+-#define SDL_WINDOWEVENT_TAKE_FOCUS SDL_EVENT_WINDOW_TAKE_FOCUS
+ #define SDL_eventaction SDL_EventAction
+ 
+ /* ##SDL_gamecontroller.h */
+@@ -808,7 +807,6 @@
+ #define SDL_WINDOWEVENT_RESTORED SDL_WINDOWEVENT_RESTORED_renamed_SDL_EVENT_WINDOW_RESTORED
+ #define SDL_WINDOWEVENT_SHOWN SDL_WINDOWEVENT_SHOWN_renamed_SDL_EVENT_WINDOW_SHOWN
+ #define SDL_WINDOWEVENT_SIZE_CHANGED SDL_WINDOWEVENT_SIZE_CHANGED_renamed_SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
+-#define SDL_WINDOWEVENT_TAKE_FOCUS SDL_WINDOWEVENT_TAKE_FOCUS_renamed_SDL_EVENT_WINDOW_TAKE_FOCUS
+ #define SDL_eventaction SDL_eventaction_renamed_SDL_EventAction
+ 
+ /* ##SDL_gamecontroller.h */

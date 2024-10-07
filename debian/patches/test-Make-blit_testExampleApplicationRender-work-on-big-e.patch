@@ -1,0 +1,33 @@
+From: capehill <juha.niemimaki@gmail.com>
+Date: Sun, 6 Oct 2024 11:02:50 +0300
+Subject: test: Make blit_testExampleApplicationRender work on big endian
+
+Changed image data pixel format to BGRA32.
+
+Origin: upstream, 3.1.4, commit:e159bcf5ded370b78078e6ef66832fbb55e674f4
+---
+ test/testautomation_images.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/test/testautomation_images.c b/test/testautomation_images.c
+index 711dd8b..f81dde6 100644
+--- a/test/testautomation_images.c
++++ b/test/testautomation_images.c
+@@ -2374,7 +2374,7 @@ SDL_Surface *SDLTest_ImageBlendingBackground(void)
+     SDL_Surface *surface = SDL_CreateSurfaceFrom(
+             SDLTest_imageRainbowBackground.width,
+             SDLTest_imageRainbowBackground.height,
+-            SDL_PIXELFORMAT_ARGB8888,
++            SDL_PIXELFORMAT_BGRA32,
+             (void *)SDLTest_imageRainbowBackground.pixel_data,
+             SDLTest_imageRainbowBackground.width * SDLTest_imageRainbowBackground.bytes_per_pixel);
+     return surface;
+@@ -2548,7 +2548,7 @@ SDL_Surface *SDLTest_ImageBlendingSprite(void)
+     SDL_Surface *surface = SDL_CreateSurfaceFrom(
+             SDLTest_imageTransparentSprite.width,
+             SDLTest_imageTransparentSprite.height,
+-            SDL_PIXELFORMAT_ARGB8888,
++            SDL_PIXELFORMAT_BGRA32,
+             (void *)SDLTest_imageTransparentSprite.pixel_data,
+             SDLTest_imageTransparentSprite.width * SDLTest_imageTransparentSprite.bytes_per_pixel);
+     return surface;

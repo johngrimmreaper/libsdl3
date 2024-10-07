@@ -1,0 +1,44 @@
+From: zshoals <zshoals@gmail.com>
+Date: Fri, 4 Oct 2024 21:52:23 -0500
+Subject: Fix typo: DiretMedia->DirectMedia
+
+Origin: upstream, 3.1.4, commit:1ca45c58912aaa2c02e0f143d36d7f171e5afbb5
+---
+ include/SDL3/SDL_properties.h | 2 +-
+ src/SDL_properties.c          | 2 +-
+ src/SDL_properties_c.h        | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/include/SDL3/SDL_properties.h b/include/SDL3/SDL_properties.h
+index 393d473..e48466e 100644
+--- a/include/SDL3/SDL_properties.h
++++ b/include/SDL3/SDL_properties.h
+@@ -1,5 +1,5 @@
+ /*
+-  Simple DiretMedia Layer
++  Simple DirectMedia Layer
+   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+ 
+   This software is provided 'as-is', without any express or implied
+diff --git a/src/SDL_properties.c b/src/SDL_properties.c
+index 5612fd7..0055bd5 100644
+--- a/src/SDL_properties.c
++++ b/src/SDL_properties.c
+@@ -1,5 +1,5 @@
+ /*
+-  Simple DiretMedia Layer
++  Simple DirectMedia Layer
+   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+ 
+   This software is provided 'as-is', without any express or implied
+diff --git a/src/SDL_properties_c.h b/src/SDL_properties_c.h
+index b0a426b..e7a471c 100644
+--- a/src/SDL_properties_c.h
++++ b/src/SDL_properties_c.h
+@@ -1,5 +1,5 @@
+ /*
+-  Simple DiretMedia Layer
++  Simple DirectMedia Layer
+   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+ 
+   This software is provided 'as-is', without any express or implied
