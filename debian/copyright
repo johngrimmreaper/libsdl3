@@ -29,6 +29,7 @@ Files-Excluded: Android.mk
                 src/render/gpu/shaders/*.dxil.h
                 src/render/gpu/shaders/*.metal.h
                 src/render/metal/SDL_shaders_metal_*.h
+                src/video/openvr/openvr_capi.h
                 test/android
                 test/emscripten
                 test/gamepad_*.h
