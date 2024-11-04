@@ -228,12 +228,6 @@ Copyright:
  2024 David Edmundson
 License: Expat
 
-Files:
- wayland-protocols/kde-output-order-v1.xml
-Copyright:
- 2022 Xaver Hugl
-License: MIT-CMU
-
 Files: debian/*
 Copyright: 2015-2020, Gianfranco Costamagna <locutusofborg@debian.org>
            2011-2013, Manuel A. Fernandez Montecelo <mafm@debian.org>

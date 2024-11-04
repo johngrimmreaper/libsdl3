@@ -1,5 +1,13 @@
-libsdl3 (3.1.3+ds-2) UNRELEASED; urgency=medium
+libsdl3 (3.1.6+ds-1) UNRELEASED; urgency=medium
 
+  * New upstream preview release
+  * d/watch, d/watch.devel: Use official upstream release tarballs
+  * d/copyright: Exclude openvr_capi.h until its license can be clarified
+  * d/copyright: No need to exclude .github/ when importing tarballs.
+    They already exclude that directory.
+  * d/copyright: Update
+  * d/libsdl3-0.symbols: Update for ABI additions
+  * d/rules: Refer to REVISION.txt, which replaces VERSION.txt
   * d/upstream/signing-key.asc: Remove.
     Upstream release artifacts are no longer being signed.
 
