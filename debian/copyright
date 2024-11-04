@@ -5,8 +5,7 @@ Source: https://www.libsdl.org/
 # To the best of my knowledge, everything we exclude is (meant to be)
 # Free Software, we just don't want to review or keep track of the
 # licensing status of files that are irrelevant to Debian.
-Files-Excluded: .github
-                Android.mk
+Files-Excluded: Android.mk
                 android-project
                 build-scripts/pkg-support/android
                 build-scripts/pkg-support/mingw
@@ -30,6 +29,7 @@ Files-Excluded: .github
                 src/render/gpu/shaders/*.dxil.h
                 src/render/gpu/shaders/*.metal.h
                 src/render/metal/SDL_shaders_metal_*.h
+                src/video/openvr/openvr_capi.h
                 test/android
                 test/emscripten
                 test/gamepad_*.h
@@ -227,12 +227,6 @@ Copyright:
  2023-2024 Matthias Klumpp
  2024 David Edmundson
 License: Expat
-
-Files:
- wayland-protocols/kde-output-order-v1.xml
-Copyright:
- 2022 Xaver Hugl
-License: MIT-CMU
 
 Files: debian/*
 Copyright: 2015-2020, Gianfranco Costamagna <locutusofborg@debian.org>

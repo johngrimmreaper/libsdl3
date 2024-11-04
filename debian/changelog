@@ -1,3 +1,19 @@
+libsdl3 (3.1.6+ds-1) experimental; urgency=medium
+
+  * New upstream preview release
+  * d/watch, d/watch.devel: Use official upstream release tarballs
+  * d/copyright: Exclude openvr_capi.h until its license can be clarified
+  * d/copyright: No need to exclude .github/ when importing tarballs.
+    They already exclude that directory.
+  * d/copyright: Update
+  * d/libsdl3-0.symbols: Update for ABI additions
+  * d/rules: Refer to REVISION.txt, which replaces VERSION.txt
+  * d/upstream/signing-key.asc: Remove.
+    Upstream release artifacts are no longer being signed.
+  * d/patches: Drop, all included upstream
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 04 Nov 2024 18:00:15 +0000
+
 libsdl3 (3.1.3+ds-1) experimental; urgency=medium
 
   * New upstream preview release
