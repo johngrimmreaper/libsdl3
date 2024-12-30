@@ -6,10 +6,6 @@ built_binaries := $(shell dh_listpackages)
 
 include /usr/share/dpkg/default.mk
 
-ifneq (,$(filter-out experimental UNRELEASED,$(DEB_DISTRIBUTION)))
-$(error This version of SDL is not yet suitable for testing/unstable)
-endif
-
 export SDL_AUDIO_DRIVER=dummy
 export SDL_VIDEO_DRIVER=dummy
 
