@@ -43,6 +43,7 @@ confflags = \
 	-DSDL_VIVANTE=OFF \
 	-DSDL_X11=ON \
 	-DSDL_X11_SHARED=OFF \
+	-DSDLTEST_TIMEOUT_MULTIPLIER=$(test_timeout_multiplier) \
 	$(NULL)
 
 ifneq ($(filter %-tests,$(built_binaries)),)
