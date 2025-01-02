@@ -9,6 +9,16 @@ include /usr/share/dpkg/default.mk
 export SDL_AUDIO_DRIVER=dummy
 export SDL_VIDEO_DRIVER=dummy
 
+# Upstream test timeouts assume a gaming-capable system.
+# Keep the timeout reasonably short for architectures where interactive
+# debugging is more likely, but extend it a lot on architectures that might
+# be very slow or using qemu for buildds.
+ifneq ($(filter amd64 i386,$(DEB_HOST_ARCH_CPU)),)
+test_timeout_multiplier = 3
+else
+test_timeout_multiplier = 20
+endif
+
 confflags = \
 	-DCMAKE_BUILD_RPATH_USE_ORIGIN=ON \
 	-DSDL_ALSA_SHARED=OFF \
@@ -27,7 +37,7 @@ confflags = \
 	-DSDL_STATIC=ON \
 	-DSDL_STATIC_PIC=ON \
 	-DSDL_TESTS=ON \
-	-DSDL_TESTS_TIMEOUT_MULTIPLIER=5 \
+	-DSDL_TESTS_TIMEOUT_MULTIPLIER=$(test_timeout_multiplier) \
 	-DSDL_TEST_LIBRARY=ON \
 	-DSDL_VENDOR_INFO="${DEB_VENDOR} ${DEB_VERSION}" \
 	-DSDL_VIVANTE=OFF \
