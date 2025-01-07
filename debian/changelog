@@ -1,5 +1,16 @@
-libsdl3 (3.1.6+ds-3) UNRELEASED; urgency=medium
+libsdl3 (3.1.6+git20250107+ds-1) UNRELEASED; urgency=medium
 
+  * d/gbp.conf: Open a new branch for upstream git snapshots
+  * New upstream git snapshot
+  * d/watch.git: Use current preview release version number
+  * d/watch: Watch for preleases until 3.2.0 is out
+  * d/watch*: Make removal of git snapshot suffix more flexible
+  * d/control: Build-depend on liburing-dev on Linux architectures
+  * d/copyright: Stop excluding files that no longer exist upstream
+  * d/copyright: Stop excluding Valve's OpenVR header file.
+    It has been placed under a DFSG-compliant license.
+  * d/copyright: Update
+  * d/rules: Set the revision marker as though this was a release
   * d/rules: Use the same test timeout multipliers as GLib.
     amd64 and i386 are known to be "fast" architectures, likely to be used
     for interactive debugging, and unlikely to be emulated with qemu,
@@ -10,11 +21,8 @@ libsdl3 (3.1.6+ds-3) UNRELEASED; urgency=medium
     A few tests use SDL_TESTS_TIMEOUT_MULTIPLIER, but most use
     SDLTEST_TIMEOUT_MULTIPLIER, because test/ behaves like a subproject.
     Set both. (Closes: #1091884)
-  * d/watch.git: Use current preview release version number
-  * d/watch: Watch for preleases until 3.2.0 is out
-  * d/gbp.conf: Open a new branch for upstream git snapshots
 
- -- Simon McVittie <smcv@debian.org>  Tue, 07 Jan 2025 20:05:26 +0000
+ -- Simon McVittie <smcv@debian.org>  Tue, 07 Jan 2025 20:11:21 +0000
 
 libsdl3 (3.1.6+ds-2) unstable; urgency=medium
 
