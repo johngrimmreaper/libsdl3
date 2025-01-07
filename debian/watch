@@ -9,4 +9,4 @@ opts="\
     pgpmode=none, \
     repack, \
     repacksuffix=+ds" \
-https://github.com/libsdl-org/SDL/tags .*/releases/tag/(?:release)-?@ANY_VERSION@
+https://github.com/libsdl-org/SDL/tags .*/releases/tag/(?:prerelease|preview|release)-?@ANY_VERSION@
