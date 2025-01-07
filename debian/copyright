@@ -12,7 +12,6 @@ Files-Excluded: Android.mk
                 src/video/directx/SDL_d3d12_xbox_cmacros.h
                 src/video/directx/d3d12.h
                 src/video/directx/d3d12sdklayers.h
-                src/gpu/d3d11/D3D11_Blit.h
                 src/gpu/d3d12/D3D12_Blit.h
                 src/gpu/metal/Metal_Blit.h
                 src/hidapi/documentation/*.png
@@ -36,7 +35,6 @@ Files-Excluded: Android.mk
                 test/glass.h
                 test/icon.h
                 test/n3ds
-                test/testgpu/testgpu_dxbc.h
                 test/testgpu/testgpu_dxil.h
                 test/testgpu/testgpu_metallib.h
                 test/unifont-*
