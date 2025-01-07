@@ -10,8 +10,11 @@ libsdl3 (3.1.6+ds-3) UNRELEASED; urgency=medium
     A few tests use SDL_TESTS_TIMEOUT_MULTIPLIER, but most use
     SDLTEST_TIMEOUT_MULTIPLIER, because test/ behaves like a subproject.
     Set both. (Closes: #1091884)
+  * d/watch.git: Use current preview release version number
+  * d/watch: Watch for preleases until 3.2.0 is out
+  * d/gbp.conf: Open a new branch for upstream git snapshots
 
- -- Simon McVittie <smcv@debian.org>  Tue, 07 Jan 2025 17:01:14 +0000
+ -- Simon McVittie <smcv@debian.org>  Tue, 07 Jan 2025 20:05:26 +0000
 
 libsdl3 (3.1.6+ds-2) unstable; urgency=medium
 
