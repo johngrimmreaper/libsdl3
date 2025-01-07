@@ -37,6 +37,8 @@ logger = logging.getLogger(__name__)
 GIT_HASH_FILENAME = ".git-hash"
 REVISION_TXT = "REVISION.txt"
 
+RE_ILLEGAL_MINGW_LIBRARIES = re.compile(r"(?:lib)?(?:gcc|(?:std)?c[+][+]|(?:win)?pthread).*", flags=re.I)
+
 
 def safe_isotime_to_datetime(str_isotime: str) -> datetime.datetime:
     try:
@@ -328,12 +330,22 @@ def configure_text(text: str, context: dict[str, str]) -> str:
     return text
 
 
+def configure_text_list(text_list: list[str], context: dict[str, str]) -> list[str]:
+    return [configure_text(text=e, context=context) for e in text_list]
+
+
 class ArchiveFileTree:
     def __init__(self):
         self._tree: dict[str, NodeInArchive] = {}
 
     def add_file(self, file: NodeInArchive):
         self._tree[file.arcpath] = file
+
+    def __iter__(self) -> typing.Iterable[NodeInArchive]:
+        yield from self._tree.values()
+
+    def __contains__(self, value: str) -> bool:
+        return value in self._tree
 
     def get_latest_mod_time(self) -> datetime.datetime:
         return max(item.time for item in self._tree.values() if item.time)
@@ -343,13 +355,12 @@ class ArchiveFileTree:
         added_files = dict()
 
         def calculate_symlink_target(s: NodeInArchive) -> str:
-            dest_dir = os.path.dirname(s.path)
+            dest_dir = os.path.dirname(s.arcpath)
             if dest_dir:
                 dest_dir += "/"
             target = dest_dir + s.symtarget
             while True:
                 new_target, n = re.subn(r"([^/]+/+[.]{2}/)", "", target)
-                print(f"{target=} {new_target=}")
                 target = new_target
                 if not n:
                     break
@@ -357,18 +368,23 @@ class ArchiveFileTree:
 
         # Add files in first pass
         for arcpath, node in self._tree.items():
+            assert node is not None, f"{arcpath} -> node"
             if node.data is not None:
                 archiver.add_file_data(arcpath=arc_join(archive_base, arcpath), data=node.data, time=node.time, mode=node.mode)
-                added_files[node.path] = node
+                assert node.arcpath is not None, f"{node=}"
+                added_files[node.arcpath] = node
             elif node.path is not None:
                 archiver.add_file_path(arcpath=arc_join(archive_base, arcpath), path=node.path)
-                added_files[node.path] = node
+                assert node.arcpath is not None, f"{node=}"
+                added_files[node.arcpath] = node
             elif node.symtarget is not None:
                 remaining_symlinks.add(node)
             elif node.directory:
                 pass
             else:
                 raise ValueError(f"Invalid Archive Node: {repr(node)}")
+
+        assert None not in added_files
 
         # Resolve symlinks in second pass: zipfile does not support symlinks, so add files to zip archive
         while True:
@@ -380,18 +396,18 @@ class ArchiveFileTree:
                 symlink_files_for_zip = {}
                 symlink_target_path = calculate_symlink_target(symlink)
                 if symlink_target_path in added_files:
-                    symlink_files_for_zip[symlink.path] = added_files[symlink_target_path]
+                    symlink_files_for_zip[symlink.arcpath] = added_files[symlink_target_path]
                 else:
                     symlink_target_path_slash = symlink_target_path + "/"
                     for added_file in added_files:
                         if added_file.startswith(symlink_target_path_slash):
-                            path_in_symlink = symlink.path + "/" + added_file.removeprefix(symlink_target_path_slash)
+                            path_in_symlink = symlink.arcpath + "/" + added_file.removeprefix(symlink_target_path_slash)
                             symlink_files_for_zip[path_in_symlink] = added_files[added_file]
                 if symlink_files_for_zip:
                     symlinks_this_time.add(symlink)
                     extra_added_files.update(symlink_files_for_zip)
                     files_for_zip = [{"arcpath": f"{archive_base}/{sym_path}", "data": sym_info.data, "mode": sym_info.mode} for sym_path, sym_info in symlink_files_for_zip.items()]
-                    archiver.add_symlink(arcpath=f"{archive_base}/{symlink.path}", target=symlink.symtarget, time=symlink.time, files_for_zip=files_for_zip)
+                    archiver.add_symlink(arcpath=f"{archive_base}/{symlink.arcpath}", target=symlink.symtarget, time=symlink.time, files_for_zip=files_for_zip)
             # if not symlinks_this_time:
             #     logger.info("files added: %r", set(path for path in added_files.keys()))
             assert symlinks_this_time, f"No targets found for symlinks: {remaining_symlinks}"
@@ -545,6 +561,7 @@ class Releaser:
             "PROJECT_VERSION": self.version,
             "PROJECT_COMMIT": self.commit,
             "PROJECT_REVISION": self.revision,
+            "PROJECT_ROOT": str(self.root),
         }
         if extra_context:
             ctx.update(extra_context)
@@ -577,11 +594,21 @@ class Releaser:
     def create_source_archives(self) -> None:
         source_collector = SourceCollector(root=self.root, commit=self.commit, executer=self.executer, filter=self._path_filter)
         print(f"Collecting sources of {self.project}...")
-        archive_tree = source_collector.get_archive_file_tree()
+        archive_tree: ArchiveFileTree = source_collector.get_archive_file_tree()
         latest_mod_time = archive_tree.get_latest_mod_time()
         archive_tree.add_file(NodeInArchive.from_text(arcpath=REVISION_TXT, text=f"{self.revision}\n", time=latest_mod_time))
         archive_tree.add_file(NodeInArchive.from_text(arcpath=f"{GIT_HASH_FILENAME}", text=f"{self.commit}\n", time=latest_mod_time))
         archive_tree.add_file_mapping(arc_dir="", file_mapping=self.release_info["source"].get("files", {}), file_mapping_root=self.root, context=self.get_context(), time=latest_mod_time)
+
+        if "Makefile.am" in archive_tree:
+            patched_time = latest_mod_time + datetime.timedelta(minutes=1)
+            print(f"Makefile.am detected -> touching aclocal.m4, */Makefile.in, configure")
+            for node_data in archive_tree:
+                arc_name = os.path.basename(node_data.arcpath)
+                arc_name_we, arc_name_ext = os.path.splitext(arc_name)
+                if arc_name in ("aclocal.m4", "configure", "Makefile.in"):
+                    print(f"Bumping time of {node_data.arcpath}")
+                    node_data.time = patched_time
 
         archive_base = f"{self.project}-{self.version}"
         zip_path = self.dist_path / f"{archive_base}.zip"
@@ -658,6 +685,15 @@ class Releaser:
     @property
     def git_hash_data(self) -> bytes:
         return f"{self.commit}\n".encode()
+
+    def verify_mingw_library(self, triplet: str, path: Path):
+        objdump_output = self.executer.check_output([f"{triplet}-objdump", "-p", str(path)])
+        libraries = re.findall(r"DLL Name: ([^\n]+)", objdump_output)
+        logger.info("%s (%s) libraries: %r", path, triplet, libraries)
+        illegal_libraries = list(filter(RE_ILLEGAL_MINGW_LIBRARIES.match, libraries))
+        logger.error("Detected 'illegal' libraries: %r", illegal_libraries)
+        if illegal_libraries:
+            raise Exception(f"{path} links to illegal libraries: {illegal_libraries}")
 
     def create_mingw_archives(self) -> None:
         build_type = "Release"
@@ -741,23 +777,38 @@ class Releaser:
                 install_path = build_parent_dir / f"install-{triplet}"
                 shutil.rmtree(install_path, ignore_errors=True)
                 build_path.mkdir(parents=True, exist_ok=True)
+                context = self.get_context({
+                    "ARCH": arch,
+                    "DEP_PREFIX": str(mingw_deps_path / triplet),
+                })
+                extra_args = configure_text_list(text_list=self.release_info["mingw"]["autotools"]["args"], context=context)
+
                 with self.section_printer.group(f"Configuring MinGW {triplet} (autotools)"):
-                    extra_args = [arg.replace("@DEP_PREFIX@", str(mingw_deps_path / triplet)) for arg in self.release_info["mingw"]["autotools"]["args"]]
                     assert "@" not in " ".join(extra_args), f"@ should not be present in extra arguments ({extra_args})"
                     self.executer.run([
                         self.root / "configure",
                         f"--prefix={install_path}",
-                        f"--includedir={install_path}/include",
-                        f"--libdir={install_path}/lib",
-                        f"--bindir={install_path}/bin",
+                        f"--includedir=${{prefix}}/include",
+                        f"--libdir=${{prefix}}/lib",
+                        f"--bindir=${{prefix}}/bin",
                         f"--host={triplet}",
                         f"--build=x86_64-none-linux-gnu",
+                        "CFLAGS=-O2",
+                        "CXXFLAGS=-O2",
+                        "LDFLAGS=-Wl,-s",
                     ] + extra_args, cwd=build_path, env=new_env)
                 with self.section_printer.group(f"Build MinGW {triplet} (autotools)"):
                     self.executer.run(["make", f"-j{self.cpu_count}"], cwd=build_path, env=new_env)
                 with self.section_printer.group(f"Install MinGW {triplet} (autotools)"):
                     self.executer.run(["make", "install"], cwd=build_path, env=new_env)
-                archive_file_tree.add_directory_tree(arc_dir=arc_join(arc_root, triplet), path=install_path)
+                self.verify_mingw_library(triplet=ARCH_TO_TRIPLET[arch], path=install_path / "bin" / f"{self.project}.dll")
+                archive_file_tree.add_directory_tree(arc_dir=arc_join(arc_root, triplet), path=install_path, time=self.arc_time)
+
+                print("Recording arch-dependent extra files for MinGW development archive ...")
+                extra_context = {
+                    "TRIPLET": ARCH_TO_TRIPLET[arch],
+                }
+                archive_file_tree.add_file_mapping(arc_dir=arc_root, file_mapping=self.release_info["mingw"]["autotools"].get("files", {}), file_mapping_root=self.root, context=self.get_context(extra_context=extra_context), time=self.arc_time)
 
         if "cmake" in self.release_info["mingw"]:
             assert self.release_info["mingw"]["cmake"]["shared-static"] in ("args", "both")
@@ -770,6 +821,12 @@ class Releaser:
                 assert arch not in mingw_archs
                 mingw_archs.add(arch)
 
+                context = self.get_context({
+                    "ARCH": arch,
+                    "DEP_PREFIX": str(mingw_deps_path / triplet),
+                })
+                extra_args = configure_text_list(text_list=self.release_info["mingw"]["cmake"]["args"], context=context)
+
                 build_path = build_parent_dir / f"build-{triplet}"
                 install_path = build_parent_dir / f"install-{triplet}"
                 shutil.rmtree(install_path, ignore_errors=True)
@@ -780,7 +837,6 @@ class Releaser:
                     args_for_shared_static = (["-DBUILD_SHARED_LIBS=ON"], ["-DBUILD_SHARED_LIBS=OFF"])
                 for arg_for_shared_static in args_for_shared_static:
                     with self.section_printer.group(f"Configuring MinGW {triplet} (CMake)"):
-                        extra_args = [arg.replace("@DEP_PREFIX@", str(mingw_deps_path / triplet)) for arg in self.release_info["mingw"]["cmake"]["args"]]
                         assert "@" not in " ".join(extra_args), f"@ should not be present in extra arguments ({extra_args})"
                         self.executer.run([
                             f"cmake",
@@ -801,7 +857,15 @@ class Releaser:
                         self.executer.run(["cmake", "--build", str(build_path), "--verbose", "--config", build_type], cwd=build_path, env=new_env)
                     with self.section_printer.group(f"Install MinGW {triplet} (CMake)"):
                         self.executer.run(["cmake", "--install", str(build_path)], cwd=build_path, env=new_env)
+                self.verify_mingw_library(triplet=ARCH_TO_TRIPLET[arch], path=install_path / "bin" / f"{self.project}.dll")
                 archive_file_tree.add_directory_tree(arc_dir=arc_join(arc_root, triplet), path=install_path, time=self.arc_time)
+
+                print("Recording arch-dependent extra files for MinGW development archive ...")
+                extra_context = {
+                    "TRIPLET": ARCH_TO_TRIPLET[arch],
+                }
+                archive_file_tree.add_file_mapping(arc_dir=arc_root, file_mapping=self.release_info["mingw"]["cmake"].get("files", {}), file_mapping_root=self.root, context=self.get_context(extra_context=extra_context), time=self.arc_time)
+                print("... done")
 
         print("Recording extra files for MinGW development archive ...")
         archive_file_tree.add_file_mapping(arc_dir=arc_root, file_mapping=self.release_info["mingw"].get("files", {}), file_mapping_root=self.root, context=self.get_context(), time=self.arc_time)
@@ -1231,6 +1295,10 @@ class Releaser:
         zip_path = self.dist_path / f"{self.project}-devel-{self.version}-VC.zip"
         arc_root = f"{self.project}-{self.version}"
 
+        def copy_files_devel(ctx):
+            archive_file_tree.add_file_mapping(arc_dir=arc_root, file_mapping=self.release_info["msvc"]["files-devel"], file_mapping_root=self.root, context=ctx, time=self.arc_time)
+
+
         logger.info("Collecting files...")
         archive_file_tree = ArchiveFileTree()
         if "msbuild" in self.release_info["msvc"]:
@@ -1238,12 +1306,13 @@ class Releaser:
                 arch_platform = self._arch_to_vs_platform(arch=arch)
                 platform_context = self.get_context(arch_platform.extra_context())
                 archive_file_tree.add_file_mapping(arc_dir=arc_root, file_mapping=self.release_info["msvc"]["msbuild"]["files-devel"], file_mapping_root=self.root, context=platform_context, time=self.arc_time)
+                copy_files_devel(ctx=platform_context)
         if "cmake" in self.release_info["msvc"]:
             for arch in self.release_info["msvc"]["cmake"]["archs"]:
                 arch_platform = self._arch_to_vs_platform(arch=arch)
                 platform_context = self.get_context(arch_platform.extra_context())
                 archive_file_tree.add_file_mapping(arc_dir=arc_root, file_mapping=self.release_info["msvc"]["cmake"]["files-devel"], file_mapping_root=self._arch_platform_to_install_path(arch_platform), context=platform_context, time=self.arc_time)
-        archive_file_tree.add_file_mapping(arc_dir=arc_root, file_mapping=self.release_info["msvc"]["files-devel"], file_mapping_root=self.root, context=self.get_context(), time=self.arc_time)
+                copy_files_devel(ctx=platform_context)
 
         with Archiver(zip_path=zip_path) as archiver:
             archive_file_tree.add_to_archiver(archive_base="", archiver=archiver)
