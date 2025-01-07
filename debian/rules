@@ -72,13 +72,14 @@ else
   confflags += -DSDL_WAYLAND=OFF
 endif
 
+ifeq ($(DEB_VERSION_UPSTREAM),3.1.6+git20250107+ds)
+  confflags += -DSDL_REVISION=preview-3.1.6-639-g0176a19aee
+endif
+
 %:
 	dh $@ --buildsystem=cmake
 
 override_dh_auto_configure:
-	#if [ $(DEB_VERSION_UPSTREAM) = 3.1.3~git20241004.1~bd4cd34+ds ]; then \
-	#	echo prerelease-3.1.2-2020-gbd4cd34a7 > REVISION.txt; \
-	#fi
 	set -e; for bmp in test/icon.bmp test/gamepad_*.bmp test/glass.bmp; do \
 		python3 cmake/xxd.py -i "$${bmp}" -o "$${bmp%.bmp}.h"; \
 	done
