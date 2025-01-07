@@ -1,3 +1,18 @@
+libsdl3 (3.1.6+ds-3) UNRELEASED; urgency=medium
+
+  * d/rules: Use the same test timeout multipliers as GLib.
+    amd64 and i386 are known to be "fast" architectures, likely to be used
+    for interactive debugging, and unlikely to be emulated with qemu,
+    so use a closer-to-normal timeout that will not be intolerably long
+    for developers. Other architectures might be using slow hardware or
+    extremely slow qemu-emulated buildds, so use a much longer timeout.
+  * d/rules: Apply test timeout multiplier to all tests.
+    A few tests use SDL_TESTS_TIMEOUT_MULTIPLIER, but most use
+    SDLTEST_TIMEOUT_MULTIPLIER, because test/ behaves like a subproject.
+    Set both. (Closes: #1091884)
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 07 Jan 2025 17:01:14 +0000
+
 libsdl3 (3.1.6+ds-2) unstable; urgency=medium
 
   * d/copyright: Remove unused MIT-CMU license stanza
