@@ -28,7 +28,6 @@ Files-Excluded: Android.mk
                 src/render/gpu/shaders/*.dxil.h
                 src/render/gpu/shaders/*.metal.h
                 src/render/metal/SDL_shaders_metal_*.h
-                src/video/openvr/openvr_capi.h
                 test/android
                 test/emscripten
                 test/gamepad_*.h
@@ -162,6 +161,12 @@ Copyright:
  2015-2023 Valve Corporation
  2015-2023 LunarG, Inc.
 License: Apache-2.0
+
+Files:
+ src/video/openvr/openvr_capi.h
+Copyright:
+ 2015 Valve Corporation
+License: BSD-3-clause
 
 Files: src/video/haiku/SDL_bkeyboard.cc
        src/video/haiku/SDL_bkeyboard.h
