@@ -18,11 +18,22 @@ libsdl3 (3.1.8+ds-1) UNRELEASED; urgency=medium
     A few tests use SDL_TESTS_TIMEOUT_MULTIPLIER, but most use
     SDLTEST_TIMEOUT_MULTIPLIER, because test/ behaves like a subproject.
     Set both. (Closes: #1091884)
+  * d/p/tray-Create-tray-icons-for-libappindicator-securely.patch:
+    Add proposed patch to fix a /tmp symlink attack when
+    providing icons to lib[ayatana-]appindicator. Regression post-3.1.6.
+  * d/control: Add Recommends on various dlopen'd libraries:
+    libdbus, libEGL, libGL | libOpenGL, libGLESv2, libudev.
+    These are not hard dependencies, but will be desirable for
+    many games.
+  * d/control: Add Suggests on various other dlopen'd libraries:
+    libayatana-appindicator3, libpipewire-0.3, liburing, libvulkan.
+    These are not always necessary, but will be desirable for some games
+    and for some systems.
   * d/watch*: Make removal of git snapshot suffix more flexible
   * d/watch: Watch for prereleases until 3.2.0 is out
   * d/watch.git: Use current preview release version number
 
- -- Simon McVittie <smcv@debian.org>  Wed, 08 Jan 2025 12:21:29 +0000
+ -- Simon McVittie <smcv@debian.org>  Wed, 08 Jan 2025 12:38:45 +0000
 
 libsdl3 (3.1.6+ds-2) unstable; urgency=medium
 
