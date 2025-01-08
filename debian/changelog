@@ -1,4 +1,4 @@
-libsdl3 (3.1.8+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.1.8+ds-1) unstable; urgency=medium
 
   * New upstream release
   * d/libsdl3-doc.manpages: Update
@@ -18,6 +18,7 @@ libsdl3 (3.1.8+ds-1) UNRELEASED; urgency=medium
     A few tests use SDL_TESTS_TIMEOUT_MULTIPLIER, but most use
     SDLTEST_TIMEOUT_MULTIPLIER, because test/ behaves like a subproject.
     Set both. (Closes: #1091884)
+  * d/rules: Ensure that shaders are output in a deterministic order
   * d/p/tray-Create-tray-icons-for-libappindicator-securely.patch:
     Add proposed patch to fix a /tmp symlink attack when
     providing icons to lib[ayatana-]appindicator. Regression post-3.1.6.
@@ -33,7 +34,7 @@ libsdl3 (3.1.8+ds-1) UNRELEASED; urgency=medium
   * d/watch: Watch for prereleases until 3.2.0 is out
   * d/watch.git: Use current preview release version number
 
- -- Simon McVittie <smcv@debian.org>  Wed, 08 Jan 2025 12:38:45 +0000
+ -- Simon McVittie <smcv@debian.org>  Wed, 08 Jan 2025 14:50:36 +0000
 
 libsdl3 (3.1.6+ds-2) unstable; urgency=medium
 
