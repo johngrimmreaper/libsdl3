@@ -9,6 +9,16 @@ include /usr/share/dpkg/default.mk
 export SDL_AUDIO_DRIVER=dummy
 export SDL_VIDEO_DRIVER=dummy
 
+# Upstream test timeouts assume a gaming-capable system.
+# Keep the timeout reasonably short for architectures where interactive
+# debugging is more likely, but extend it a lot on architectures that might
+# be very slow or using qemu for buildds.
+ifneq ($(filter amd64 i386,$(DEB_HOST_ARCH_CPU)),)
+test_timeout_multiplier = 3
+else
+test_timeout_multiplier = 20
+endif
+
 confflags = \
 	-DCMAKE_BUILD_RPATH_USE_ORIGIN=ON \
 	-DSDL_ALSA_SHARED=OFF \
@@ -27,12 +37,13 @@ confflags = \
 	-DSDL_STATIC=ON \
 	-DSDL_STATIC_PIC=ON \
 	-DSDL_TESTS=ON \
-	-DSDL_TESTS_TIMEOUT_MULTIPLIER=5 \
+	-DSDL_TESTS_TIMEOUT_MULTIPLIER=$(test_timeout_multiplier) \
 	-DSDL_TEST_LIBRARY=ON \
 	-DSDL_VENDOR_INFO="${DEB_VENDOR} ${DEB_VERSION}" \
 	-DSDL_VIVANTE=OFF \
 	-DSDL_X11=ON \
 	-DSDL_X11_SHARED=OFF \
+	-DSDLTEST_TIMEOUT_MULTIPLIER=$(test_timeout_multiplier) \
 	$(NULL)
 
 ifneq ($(filter %-tests,$(built_binaries)),)
@@ -61,18 +72,19 @@ else
   confflags += -DSDL_WAYLAND=OFF
 endif
 
+#ifeq ($(DEB_VERSION_UPSTREAM),3.1.6+git20250107+ds)
+#  confflags += -DSDL_REVISION=preview-3.1.6-639-g0176a19aee
+#endif
+
 %:
 	dh $@ --buildsystem=cmake
 
 override_dh_auto_configure:
-	#if [ $(DEB_VERSION_UPSTREAM) = 3.1.3~git20241004.1~bd4cd34+ds ]; then \
-	#	echo prerelease-3.1.2-2020-gbd4cd34a7 > REVISION.txt; \
-	#fi
 	set -e; for bmp in test/icon.bmp test/gamepad_*.bmp test/glass.bmp; do \
 		python3 cmake/xxd.py -i "$${bmp}" -o "$${bmp%.bmp}.h"; \
 	done
 	cd build-scripts && ./makecasefoldhashtable.pl > ../src/stdlib/SDL_casefolding.h
-	cd src/render/gpu/shaders && bash -ex ./build-shaders.sh
+	cd src/render/gpu/shaders && LC_ALL=C bash -ex ./build-shaders.sh
 	# This is intended as a Windows batch file, but at the time of writing
 	# it's so simple that it's also a valid shell script
 	cd src/render/vulkan && sh -ex ./compile_shaders.bat
