@@ -62,6 +62,7 @@ Depends:
  ${misc:Depends},
  ${shlibs:Depends}
 Suggests:
+ libayatana-appindicator3-1 | libappindicator3-1,
  xdg-utils,
 Description: Simple DirectMedia Layer, version 3
  SDL is a library that allows programs portable low level access to a video
