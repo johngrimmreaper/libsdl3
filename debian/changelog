@@ -1,9 +1,8 @@
 libsdl3 (3.1.6+git20250107+ds-1) UNRELEASED; urgency=medium
 
-  * d/gbp.conf: Open a new branch for upstream git snapshots
   * New upstream git snapshot
   * d/watch.git: Use current preview release version number
-  * d/watch: Watch for preleases until 3.2.0 is out
+  * d/watch: Watch for prereleases until 3.2.0 is out
   * d/watch*: Make removal of git snapshot suffix more flexible
   * d/control: Build-depend on liburing-dev on Linux architectures
   * d/copyright: Stop excluding files that no longer exist upstream
@@ -21,8 +20,10 @@ libsdl3 (3.1.6+git20250107+ds-1) UNRELEASED; urgency=medium
     A few tests use SDL_TESTS_TIMEOUT_MULTIPLIER, but most use
     SDLTEST_TIMEOUT_MULTIPLIER, because test/ behaves like a subproject.
     Set both. (Closes: #1091884)
+  * d/libsdl3-doc.manpages: Update
+  * d/libsdl3-0.symbols: Update
 
- -- Simon McVittie <smcv@debian.org>  Tue, 07 Jan 2025 20:11:21 +0000
+ -- Simon McVittie <smcv@debian.org>  Wed, 08 Jan 2025 12:21:29 +0000
 
 libsdl3 (3.1.6+ds-2) unstable; urgency=medium
 
