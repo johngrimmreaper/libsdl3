@@ -84,7 +84,7 @@ override_dh_auto_configure:
 		python3 cmake/xxd.py -i "$${bmp}" -o "$${bmp%.bmp}.h"; \
 	done
 	cd build-scripts && ./makecasefoldhashtable.pl > ../src/stdlib/SDL_casefolding.h
-	cd src/render/gpu/shaders && bash -ex ./build-shaders.sh
+	cd src/render/gpu/shaders && LC_ALL=C bash -ex ./build-shaders.sh
 	# This is intended as a Windows batch file, but at the time of writing
 	# it's so simple that it's also a valid shell script
 	cd src/render/vulkan && sh -ex ./compile_shaders.bat
