@@ -1,0 +1,54 @@
+From: Sam Lantinga <slouken@libsdl.org>
+Date: Fri, 17 Jan 2025 12:08:45 -0800
+Subject: Fixed warning C6313: Incorrect operator. Use an equality test to
+ check for zero-valued flags.
+
+Origin: upstream, 3.1.12, commit:656c519cca9c9266021cd7f568c30ea2663881d9
+---
+ src/tray/unix/SDL_tray.c    | 6 ++++--
+ src/tray/windows/SDL_tray.c | 4 ++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/src/tray/unix/SDL_tray.c b/src/tray/unix/SDL_tray.c
+index cc57fd7..39deab4 100644
+--- a/src/tray/unix/SDL_tray.c
++++ b/src/tray/unix/SDL_tray.c
+@@ -591,12 +591,14 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
+         entry->item = gtk_separator_menu_item_new();
+     } else if (flags & SDL_TRAYENTRY_CHECKBOX) {
+         entry->item = gtk_check_menu_item_new_with_label(label);
+-        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(entry->item), !!(flags & SDL_TRAYENTRY_CHECKED));
++        gboolean active = ((flags & SDL_TRAYENTRY_CHECKED) != 0);
++        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(entry->item), active);
+     } else {
+         entry->item = gtk_menu_item_new_with_label(label);
+     }
+ 
+-    gtk_widget_set_sensitive(entry->item, !(flags & SDL_TRAYENTRY_DISABLED));
++    gboolean sensitive = ((flags & SDL_TRAYENTRY_DISABLED) == 0);
++    gtk_widget_set_sensitive(entry->item, sensitive);
+ 
+     SDL_TrayEntry **new_entries = (SDL_TrayEntry **)SDL_realloc(menu->entries, (menu->nEntries + 2) * sizeof(*new_entries));
+ 
+diff --git a/src/tray/windows/SDL_tray.c b/src/tray/windows/SDL_tray.c
+index 526c190..f5eb6da 100644
+--- a/src/tray/windows/SDL_tray.c
++++ b/src/tray/windows/SDL_tray.c
+@@ -523,7 +523,7 @@ bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
+ 
+     GetMenuItemInfoW(entry->parent->hMenu, (UINT) entry->id, FALSE, &mii);
+ 
+-    return !!(mii.fState & MFS_CHECKED);
++    return ((mii.fState & MFS_CHECKED) != 0);
+ }
+ 
+ void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled)
+@@ -549,7 +549,7 @@ bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
+ 
+     GetMenuItemInfoW(entry->parent->hMenu, (UINT) entry->id, FALSE, &mii);
+ 
+-    return !!(mii.fState & MFS_ENABLED);
++    return ((mii.fState & MFS_ENABLED) != 0);
+ }
+ 
+ void SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, void *userdata)

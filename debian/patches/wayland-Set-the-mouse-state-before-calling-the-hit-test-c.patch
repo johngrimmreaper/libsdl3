@@ -1,0 +1,104 @@
+From: Frank Praznik <frank.praznik@gmail.com>
+Date: Sat, 18 Jan 2025 11:59:51 -0500
+Subject: wayland: Set the mouse state before calling the hit test callback
+
+Update the mouse state before entering the hit test, in case the global state is queried, or the system menu opened, while in the client hit testing callback.
+
+Origin: upstream, 3.1.12, commit:42e0fb10f815c7f37191eab056893bd81575ea09
+---
+ src/video/wayland/SDL_waylandevents.c   | 22 ++++++++++------------
+ src/video/wayland/SDL_waylandevents_c.h |  2 +-
+ src/video/wayland/SDL_waylandmouse.c    |  3 ++-
+ 3 files changed, 13 insertions(+), 14 deletions(-)
+
+diff --git a/src/video/wayland/SDL_waylandevents.c b/src/video/wayland/SDL_waylandevents.c
+index 03982fb..c6260b86 100644
+--- a/src/video/wayland/SDL_waylandevents.c
++++ b/src/video/wayland/SDL_waylandevents.c
+@@ -597,6 +597,7 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
+             // Clear the capture flag and raise all buttons
+             wind->sdlwindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+ 
++            input->buttons_pressed = 0;
+             SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_BUTTON_LEFT, false);
+             SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_BUTTON_RIGHT, false);
+             SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_BUTTON_MIDDLE, false);
+@@ -604,7 +605,6 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
+             SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_BUTTON_X2, false);
+         }
+ 
+-
+         /* A pointer leave event may be emitted if the compositor hides the pointer in response to receiving a touch event.
+          * Don't relinquish focus if the surface has active touches, as the compositor is just transitioning from mouse to touch mode.
+          */
+@@ -728,6 +728,13 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
+         SDL_VideoData *viddata = window->waylandData;
+         bool ignore_click = false;
+ 
++        if (state) {
++            Wayland_UpdateImplicitGrabSerial(input, serial);
++            input->buttons_pressed |= SDL_BUTTON_MASK(sdl_button);
++        } else {
++            input->buttons_pressed &= ~(SDL_BUTTON_MASK(sdl_button));
++        }
++
+         if (sdl_button == SDL_BUTTON_LEFT &&
+             ProcessHitTest(input->pointer_focus, input->seat, input->sx_w, input->sy_w, serial)) {
+             return; // don't pass this event on to app.
+@@ -747,14 +754,9 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
+          * the mouse outside the window if you drag outside of it, until you let go
+          * of all buttons (even if you add or remove presses outside the window, as
+          * long as any button is still down, the capture remains).
++         *
++         * The mouse is not captured in relative mode.
+          */
+-        if (state) { // update our mask of currently-pressed buttons
+-            input->buttons_pressed |= SDL_BUTTON_MASK(sdl_button);
+-        } else {
+-            input->buttons_pressed &= ~(SDL_BUTTON_MASK(sdl_button));
+-        }
+-
+-        // Don't modify the capture flag in relative mode.
+         if (!viddata->relative_mouse_mode) {
+             if (input->buttons_pressed != 0) {
+                 window->sdlwindow->flags |= SDL_WINDOW_MOUSE_CAPTURE;
+@@ -763,10 +765,6 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
+             }
+         }
+ 
+-        if (state) {
+-            Wayland_UpdateImplicitGrabSerial(input, serial);
+-        }
+-
+         if (!ignore_click) {
+             SDL_SendMouseButton(timestamp, window->sdlwindow, input->pointer_id, sdl_button, down);
+         }
+diff --git a/src/video/wayland/SDL_waylandevents_c.h b/src/video/wayland/SDL_waylandevents_c.h
+index 2f11fe5..6158882 100644
+--- a/src/video/wayland/SDL_waylandevents_c.h
++++ b/src/video/wayland/SDL_waylandevents_c.h
+@@ -94,7 +94,7 @@ struct SDL_WaylandInput
+     wl_fixed_t sx_w;
+     wl_fixed_t sy_w;
+ 
+-    uint32_t buttons_pressed;
++    SDL_MouseButtonFlags buttons_pressed;
+ 
+     // The serial of the last implicit grab event for window activation and selection data.
+     Uint32 last_implicit_grab_serial;
+diff --git a/src/video/wayland/SDL_waylandmouse.c b/src/video/wayland/SDL_waylandmouse.c
+index f8827cc..968cb6f 100644
+--- a/src/video/wayland/SDL_waylandmouse.c
++++ b/src/video/wayland/SDL_waylandmouse.c
+@@ -892,9 +892,10 @@ static SDL_MouseButtonFlags SDLCALL Wayland_GetGlobalMouseState(float *x, float
+     SDL_MouseButtonFlags result = 0;
+ 
+     if (focus) {
++        SDL_VideoData *viddata = SDL_GetVideoDevice()->internal;
+         int off_x, off_y;
+ 
+-        result = SDL_GetMouseState(x, y);
++        result = viddata->input->buttons_pressed;
+         SDL_RelativeToGlobalForWindow(focus, focus->x, focus->y, &off_x, &off_y);
+         *x += off_x;
+         *y += off_y;

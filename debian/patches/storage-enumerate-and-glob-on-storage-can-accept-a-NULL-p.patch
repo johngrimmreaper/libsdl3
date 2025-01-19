@@ -1,0 +1,73 @@
+From: "Ryan C. Gordon" <icculus@icculus.org>
+Date: Fri, 17 Jan 2025 20:04:27 -0500
+Subject: storage: enumerate and glob on storage can accept a NULL path.
+
+This will be treated as the root of the storage tree.
+
+Origin: upstream, 3.1.12, commit:010f27dc70a5ed21e03ac2bfe22f11109b1e8c44
+---
+ include/SDL3/SDL_storage.h | 10 ++++++++--
+ src/storage/SDL_storage.c  | 13 ++++++++-----
+ 2 files changed, 16 insertions(+), 7 deletions(-)
+
+diff --git a/include/SDL3/SDL_storage.h b/include/SDL3/SDL_storage.h
+index f6be770..25e19f3 100644
+--- a/include/SDL3/SDL_storage.h
++++ b/include/SDL3/SDL_storage.h
+@@ -543,8 +543,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CreateStorageDirectory(SDL_Storage *storage
+  * returned SDL_ENUM_SUCCESS to halt enumeration, or all directory entries
+  * were enumerated.
+  *
++ * If `path` is NULL, this is treated as a request to enumerate the root of
++ * the storage container's tree. An empty string also works for this.
++ *
+  * \param storage a storage container.
+- * \param path the path of the directory to enumerate.
++ * \param path the path of the directory to enumerate, or NULL for the root.
+  * \param callback a function that is called for each entry in the directory.
+  * \param userdata a pointer that is passed to `callback`.
+  * \returns true on success or false on failure; call SDL_GetError() for more
+@@ -646,8 +649,11 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *sto
+  * convenience, but if `count` is non-NULL, on return it will contain the
+  * number of items in the array, not counting the NULL terminator.
+  *
++ * If `path` is NULL, this is treated as a request to enumerate the root of
++ * the storage container's tree. An empty string also works for this.
++ *
+  * \param storage a storage container.
+- * \param path the path of the directory to enumerate.
++ * \param path the path of the directory to enumerate, or NULL for the root.
+  * \param pattern the pattern that files in the directory must match. Can be
+  *                NULL.
+  * \param flags `SDL_GLOB_*` bitflags that affect this search.
+diff --git a/src/storage/SDL_storage.c b/src/storage/SDL_storage.c
+index a5687c6..75952ff 100644
+--- a/src/storage/SDL_storage.c
++++ b/src/storage/SDL_storage.c
+@@ -284,8 +284,10 @@ bool SDL_EnumerateStorageDirectory(SDL_Storage *storage, const char *path, SDL_E
+     CHECK_STORAGE_MAGIC()
+ 
+     if (!path) {
+-        return SDL_InvalidParamError("path");
+-    } else if (!ValidateStoragePath(path)) {
++        path = "";  // we allow NULL to mean "root of the storage tree".
++    }
++
++    if (!ValidateStoragePath(path)) {
+         return false;
+     } else if (!storage->iface.enumerate) {
+         return SDL_Unsupported();
+@@ -396,9 +398,10 @@ char **SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const ch
+     CHECK_STORAGE_MAGIC_RET(NULL)
+ 
+     if (!path) {
+-        SDL_InvalidParamError("path");
+-        return NULL;
+-    } else if (!ValidateStoragePath(path)) {
++        path = "";  // we allow NULL to mean "root of the storage tree".
++    }
++
++    if (!ValidateStoragePath(path)) {
+         return NULL;
+     }
+ 

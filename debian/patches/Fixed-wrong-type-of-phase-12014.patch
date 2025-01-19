@@ -1,0 +1,38 @@
+From: Nicolas Firmo <49406269+NicolasFirmo@users.noreply.github.com>
+Date: Fri, 17 Jan 2025 23:12:47 -0300
+Subject: Fixed wrong type of `phase` (#12014)
+
+`phase` should be a `float` value that ranges between `0` and `1`.
+
+Origin: upstream, 3.1.12, commit:842f6dc40227c8b7aa5b92084b60b257690a9e90
+---
+ examples/audio/01-simple-playback/simple-playback.c                   | 2 +-
+ examples/audio/02-simple-playback-callback/simple-playback-callback.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/examples/audio/01-simple-playback/simple-playback.c b/examples/audio/01-simple-playback/simple-playback.c
+index 8fb4fe4..35ddf8a 100644
+--- a/examples/audio/01-simple-playback/simple-playback.c
++++ b/examples/audio/01-simple-playback/simple-playback.c
+@@ -76,7 +76,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
+         /* generate a 440Hz pure tone */
+         for (i = 0; i < SDL_arraysize(samples); i++) {
+             const int freq = 440;
+-            const int phase = current_sine_sample * freq / 8000.0f;
++            const float phase = current_sine_sample * freq / 8000.0f;
+             samples[i] = SDL_sinf(phase * 2 * SDL_PI_F);
+             current_sine_sample++;
+         }
+diff --git a/examples/audio/02-simple-playback-callback/simple-playback-callback.c b/examples/audio/02-simple-playback-callback/simple-playback-callback.c
+index 27d5709..5a78361 100644
+--- a/examples/audio/02-simple-playback-callback/simple-playback-callback.c
++++ b/examples/audio/02-simple-playback-callback/simple-playback-callback.c
+@@ -36,7 +36,7 @@ static void SDLCALL FeedTheAudioStreamMore(void *userdata, SDL_AudioStream *astr
+         /* generate a 440Hz pure tone */
+         for (i = 0; i < total; i++) {
+             const int freq = 440;
+-            const int phase = current_sine_sample * freq / 8000.0f;
++            const float phase = current_sine_sample * freq / 8000.0f;
+             samples[i] = SDL_sinf(phase * 2 * SDL_PI_F);
+             current_sine_sample++;
+         }
