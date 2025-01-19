@@ -1,4 +1,4 @@
-libsdl3 (3.1.10+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.1.10+ds-1) unstable; urgency=medium
 
   * New upstream release candidate
   * d/watch*: Fix dversionmangle expression
@@ -19,8 +19,9 @@ libsdl3 (3.1.10+ds-1) UNRELEASED; urgency=medium
     d/p/Use-SDL_calloc-instead-of-SDL_malloc.patch,
     d/p/pen-Send-virtual-mouse-motion-without-a-button-press-when.patch:
     Add post-release bug fixes up to prerelease-3.1.10-47-g32965b4bf
+  * d/docs: README-SDL.txt no longer exists
 
- -- Simon McVittie <smcv@debian.org>  Sun, 19 Jan 2025 13:50:53 +0000
+ -- Simon McVittie <smcv@debian.org>  Sun, 19 Jan 2025 14:43:56 +0000
 
 libsdl3 (3.1.8+ds-1) unstable; urgency=medium
 
