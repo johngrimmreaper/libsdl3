@@ -17,6 +17,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_AsyncIOFromFile@SDL3_0.0.0 3.1.8~
  SDL_AttachVirtualJoystick@SDL3_0.0.0 3.1.3~
  SDL_AudioDevicePaused@SDL3_0.0.0 3.1.3~
+ SDL_AudioStreamDevicePaused@SDL3_0.0.0 3.1.10~
  SDL_BeginGPUComputePass@SDL3_0.0.0 3.1.3~
  SDL_BeginGPUCopyPass@SDL3_0.0.0 3.1.3~
  SDL_BeginGPURenderPass@SDL3_0.0.0 3.1.3~
@@ -55,6 +56,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ClearError@SDL3_0.0.0 3.1.3~
  SDL_ClearProperty@SDL3_0.0.0 3.1.3~
  SDL_ClearSurface@SDL3_0.0.0 3.1.3~
+ SDL_ClickTrayEntry@SDL3_0.0.0 3.1.10~
  SDL_CloseAsyncIO@SDL3_0.0.0 3.1.8~
  SDL_CloseAudioDevice@SDL3_0.0.0 3.1.3~
  SDL_CloseCamera@SDL3_0.0.0 3.1.3~
