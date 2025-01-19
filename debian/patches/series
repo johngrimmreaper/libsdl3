@@ -1,1 +1,10 @@
-tray-Create-tray-icons-for-libappindicator-securely.patch
+Fixed-warning-C6313-Incorrect-operator.-Use-an-equality-t.patch
+x11-check-to-see-if-displays-moved-when-connected-disconn.patch
+storage-enumerate-and-glob-on-storage-can-accept-a-NULL-p.patch
+Fixed-sine-wave-distortion-over-time.patch
+Fixed-wrong-type-of-phase-12014.patch
+Added-support-for-the-8BitDo-Ultimate-2C-Wireless-in-Blue.patch
+Added-Linux-evdev-mappings-for-the-Wireless-HORIPAD-For-S.patch
+wayland-Set-the-mouse-state-before-calling-the-hit-test-c.patch
+Use-SDL_calloc-instead-of-SDL_malloc.patch
+pen-Send-virtual-mouse-motion-without-a-button-press-when.patch

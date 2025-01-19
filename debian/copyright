@@ -9,6 +9,7 @@ Files-Excluded: Android.mk
                 android-project
                 build-scripts/pkg-support/android
                 build-scripts/pkg-support/mingw
+                build-scripts/pkg-support/msvc
                 src/video/directx/SDL_d3d12_xbox_cmacros.h
                 src/video/directx/d3d12.h
                 src/video/directx/d3d12sdklayers.h
