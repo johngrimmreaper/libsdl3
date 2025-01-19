@@ -3,8 +3,24 @@ libsdl3 (3.1.10+ds-1) UNRELEASED; urgency=medium
   * New upstream release candidate
   * d/watch*: Fix dversionmangle expression
   * d/libsdl3-0.symbols: Depend on 3.1.8 for symbols introduced after 3.1.6
+  * d/rules: Update build options for 3.1.10
+  * d/copyright: Exclude more unneeded MSVC-related files
+  * d/libsdl3-0.symbols: Update with new symbols in 3.1.10
+  * d/p/tray-Create-tray-icons-for-libappindicator-securely.patch:
+    Drop patch, applied upstream
+  * d/p/Fixed-warning-C6313-Incorrect-operator.-Use-an-equality-t.patch,
+    d/p/x11-check-to-see-if-displays-moved-when-connected-disconn.patch,
+    d/p/storage-enumerate-and-glob-on-storage-can-accept-a-NULL-p.patch,
+    d/p/Fixed-sine-wave-distortion-over-time.patch,
+    d/p/Fixed-wrong-type-of-phase-12014.patch,
+    d/p/Added-support-for-the-8BitDo-Ultimate-2C-Wireless-in-Blue.patch,
+    d/p/Added-Linux-evdev-mappings-for-the-Wireless-HORIPAD-For-S.patch,
+    d/p/wayland-Set-the-mouse-state-before-calling-the-hit-test-c.patch,
+    d/p/Use-SDL_calloc-instead-of-SDL_malloc.patch,
+    d/p/pen-Send-virtual-mouse-motion-without-a-button-press-when.patch:
+    Add post-release bug fixes up to prerelease-3.1.10-47-g32965b4bf
 
- -- Simon McVittie <smcv@debian.org>  Sun, 19 Jan 2025 13:32:13 +0000
+ -- Simon McVittie <smcv@debian.org>  Sun, 19 Jan 2025 13:50:53 +0000
 
 libsdl3 (3.1.8+ds-1) unstable; urgency=medium
 
