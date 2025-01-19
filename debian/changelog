@@ -1,5 +1,6 @@
-libsdl3 (3.1.8+ds-2) UNRELEASED; urgency=medium
+libsdl3 (3.1.10+ds-1) UNRELEASED; urgency=medium
 
+  * New upstream release candidate
   * d/watch*: Fix dversionmangle expression
   * d/libsdl3-0.symbols: Depend on 3.1.8 for symbols introduced after 3.1.6
 
