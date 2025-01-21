@@ -74,12 +74,10 @@ Suggests:
  libvulkan1,
  xdg-utils,
 Description: Simple DirectMedia Layer, version 3
- SDL is a library that allows programs portable low level access to a video
- framebuffer, audio output, mouse, and keyboard.
+ SDL is a cross-platform library designed to make it easy to write
+ multimedia software such as games and emulators.
  .
- This version of SDL is under development and its API and ABI are not stable.
- Use libsdl2-dev for new programs until a stable release of SDL 3 has
- been made: the first stable release is expected to be versioned as 3.2.0.
+ This package contains the shared library.
 
 Package: libsdl3-dev
 Section: libdevel
@@ -117,12 +115,8 @@ Depends:
  ${misc:Depends},
  ${shlibs:Depends}
 Description: Simple DirectMedia Layer, version 3 development files
- SDL is a library that allows programs portable low level access to a video
- framebuffer, audio output, mouse, and keyboard.
- .
- This version of SDL is under development and its API and ABI are not stable.
- Use libsdl2-dev for new programs until a stable release of SDL 3 has
- been made: the first stable release is expected to be versioned as 3.2.0.
+ SDL is a cross-platform library designed to make it easy to write
+ multimedia software such as games and emulators.
  .
  This package contains the files needed to compile and link programs which
  use SDL.
@@ -139,8 +133,8 @@ Breaks:
 Replaces:
  libsdl1.2-dev (<< 1.2.64),
 Description: Reference manual for SDL 3
- SDL is a library that allows programs portable low level access to a video
- framebuffer, audio output, mouse, and keyboard.
+ SDL is a cross-platform library designed to make it easy to write
+ multimedia software such as games and emulators.
  .
  This package contains the reference manual and examples.
 
@@ -154,8 +148,8 @@ Depends:
 Suggests:
  gnome-desktop-testing
 Description: Simple DirectMedia Layer automated and manual tests
- SDL is a library that allows programs portable low level access to a video
- framebuffer, audio output, mouse, and keyboard.
+ SDL is a cross-platform library designed to make it easy to write
+ multimedia software such as games and emulators.
  .
  This package contains manual and automated tests. The automated tests can
  be run using ginsttest-runner in the gnome-desktop-testing package,
