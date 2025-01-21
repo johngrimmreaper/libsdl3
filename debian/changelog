@@ -1,12 +1,13 @@
-libsdl3 (3.2.0+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.2.0+ds-1) unstable; urgency=medium
 
   * New upstream stable release (Closes: #1086720)
   * d/libsdl3-0.symbols: Add one new symbol
-  * d/watch: Only watch for stable releases
-  * Drop all patches, included in the upstream stable release
   * d/libsdl3-0.symbols: Generate dependencies on 3.2.0 stable release
+  * d/patches: Drop all patches, included in the upstream stable release
+  * d/control: Update package descriptions to reflect stable status
+  * d/watch: Only watch for stable releases
 
- -- Simon McVittie <smcv@debian.org>  Tue, 21 Jan 2025 19:39:44 +0000
+ -- Simon McVittie <smcv@debian.org>  Tue, 21 Jan 2025 19:46:42 +0000
 
 libsdl3 (3.1.10+ds-1) unstable; urgency=medium
 
