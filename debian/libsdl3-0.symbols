@@ -983,6 +983,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_UpdateNVTexture@SDL3_0.0.0 3.1.3~
  SDL_UpdateSensors@SDL3_0.0.0 3.1.3~
  SDL_UpdateTexture@SDL3_0.0.0 3.1.3~
+ SDL_UpdateTrays@SDL3_0.0.0 3.2.0~
  SDL_UpdateWindowSurface@SDL3_0.0.0 3.1.3~
  SDL_UpdateWindowSurfaceRects@SDL3_0.0.0 3.1.3~
  SDL_UpdateYUVTexture@SDL3_0.0.0 3.1.3~
