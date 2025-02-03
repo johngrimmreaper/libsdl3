@@ -1,8 +1,11 @@
 libsdl3 (3.2.2+ds-2) UNRELEASED; urgency=medium
 
   * d/copyright: Update Source to match debian/watch
+  * d/control: Build-depend on glslang-tools (>= 12).
+    Other versions might work, but this version (from Debian 12) is the
+    oldest that has successfully been tested in the Steam Runtime.
 
- -- Simon McVittie <smcv@debian.org>  Mon, 03 Feb 2025 18:54:19 +0000
+ -- Simon McVittie <smcv@debian.org>  Mon, 03 Feb 2025 18:59:27 +0000
 
 libsdl3 (3.2.2+ds-1) unstable; urgency=medium
 
