@@ -2,10 +2,13 @@ libsdl3 (3.2.4+ds-1) UNRELEASED; urgency=medium
 
   * New upstream stable release
     - Unusually, this one adds new API/ABI.
+  * d/libsdl3-0.symbols: Update
   * d/copyright: Update Source to match debian/watch
   * d/control: Build-depend on glslang-tools (>= 12).
     Other versions might work, but this version (from Debian 12) is the
     oldest that has successfully been tested in the Steam Runtime.
+  * d/tests/control: Stop treating installed-tests as superficial.
+    These have reasonably good coverage now that we run testautomation.
 
  -- Simon McVittie <smcv@debian.org>  Mon, 03 Feb 2025 18:59:27 +0000
 
