@@ -946,6 +946,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_StopHapticRumble@SDL3_0.0.0 3.2.0
  SDL_StopTextInput@SDL3_0.0.0 3.2.0
  SDL_StorageReady@SDL3_0.0.0 3.2.0
+ SDL_StretchSurface@SDL3_0.0.0 3.2.4
  SDL_StringToGUID@SDL3_0.0.0 3.2.0
  SDL_SubmitGPUCommandBuffer@SDL3_0.0.0 3.2.0
  SDL_SubmitGPUCommandBufferAndAcquireFence@SDL3_0.0.0 3.2.0
