@@ -1,5 +1,7 @@
-libsdl3 (3.2.2+ds-2) UNRELEASED; urgency=medium
+libsdl3 (3.2.4+ds-1) UNRELEASED; urgency=medium
 
+  * New upstream stable release
+    - Unusually, this one adds new API/ABI.
   * d/copyright: Update Source to match debian/watch
   * d/control: Build-depend on glslang-tools (>= 12).
     Other versions might work, but this version (from Debian 12) is the
