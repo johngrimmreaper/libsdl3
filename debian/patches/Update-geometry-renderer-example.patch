@@ -1,0 +1,24 @@
+From: Christian Walter <cfwalter@users.noreply.github.com>
+Date: Sun, 9 Feb 2025 09:55:19 -0500
+Subject: Update geometry renderer example
+
+This PR updates the geometry renderer example such that the `color` values of `vertices[3]` are set correctly in `SDL_AppIterate`.
+
+Origin: upstream, 3.2.5, commit:e29ebb9f18990516a2c1aedc36547b371a026b90
+---
+ examples/renderer/10-geometry/geometry.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/examples/renderer/10-geometry/geometry.c b/examples/renderer/10-geometry/geometry.c
+index ffe7111..77ff863 100644
+--- a/examples/renderer/10-geometry/geometry.c
++++ b/examples/renderer/10-geometry/geometry.c
+@@ -141,7 +141,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
+     /* we need one more vertex, since the two triangles can share two of them. */
+     vertices[3].position.x = 600.0f;
+     vertices[3].position.y = 150.0f;
+-    vertices[3].color.r = vertices[0].color.g = vertices[0].color.b = vertices[0].color.a = 1.0f;
++    vertices[3].color.r = vertices[3].color.g = vertices[3].color.b = vertices[3].color.a = 1.0f;
+     vertices[3].tex_coord.x = 1.0f;
+     vertices[3].tex_coord.y = 1.0f;
+ 

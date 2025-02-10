@@ -1,0 +1,28 @@
+From: danginsburg <dginsburg@upsamplesoftware.com>
+Date: Mon, 10 Feb 2025 11:43:43 -0500
+Subject: Fix #12142
+
+the problem was if the size of the vertex buffer was exceeded,
+the currentVertexBuffer would be reset to zero and thus we'd leave it
+pointing to an in-use VB that would get overwritten on the next present
+before the vkQueueSubmit occurred.
+
+Bug: https://github.com/libsdl-org/SDL/issues/12142
+Origin: upstream, 3.2.5, commit:4fd0b2a85c9cca4b55602f0d805e26eaa8e74a24
+---
+ src/render/vulkan/SDL_render_vulkan.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/render/vulkan/SDL_render_vulkan.c b/src/render/vulkan/SDL_render_vulkan.c
+index 7398315..7503613 100644
+--- a/src/render/vulkan/SDL_render_vulkan.c
++++ b/src/render/vulkan/SDL_render_vulkan.c
+@@ -3253,7 +3253,7 @@ static bool VULKAN_UpdateVertexBuffer(SDL_Renderer *renderer,
+ 
+     stateCache->vertexBuffer = vertexBuffer->buffer;
+ 
+-    rendererData->currentVertexBuffer++;
++    rendererData->currentVertexBuffer = vbidx + 1;
+     if (rendererData->currentVertexBuffer >= SDL_VULKAN_NUM_VERTEX_BUFFERS) {
+         rendererData->currentVertexBuffer = 0;
+         rendererData->issueBatch = true;
