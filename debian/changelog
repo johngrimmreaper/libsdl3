@@ -1,10 +1,10 @@
-libsdl3 (3.2.4+ds-2) UNRELEASED; urgency=medium
+libsdl3 (3.2.4+ds-2) unstable; urgency=medium
 
   * d/patches: Add post-release bug fixes up to
     release-3.2.4-18-g4fd0b2a85c, excluding N3DS- and Windows-specific
     changes
 
- -- Simon McVittie <smcv@debian.org>  Mon, 10 Feb 2025 18:00:49 +0000
+ -- Simon McVittie <smcv@debian.org>  Mon, 10 Feb 2025 18:01:25 +0000
 
 libsdl3 (3.2.4+ds-1) unstable; urgency=medium
 
