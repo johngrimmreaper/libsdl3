@@ -1,0 +1,23 @@
+From: Sam Lantinga <slouken@libsdl.org>
+Date: Mon, 10 Feb 2025 08:35:30 -0800
+Subject: Centered joystick axis values should be 0
+
+Bug: https://github.com/libsdl-org/sdl2-compat/issues/338
+Origin: upstream, 3.2.5, commit:f6126e9ea1f66cfeccf1cf7fd6bd798bf45eaff3
+---
+ src/joystick/SDL_gamepad.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/joystick/SDL_gamepad.c b/src/joystick/SDL_gamepad.c
+index 2efa9c3..d51e39b 100644
+--- a/src/joystick/SDL_gamepad.c
++++ b/src/joystick/SDL_gamepad.c
+@@ -2824,7 +2824,7 @@ bool SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
+  */
+ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
+ {
+-    Sint16 result = true;
++    Sint16 result = 0;
+ 
+     SDL_LockJoysticks();
+     {

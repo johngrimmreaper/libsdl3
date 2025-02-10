@@ -1,0 +1,33 @@
+From: Michael Savage <github@mikejsavage.co.uk>
+Date: Sat, 8 Feb 2025 13:03:18 +0200
+Subject: Fix SSE 4.2 test
+
+When building with zig cc I get:
+
+```
+error: always_inline function '_mm_crc32_u32' requires target feature 'crc32', but would be inlined into function 'calc_crc32c' that is compiled without support for 'crc32'
+    5 |       crc32c = (unsigned)_mm_crc32_u32(crc32c, *(unsigned*)text);
+      |                          ^
+1 error generated.
+```
+
+This PR adds -mcrc32, another option would be to use a different SSE4.2 op
+
+Origin: upstream, 3.2.5, commit:5d1bbd9b27dc99a2945b842c28764a90ab30d54e
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d8e5667..39b74dd 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -751,7 +751,7 @@ if(SDL_ASSEMBLY)
+   if(SDL_SSE4_2)
+     cmake_push_check_state()
+     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
+-      string(APPEND CMAKE_REQUIRED_FLAGS " -msse4.2")
++      string(APPEND CMAKE_REQUIRED_FLAGS " -msse4.2 -mcrc32")
+     endif()
+     check_c_source_compiles("
+       #include <nmmintrin.h>

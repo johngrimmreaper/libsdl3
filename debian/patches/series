@@ -1,0 +1,11 @@
+Fix-SSE-4.2-test.patch
+Added-mapping-for-Dreamcast-Controller-USB.patch
+Corrected-alphabetical-order.patch
+Removed-crc.patch
+x11-Don-t-wait-for-events-when-the-connection-errored-out.patch
+Update-geometry-renderer-example.patch
+joystick-Fix-PS5-player-LED-hint-change-callback-name.patch
+Added-SDL_DEPS_SHARED-option-to-control-default-dynamic-l.patch
+pipewire-Ensure-that-the-correct-struct-is-used-for-enume.patch
+Centered-joystick-axis-values-should-be-0.patch
+Fix-12142.patch
