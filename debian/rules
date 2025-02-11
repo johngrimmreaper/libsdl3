@@ -101,6 +101,18 @@ ifneq ($(filter %-doc,$(built_binaries)),)
 	find docs/output -type d -empty -delete
 endif
 
+# Only run testtimer as an autopkgtest on machines that we're reasonably
+# sure are both fast and set up to be usable for interactive use
+# (currently only x86 and 64-bit ARM).
+# There is an assertion that requesting a 1ms delay does not result in
+# a delay of more than 100ms, and that's not going to be reliably true
+# on slow machines like riscv64 or batch-processing-oriented machines
+# like s390x.
+ifeq (,$(filter amd64 arm64 i386,$(DEB_HOST_ARCH)))
+execute_after_dh_auto_install:
+	rm -fv debian/tmp/usr/share/installed-tests/SDL3/testtimer.test
+endif
+
 execute_after_dh_auto_clean-indep:
 	rm -f debian/Doxyfile
 	rm -rf docs/output
