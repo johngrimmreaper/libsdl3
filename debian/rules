@@ -22,6 +22,7 @@ endif
 confflags = \
 	-DCMAKE_BUILD_RPATH_USE_ORIGIN=ON \
 	-DSDL_ALSA_SHARED=OFF \
+	-DSDL_DEPS_SHARED=OFF \
 	-DSDL_EXAMPLES=ON \
 	-DSDL_HIDAPI_LIBUSB_SHARED=OFF \
 	-DSDL_JACK=OFF \
@@ -67,6 +68,7 @@ endif
 
 ifeq ($(DEB_HOST_ARCH_OS),linux)
   confflags += -DSDL_WAYLAND=ON
+  confflags += -DSDL_WAYLAND_LIBDECOR_SHARED=OFF
   confflags += -DSDL_WAYLAND_SHARED=OFF
 else
   confflags += -DSDL_WAYLAND=OFF
