@@ -1498,6 +1498,10 @@ typedef struct SDL_GPUIndirectDispatchCommand
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUSampler
+ * \sa SDL_GPUFilter
+ * \sa SDL_GPUSamplerMipmapMode
+ * \sa SDL_GPUSamplerAddressMode
+ * \sa SDL_GPUCompareOp
  */
 typedef struct SDL_GPUSamplerCreateInfo
 {
@@ -1798,6 +1802,8 @@ typedef struct SDL_GPUColorTargetDescription
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineCreateInfo
+ * \sa SDL_GPUColorTargetDescription
+ * \sa SDL_GPUTextureFormat
  */
 typedef struct SDL_GPUGraphicsPipelineTargetInfo
 {
@@ -3920,6 +3926,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitForGPUSwapchain(
  * freed by the user. You MUST NOT call this function from any thread other
  * than the one that created the window.
  *
+ * The swapchain texture is write-only and cannot be used as a sampler or for
+ * another reading operation.
+ *
  * \param command_buffer a command buffer.
  * \param window a window that has been claimed.
  * \param swapchain_texture a pointer filled in with a swapchain texture
@@ -3938,6 +3947,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitForGPUSwapchain(
  *
  * \sa SDL_SubmitGPUCommandBuffer
  * \sa SDL_SubmitGPUCommandBufferAndAcquireFence
+ * \sa SDL_AcquireGPUSwapchainTexture
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WaitAndAcquireGPUSwapchainTexture(
     SDL_GPUCommandBuffer *command_buffer,
