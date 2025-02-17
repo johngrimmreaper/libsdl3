@@ -596,6 +596,7 @@ const char *SDL_GetVideoDriver(int index)
     if (index >= 0 && index < SDL_GetNumVideoDrivers()) {
         return deduped_bootstrap[index]->name;
     }
+    SDL_InvalidParamError("index");
     return NULL;
 }
 
@@ -654,7 +655,8 @@ bool SDL_VideoInit(const char *driver_name)
                                                                      : SDL_strlen(driver_attempt);
 
             for (i = 0; bootstrap[i]; ++i) {
-                if ((driver_attempt_len == SDL_strlen(bootstrap[i]->name)) &&
+                if (!bootstrap[i]->is_preferred &&
+                    (driver_attempt_len == SDL_strlen(bootstrap[i]->name)) &&
                     (SDL_strncasecmp(bootstrap[i]->name, driver_attempt, driver_attempt_len) == 0)) {
                     video = bootstrap[i]->create();
                     if (video) {

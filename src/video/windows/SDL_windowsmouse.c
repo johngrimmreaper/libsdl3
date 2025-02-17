@@ -210,6 +210,12 @@ static HCURSOR WIN_CreateHCursor(SDL_Surface *surface, int hot_x, int hot_y)
 
     if (!ii.hbmMask || (!is_monochrome && !ii.hbmColor)) {
         SDL_SetError("Couldn't create cursor bitmaps");
+        if (ii.hbmMask) {
+            DeleteObject(ii.hbmMask);
+        }
+        if (ii.hbmColor) {
+            DeleteObject(ii.hbmColor);
+        }
         return NULL;
     }
 
@@ -286,7 +292,7 @@ static SDL_Cursor *WIN_CreateSystemCursor(SDL_SystemCursor id)
         name = IDC_CROSS;
         break;
     case SDL_SYSTEM_CURSOR_PROGRESS:
-        name = IDC_WAIT;
+        name = IDC_APPSTARTING;
         break;
     case SDL_SYSTEM_CURSOR_NWSE_RESIZE:
         name = IDC_SIZENWSE;
