@@ -93,6 +93,7 @@ Depends:
  libgl-dev,
  libgles-dev [!hurd-any],
  libibus-1.0-dev,
+ libpipewire-0.3-dev (>= 0.3.44) [linux-any],
  libpulse-dev,
  libsdl3-0 (= ${binary:Version}),
  libsndio-dev,
