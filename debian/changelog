@@ -1,3 +1,20 @@
+libsdl3 (3.2.4+git20250217+ds-1) UNRELEASED; urgency=medium
+
+  * d/watch.git: Update
+  * d/gbp.conf, d/watch: Watch for git snapshots
+  * New upstream snapshot
+  * d/copyright: Update
+  * d/rules: Be more explicit about what we do and don't load dynamically
+  * d/rules: Treat testtimer as flaky when running on non-x86, non-aarch64.
+    There is an assertion that requesting a 1ms delay does not result in
+    a delay of more than 100ms, and that isn't reliably true on slow
+    machines like riscv64 or batch-processing-oriented machines like s390x,
+    resulting in test failures.
+    This makes those machines unsuitable for playing fast-paced SDL-based
+    games, but we already knew that.
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 17 Feb 2025 11:23:58 +0000
+
 libsdl3 (3.2.4+ds-2) unstable; urgency=medium
 
   * d/patches: Add post-release bug fixes up to
