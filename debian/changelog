@@ -1,4 +1,4 @@
-libsdl3 (3.2.4+git20250217+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.2.4+git20250218+ds-1) UNRELEASED; urgency=medium
 
   * d/watch.git: Update
   * d/gbp.conf, d/watch: Watch for git snapshots
