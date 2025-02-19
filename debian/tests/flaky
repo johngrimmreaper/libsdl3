@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -eu
+
+if [ -z "${HOME-}" ] || ! [ -w "${HOME}" ]; then
+    export HOME="${AUTOPKGTEST_TMP}"
+fi
+
+export SDL_AUDIO_DRIVER=dummy
+export SDL_VIDEO_DRIVER=dummy
+cd "$AUTOPKGTEST_TMP"
+
+failed=0
+
+/usr/libexec/installed-tests/SDL3/testtimer || failed=1
+
+exit "$failed"

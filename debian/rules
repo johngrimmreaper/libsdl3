@@ -22,6 +22,7 @@ endif
 confflags = \
 	-DCMAKE_BUILD_RPATH_USE_ORIGIN=ON \
 	-DSDL_ALSA_SHARED=OFF \
+	-DSDL_DEPS_SHARED=OFF \
 	-DSDL_EXAMPLES=ON \
 	-DSDL_HIDAPI_LIBUSB_SHARED=OFF \
 	-DSDL_JACK=OFF \
@@ -67,6 +68,7 @@ endif
 
 ifeq ($(DEB_HOST_ARCH_OS),linux)
   confflags += -DSDL_WAYLAND=ON
+  confflags += -DSDL_WAYLAND_LIBDECOR_SHARED=OFF
   confflags += -DSDL_WAYLAND_SHARED=OFF
 else
   confflags += -DSDL_WAYLAND=OFF
@@ -99,6 +101,18 @@ ifneq ($(filter %-doc,$(built_binaries)),)
 	# useless files
 	find docs/output -name "*.md5" -delete
 	find docs/output -type d -empty -delete
+endif
+
+# Only run testtimer as an autopkgtest on machines that we're reasonably
+# sure are both fast and set up to be usable for interactive use
+# (currently only x86 and 64-bit ARM).
+# There is an assertion that requesting a 1ms delay does not result in
+# a delay of more than 100ms, and that's not going to be reliably true
+# on slow machines like riscv64 or batch-processing-oriented machines
+# like s390x.
+ifeq (,$(filter amd64 arm64 i386,$(DEB_HOST_ARCH)))
+execute_after_dh_auto_install:
+	rm -fv debian/tmp/usr/share/installed-tests/SDL3/testtimer.test
 endif
 
 execute_after_dh_auto_clean-indep:
