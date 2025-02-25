@@ -1,3 +1,10 @@
+libsdl3 (3.2.4+git20250225+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream snapshot
+  * d/copyright: Update
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 25 Feb 2025 16:15:25 +0000
+
 libsdl3 (3.2.4+git20250218+ds-1) experimental; urgency=medium
 
   * d/watch.git: Update
