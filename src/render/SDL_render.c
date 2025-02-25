@@ -25,6 +25,7 @@
 #include "SDL_sysrender.h"
 #include "SDL_render_debug_font.h"
 #include "software/SDL_render_sw_c.h"
+#include "../events/SDL_windowevents_c.h"
 #include "../video/SDL_pixels_c.h"
 #include "../video/SDL_video_c.h"
 
@@ -820,8 +821,9 @@ const char *SDL_GetRenderDriver(int index)
 #endif
 }
 
-void SDL_RendererEventWatch(SDL_Renderer *renderer, SDL_Event *event)
+static bool SDL_RendererEventWatch(void *userdata, SDL_Event *event)
 {
+    SDL_Renderer *renderer = (SDL_Renderer *)userdata;
     SDL_Window *window = renderer->window;
 
     if (renderer->WindowEvent) {
@@ -849,6 +851,7 @@ void SDL_RendererEventWatch(SDL_Renderer *renderer, SDL_Event *event)
                event->type == SDL_EVENT_WINDOW_HDR_STATE_CHANGED) {
         UpdateHDRProperties(renderer);
     }
+    return true;
 }
 
 bool SDL_CreateWindowAndRenderer(const char *title, int width, int height, SDL_WindowFlags window_flags, SDL_Window **window, SDL_Renderer **renderer)
@@ -1107,6 +1110,10 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 
     SDL_SetRenderViewport(renderer, NULL);
 
+    if (window) {
+        SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, SDL_RendererEventWatch, renderer);
+    }
+
     int vsync = (int)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
     if (!SDL_SetRenderVSync(renderer, vsync)) {
         if (vsync == 0) {
@@ -1281,7 +1288,19 @@ static SDL_PixelFormat GetClosestSupportedFormat(SDL_Renderer *renderer, SDL_Pix
 {
     int i;
 
-    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
+    if (format == SDL_PIXELFORMAT_MJPG) {
+        // We'll decode to SDL_PIXELFORMAT_NV12 or SDL_PIXELFORMAT_RGBA32
+        for (i = 0; i < renderer->num_texture_formats; ++i) {
+            if (renderer->texture_formats[i] == SDL_PIXELFORMAT_NV12) {
+                return renderer->texture_formats[i];
+            }
+        }
+        for (i = 0; i < renderer->num_texture_formats; ++i) {
+            if (renderer->texture_formats[i] == SDL_PIXELFORMAT_RGBA32) {
+                return renderer->texture_formats[i];
+            }
+        }
+    } else if (SDL_ISPIXELFORMAT_FOURCC(format)) {
         // Look for an exact match
         for (i = 0; i < renderer->num_texture_formats; ++i) {
             if (renderer->texture_formats[i] == format) {
@@ -1410,11 +1429,15 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
             closest_format = renderer->texture_formats[0];
         }
 
-        default_colorspace = SDL_GetDefaultColorspaceForFormat(closest_format);
-        if (SDL_COLORSPACETYPE(texture->colorspace) == SDL_COLORSPACETYPE(default_colorspace)) {
-            SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, texture->colorspace);
+        if (format == SDL_PIXELFORMAT_MJPG && closest_format == SDL_PIXELFORMAT_NV12) {
+            SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, SDL_COLORSPACE_JPEG);
         } else {
-            SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, default_colorspace);
+            default_colorspace = SDL_GetDefaultColorspaceForFormat(closest_format);
+            if (SDL_COLORSPACETYPE(texture->colorspace) == SDL_COLORSPACETYPE(default_colorspace)) {
+                SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, texture->colorspace);
+            } else {
+                SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, default_colorspace);
+            }
         }
         SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, closest_format);
         SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, texture->access);
@@ -1443,7 +1466,9 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
         texture->next = texture->native;
         renderer->textures = texture;
 
-        if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        if (texture->format == SDL_PIXELFORMAT_MJPG) {
+            // We have a custom decode + upload path for this
+        } else if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
 #ifdef SDL_HAVE_YUV
             texture->yuv = SDL_SW_CreateYUVTexture(texture->format, texture->colorspace, w, h);
 #else
@@ -5206,6 +5231,8 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
 
     renderer->destroyed = true;
 
+    SDL_RemoveWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, SDL_RendererEventWatch, renderer);
+
     if (renderer->window) {
         SDL_PropertiesID props = SDL_GetWindowProperties(renderer->window);
         if (SDL_GetPointerProperty(props, SDL_PROP_WINDOW_RENDERER_POINTER, NULL) == renderer) {
@@ -5214,6 +5241,10 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
         SDL_RemoveWindowRenderer(renderer->window, renderer);
     }
 
+    if (renderer->software) {
+        // Make sure all drawing to a surface is complete
+        FlushRenderCommands(renderer);
+    }
     SDL_DiscardAllCommands(renderer);
 
     if (renderer->debug_char_texture_atlas) {
