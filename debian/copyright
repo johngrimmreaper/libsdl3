@@ -126,13 +126,13 @@ Files:
 Copyright: none
 License: PublicDomain
 
+Files: src/video/stb_image.h
+Copyright: 2017 Sean Barrett
+License: Expat or Unlicense
+
 Files: test/main.cpp
 Copyright: none
 License: PublicDomain_Daniel_Gibson
-
-Files: test/stb_image.h
-Copyright: 2017 Sean Barrett
-License: Expat or Unlicense
 
 Files: test/sword.wav
 Copyright: Erdie
