@@ -1,11 +1,11 @@
-libsdl3 (3.2.4+git20250228+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.2.4+git20250228+ds-1) experimental; urgency=medium
 
   * New upstream snapshot
     - Among many other changes, this fixes an audio capture regression
       with PulseAudio in versions since 2.30 (Closes: #1098900)
   * d/copyright: Update
 
- -- Simon McVittie <smcv@debian.org>  Tue, 25 Feb 2025 16:15:25 +0000
+ -- Simon McVittie <smcv@debian.org>  Fri, 28 Feb 2025 13:52:25 +0000
 
 libsdl3 (3.2.4+git20250218+ds-1) experimental; urgency=medium
 
