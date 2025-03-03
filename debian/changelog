@@ -1,8 +1,10 @@
 libsdl3 (3.2.6+ds-1) UNRELEASED; urgency=medium
 
   * New upstream stable release
+  * d/patches: Update to upstream 3.2.x branch commit
+    release-3.2.6-5-g18d93d11e1, excluding macOS-specific changes
 
- -- Simon McVittie <smcv@debian.org>  Mon, 03 Mar 2025 09:36:58 +0000
+ -- Simon McVittie <smcv@debian.org>  Mon, 03 Mar 2025 09:44:48 +0000
 
 libsdl3 (3.2.4+git20250228+ds-1) experimental; urgency=medium
 
