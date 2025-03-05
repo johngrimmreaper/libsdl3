@@ -1,8 +1,10 @@
-libsdl3 (3.2.8+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.2.8+ds-1) unstable; urgency=medium
 
   * New upstream stable release
+  * Drop patches, applied upstream
+  * Standards-Version: 4.7.2 (no changes required)
 
- -- Simon McVittie <smcv@debian.org>  Wed, 05 Mar 2025 10:23:28 +0000
+ -- Simon McVittie <smcv@debian.org>  Wed, 05 Mar 2025 10:24:27 +0000
 
 libsdl3 (3.2.6+ds-1) unstable; urgency=medium
 
