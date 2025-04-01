@@ -1,0 +1,36 @@
+From: blukai <20866892+blukai@users.noreply.github.com>
+Date: Tue, 1 Apr 2025 01:55:16 +0200
+Subject: fix vulkan vertex buffer indexing
+
+this was causing problems when i was specifying non-zero buffer slots in
+`SDL_BindGPUVertexBuffers`, `SDL_GPUVertexAttribute` and
+`SDL_GPUVertexBufferDescription`.
+
+`firstSlot + 1` is simply copied over from metal and d3d12 backends.
+
+(cherry picked from commit 512485869ccb4bf058ab98281d1c7f0b2e33af41)
+
+Origin: upstream, 3.2.12, commit:9109e05f3f1acff0843925eff9b46b1fa4b14951
+---
+ src/gpu/vulkan/SDL_gpu_vulkan.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/gpu/vulkan/SDL_gpu_vulkan.c b/src/gpu/vulkan/SDL_gpu_vulkan.c
+index 7ea1036..e085ed2 100644
+--- a/src/gpu/vulkan/SDL_gpu_vulkan.c
++++ b/src/gpu/vulkan/SDL_gpu_vulkan.c
+@@ -7943,11 +7943,11 @@ static void VULKAN_BindVertexBuffers(
+ 
+     for (Uint32 i = 0; i < numBindings; i += 1) {
+         VulkanBuffer *buffer = ((VulkanBufferContainer *)bindings[i].buffer)->activeBuffer;
+-        if (vulkanCommandBuffer->vertexBuffers[i] != buffer->buffer || vulkanCommandBuffer->vertexBufferOffsets[i] != bindings[i].offset) {
++        if (vulkanCommandBuffer->vertexBuffers[firstSlot + i] != buffer->buffer || vulkanCommandBuffer->vertexBufferOffsets[firstSlot + i] != bindings[i].offset) {
+             VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, buffer);
+ 
+-            vulkanCommandBuffer->vertexBuffers[i] = buffer->buffer;
+-            vulkanCommandBuffer->vertexBufferOffsets[i] = bindings[i].offset;
++            vulkanCommandBuffer->vertexBuffers[firstSlot + i] = buffer->buffer;
++            vulkanCommandBuffer->vertexBufferOffsets[firstSlot + i] = bindings[i].offset;
+             vulkanCommandBuffer->needVertexBufferBind = true;
+         }
+     }
