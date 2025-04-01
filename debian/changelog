@@ -1,8 +1,14 @@
 libsdl3 (3.2.10+ds-1) UNRELEASED; urgency=medium
 
   * New upstream stable release
+  * d/patches: Add post-release bug fixes from upstream release-3.2.x
+    branch, up to commit release-3.2.10-6-g0759f22a91, excluding
+    N3DS-specific changes that are not relevant on Linux
+    - Fix Vulkan vertex buffer indexing
+    - Fix texture colour space when creating a texture from a surface
+    - Documentation improvements for high DPI
 
- -- Simon McVittie <smcv@debian.org>  Tue, 01 Apr 2025 12:35:51 +0100
+ -- Simon McVittie <smcv@debian.org>  Tue, 01 Apr 2025 12:53:53 +0100
 
 libsdl3 (3.2.8+ds-1) unstable; urgency=medium
 
