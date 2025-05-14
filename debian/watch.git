@@ -4,8 +4,8 @@ opts="\
     dversionmangle=s/[+~](?:ds|dfsg)[0-9]*$//;s/\+(?:git)?[0-9]+(?:\+g[0-9a-f]*)?$//, \
     mode=git, \
     pgpmode=none, \
-    pretty=3.2.4+git%cd, \
+    pretty=3.2.14~git%cd, \
     repack, \
     repacksuffix=+ds" \
 https://github.com/libsdl-org/SDL.git \
-HEAD
+heads/release-3.2.x
