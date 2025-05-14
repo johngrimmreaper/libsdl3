@@ -1731,11 +1731,24 @@ SDL_VideoDisplay *SDL_GetVideoDisplayForFullscreenWindow(SDL_Window *window)
     return SDL_GetVideoDisplay(displayID);
 }
 
+#define SDL_PROP_SDL2_COMPAT_WINDOW_PREFERRED_FULLSCREEN_DISPLAY "sdl2-compat.window.preferred_fullscreen_display"
+
 SDL_DisplayID SDL_GetDisplayForWindow(SDL_Window *window)
 {
     SDL_DisplayID displayID = 0;
 
     CHECK_WINDOW_MAGIC(window, 0);
+
+    /* sdl2-compat calls this function to get a display on which to make the window fullscreen,
+     * so pass it the preferred fullscreen display ID in a property.
+     */
+    SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
+    SDL_VideoDisplay *fs_display = SDL_GetVideoDisplayForFullscreenWindow(window);
+    if (fs_display) {
+        SDL_SetNumberProperty(window_props, SDL_PROP_SDL2_COMPAT_WINDOW_PREFERRED_FULLSCREEN_DISPLAY, fs_display->id);
+    } else {
+        SDL_ClearProperty(window_props, SDL_PROP_SDL2_COMPAT_WINDOW_PREFERRED_FULLSCREEN_DISPLAY);
+    }
 
     // An explicit fullscreen display overrides all
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
@@ -2924,11 +2937,12 @@ bool SDL_GetWindowPosition(SDL_Window *window, int *x, int *y)
             }
         }
     } else {
+        const bool use_pending = (window->flags & SDL_WINDOW_HIDDEN) && window->last_position_pending;
         if (x) {
-            *x = window->x;
+            *x = use_pending ? window->pending.x : window->x;
         }
         if (y) {
-            *y = window->y;
+            *y = use_pending ? window->pending.y : window->y;
         }
     }
     return true;
@@ -5404,6 +5418,10 @@ bool SDL_GetTextInputMultiline(SDL_PropertiesID props)
 static bool AutoShowingScreenKeyboard(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
+    if (!hint) {
+        // Steam will eventually have smarts about whether a keyboard is active, so always request the on-screen keyboard on Steam Deck
+        hint = SDL_GetHint("SteamDeck");
+    }
     if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
         SDL_GetStringBoolean(hint, false)) {
         return true;
