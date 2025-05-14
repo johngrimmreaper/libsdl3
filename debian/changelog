@@ -1,8 +1,8 @@
-libsdl3 (3.2.14+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.2.14+ds-1) experimental; urgency=medium
 
-  * New upstream release
+  * New upstream stable release
 
- -- Simon McVittie <smcv@debian.org>  Wed, 14 May 2025 19:32:45 +0100
+ -- Simon McVittie <smcv@debian.org>  Wed, 14 May 2025 19:33:36 +0100
 
 libsdl3 (3.2.14~git20250513+ds-1) experimental; urgency=medium
 
