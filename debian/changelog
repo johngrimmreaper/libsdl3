@@ -1,3 +1,9 @@
+libsdl3 (3.2.14+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream release
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 14 May 2025 19:32:45 +0100
+
 libsdl3 (3.2.14~git20250513+ds-1) experimental; urgency=medium
 
   * d/watch, d/watch.git: Monitor the release-3.2.x branch for now
