@@ -1,4 +1,4 @@
-libsdl3 (3.2.16+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.2.16+ds-1) experimental; urgency=medium
 
   * New upstream stable release
     - When a compute shader writes to a texture, check that the format is a
@@ -35,9 +35,10 @@ libsdl3 (3.2.16+ds-1) UNRELEASED; urgency=medium
     - Documentation fixes
     - 3DS-, Android-, Emscripten-, macOS-, PS2-, PSP-, Vita-, Windows-
       and XBox-specific changes not relevant to Debian
-  * Add more details of the previous upstream stable release
+  * Add more details of the previous upstream stable release to its changelog
+    entry
 
- -- Simon McVittie <smcv@debian.org>  Tue, 03 Jun 2025 12:04:55 +0100
+ -- Simon McVittie <smcv@debian.org>  Tue, 03 Jun 2025 12:47:12 +0100
 
 libsdl3 (3.2.14+ds-1) experimental; urgency=medium
 
