@@ -1,3 +1,38 @@
+libsdl3 (3.2.18+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream stable release
+    - Add support for popups that can extend outside the display bounds or
+      avoid grabbing focus
+    - Don't let automatically generated gamepad mappings override
+      manually-set mappings
+    - Game controller support for ZEROPLUS P4 Wired Gamepad
+    - Fix compatibility with MayFlash GameCube adapter with
+      version 7 firmware
+    - Read gyro and accelerometer calibration data from Switch controllers
+      instead of using a hard-coded default
+    - Fix a long delay when enumerating HIDAPI devices if a Razer Huntsman
+      Gaming keyboard is attached
+    - Don't allow setting a window to be its own parent
+    - Add F21-F24 to the keyboard scancode mapping table
+    - Fix a crash in SDL_GetAudioDeviceChannelMap() if a device has no
+      channels
+    - Skip "zombie" devices when enumerating audio devices
+    - Update the rendering viewport when logical presentation changes
+    - Avoid duplicate mouse events when using a pen device
+    - Improve compatibility with XMonad
+    - Improve compatibility with fvwm
+    - Improve Wayland spec compliance
+    - Ensure Vulkan non-dispatchable handles are 64-bit on x32
+    - Documentation fixes
+    - Fix some compiler warnings
+    - Silence some debug spam by default
+    - Make tests compatible with ffmpeg 7.1
+      (not relevant in Debian, we don't compile this test)
+    - Android-, macOS-, MSVC-, PSP-, Windows- and XBox-specific changes
+      not relevant to Debian
+
+ -- Simon McVittie <smcv@debian.org>  Sat, 19 Jul 2025 10:04:34 +0100
+
 libsdl3 (3.2.16+ds-1) experimental; urgency=medium
 
   * New upstream stable release
