@@ -1,4 +1,4 @@
-libsdl3 (3.2.18+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.2.18+ds-1) experimental; urgency=medium
 
   * New upstream stable release
     - Add support for popups that can extend outside the display bounds or
@@ -31,7 +31,7 @@ libsdl3 (3.2.18+ds-1) UNRELEASED; urgency=medium
     - Android-, macOS-, MSVC-, PSP-, Windows- and XBox-specific changes
       not relevant to Debian
 
- -- Simon McVittie <smcv@debian.org>  Sat, 19 Jul 2025 10:04:34 +0100
+ -- Simon McVittie <smcv@debian.org>  Sat, 19 Jul 2025 10:20:05 +0100
 
 libsdl3 (3.2.16+ds-1) experimental; urgency=medium
 
