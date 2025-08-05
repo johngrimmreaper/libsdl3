@@ -1,0 +1,23 @@
+From: Mathieu Eyraud <70028899+meyraud705@users.noreply.github.com>
+Date: Mon, 4 Aug 2025 11:14:52 +0200
+Subject: Fix condition for setting HDR properties
+
+Origin: upstream, 3.3.0, commit:a05aca51ec41324a44abb7a89522c571d6c594c7
+Origin: upstream, 3.2.22, commit:688637eca8329272510b93ca1f17c2199dbaec5e
+---
+ src/video/SDL_video.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/video/SDL_video.c b/src/video/SDL_video.c
+index fdfe239..e905737 100644
+--- a/src/video/SDL_video.c
++++ b/src/video/SDL_video.c
+@@ -1162,7 +1162,7 @@ float SDL_GetDisplayContentScale(SDL_DisplayID displayID)
+ 
+ void SDL_SetWindowHDRProperties(SDL_Window *window, const SDL_HDROutputProperties *HDR, bool send_event)
+ {
+-    if (window->HDR.HDR_headroom != HDR->HDR_headroom || window->HDR.SDR_white_level != window->HDR.SDR_white_level) {
++    if (window->HDR.HDR_headroom != HDR->HDR_headroom || window->HDR.SDR_white_level != HDR->SDR_white_level) {
+         SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
+ 
+         SDL_SetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, SDL_max(HDR->HDR_headroom, 1.0f));

@@ -1,3 +1,48 @@
+libsdl3 (3.2.20+ds-1) experimental; urgency=medium
+
+  * New upstream stable release
+    - Fix duplicate SDL_EVENT_GAMEPAD_ADDED for controllers with automatic
+      gamepad mappings
+    - When binding an audio stream to a device, if the audio format at the
+      non-device end is unspecified, set it to match the device end
+    - Under X11, discard mouse wheel events from composite "Master"
+      devices to avoid duplication with the individual devices
+    - Under Wayland, ensure that popups always overlap the parent window,
+      avoiding a protocol violation
+    - Under Wayland, reorder surface destruction to avoid premature blanking
+    - In the Vulkan GPU renderer, don't acquire the swapchain if the window
+      is hidden
+    - In the Vulkan GPU renderer, clean up command buffers more promptly to
+      avoid a lag spike
+    - Fix a memory leak in the Vulkan GPU renderer
+    - Fix memory leaks in the OpenGL|ES 2 renderer
+    - Clear "out" parameters properly when loading a WAV file fails
+    - Fix a wrong swap chain size in the Vulkan GPU renderer when retrying
+      acquire
+    - Fix some use-after-frees during error handling in the Vulkan GPU
+      renderer
+    - Fix a potential crash in SDL_BlitSurfaceScaled() if the width/height
+      overflow to become negative
+    - Fix a double-free in HIDAPI error handling
+    - Correctly mark Vulkan compute uniform descriptor as set when
+      appropriate
+    - In SDL_EndGPURenderPass(), check for an invalid argument before
+      dereferencing it
+    - Fix a crash if sending a clipboard event while video is uninitialized
+      (in practice mainly relevant on Android)
+    - Don't treat Mayflash GameCube adapter as a PS3 controller
+    - Avoid some compiler warnings
+    - Documentation updates
+    - CI changes not relevant to Debian
+    - Android-, FreeBSD-, macOS-, PSP-, Windows- and XBox-specific changes
+      not relevant to Debian
+  * d/patches: Add post-release bug fixes from upstream release-3.2.x
+    branch, up to commit release-3.2.20-5-g688637eca8, excluding
+    macOS-specific changes that are not relevant on Linux
+    - Really set HDR-related window properties, when appropriate
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 05 Aug 2025 18:01:24 +0100
+
 libsdl3 (3.2.18+ds-1) experimental; urgency=medium
 
   * New upstream stable release
