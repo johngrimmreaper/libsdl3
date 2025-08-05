@@ -22,12 +22,8 @@ Files-Excluded: Android.mk
                 src/render/direct3d11/D3D11_*Shader*.h
                 src/render/direct3d12/D3D12_*RootSig*.h
                 src/render/direct3d12/D3D12_*Shader*.h
-                src/render/gpu/shaders/dxbc50.h
-                src/render/gpu/shaders/dxil60.h
-                src/render/gpu/shaders/metal.h
-                src/render/gpu/shaders/*.dxbc.h
                 src/render/gpu/shaders/*.dxil.h
-                src/render/gpu/shaders/*.metal.h
+                src/render/gpu/shaders/*.msl.h
                 src/render/metal/SDL_shaders_metal_*.h
                 test/android
                 test/emscripten
