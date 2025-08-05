@@ -36,6 +36,10 @@ libsdl3 (3.2.20+ds-1) UNRELEASED; urgency=medium
     - CI changes not relevant to Debian
     - Android-, FreeBSD-, macOS-, PSP-, Windows- and XBox-specific changes
       not relevant to Debian
+  * d/patches: Add post-release bug fixes from upstream release-3.2.x
+    branch, up to commit release-3.2.20-5-g688637eca8, excluding
+    macOS-specific changes that are not relevant on Linux
+    - Really set HDR-related window properties, when appropriate
 
  -- Simon McVittie <smcv@debian.org>  Tue, 05 Aug 2025 17:36:24 +0100
 
