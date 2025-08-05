@@ -33,6 +33,8 @@ Files-Excluded: Android.mk
                 test/n3ds
                 test/testgpu/testgpu_dxil.h
                 test/testgpu/testgpu_metallib.h
+                test/testgpu*.dxil.h
+                test/testgpu*.msl.h
                 test/unifont-*
                 VisualC
                 VisualC-GDK
