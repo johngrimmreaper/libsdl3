@@ -30,6 +30,10 @@
 // this checks for HAVE_DBUS_DBUS_H internally.
 #include "core/linux/SDL_dbus.h"
 
+#if defined(SDL_PLATFORM_UNIX) && !defined(SDL_PLATFORM_ANDROID)
+#include "core/unix/SDL_gtk.h"
+#endif
+
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten.h>
 #endif
@@ -663,6 +667,10 @@ void SDL_Quit(void)
     SDL_DBus_Quit();
 #endif
 
+#if defined(SDL_PLATFORM_UNIX) && !defined(SDL_PLATFORM_ANDROID) && !defined(SDL_PLATFORM_EMSCRIPTEN)
+    SDL_Gtk_Quit();
+#endif
+
     SDL_QuitTimers();
     SDL_QuitAsyncIO();
 
@@ -728,6 +736,8 @@ const char *SDL_GetPlatform(void)
     return "macOS";
 #elif defined(SDL_PLATFORM_NETBSD)
     return "NetBSD";
+#elif defined(SDL_PLATFORM_NGAGE)
+    return "Nokia N-Gage";
 #elif defined(SDL_PLATFORM_OPENBSD)
     return "OpenBSD";
 #elif defined(SDL_PLATFORM_OS2)
