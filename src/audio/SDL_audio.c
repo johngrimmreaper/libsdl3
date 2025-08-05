@@ -77,6 +77,9 @@ static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_N3DS
     &N3DSAUDIO_bootstrap,
 #endif
+#ifdef SDL_AUDIO_DRIVER_NGAGE
+    &NGAGEAUDIO_bootstrap,
+#endif
 #ifdef SDL_AUDIO_DRIVER_EMSCRIPTEN
     &EMSCRIPTENAUDIO_bootstrap,
 #endif
@@ -1003,7 +1006,9 @@ bool SDL_InitAudio(const char *driver_name)
         }
     }
 
-    if (!initialized) {
+    if (initialized) {
+        SDL_DebugLogBackend("audio", current_audio.name);
+    } else {
         // specific drivers will set the error message if they fail, but otherwise we do it here.
         if (!tried_to_init) {
             if (driver_name) {
@@ -1070,9 +1075,16 @@ void SDL_QuitAudio(void)
 
     current_audio.impl.DeinitializeStart();
 
-    // Destroy any audio streams that still exist...
-    while (current_audio.existing_streams) {
-        SDL_DestroyAudioStream(current_audio.existing_streams);
+    // Destroy any audio streams that still exist...unless app asked to keep it.
+    SDL_AudioStream *next = NULL;
+    for (SDL_AudioStream *i = current_audio.existing_streams; i; i = next) {
+        next = i->next;
+        if (i->simplified || SDL_GetBooleanProperty(i->props, SDL_PROP_AUDIOSTREAM_AUTO_CLEANUP_BOOLEAN, true)) {
+            SDL_DestroyAudioStream(i);
+        } else {
+            i->prev = NULL;
+            i->next = NULL;
+        }
     }
 
     SDL_LockRWLockForWriting(current_audio.device_hash_lock);
@@ -1152,11 +1164,9 @@ bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device)
 
             // We should have updated this elsewhere if the format changed!
             SDL_assert(SDL_AudioSpecsEqual(&stream->dst_spec, &device->spec, NULL, NULL));
-
             SDL_assert(stream->src_spec.format != SDL_AUDIO_UNKNOWN);
 
             const int br = SDL_GetAtomicInt(&logdev->paused) ? 0 : SDL_GetAudioStreamDataAdjustGain(stream, device_buffer, buffer_size, logdev->gain);
-
             if (br < 0) {  // Probably OOM. Kill the audio device; the whole thing is likely dying soon anyhow.
                 failed = true;
                 SDL_memset(device_buffer, device->silence_value, buffer_size);  // just supply silence to the device before we die.
@@ -1938,8 +1948,9 @@ bool SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallba
 {
     SDL_AudioDevice *device = NULL;
     SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid, &device);
-    bool result = true;
+    bool result = false;
     if (logdev) {
+        result = true;
         if (callback && !device->postmix_buffer) {
             device->postmix_buffer = (float *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
             if (!device->postmix_buffer) {

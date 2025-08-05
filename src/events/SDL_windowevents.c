@@ -56,7 +56,7 @@ void SDL_RemoveWindowEventWatch(SDL_WindowEventWatchPriority priority, SDL_Event
     SDL_RemoveEventWatchList(&SDL_window_event_watchers[priority], filter, userdata);
 }
 
-static bool SDLCALL RemoveSupercededWindowEvents(void *userdata, SDL_Event *event)
+static bool SDLCALL RemoveSupersededWindowEvents(void *userdata, SDL_Event *event)
 {
     SDL_Event *new_event = (SDL_Event *)userdata;
 
@@ -188,6 +188,7 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
         if (data1 == 0 || (SDL_DisplayID)data1 == window->last_displayID) {
             return false;
         }
+        window->update_fullscreen_on_display_changed = true;
         window->last_displayID = (SDL_DisplayID)data1;
         break;
     case SDL_EVENT_WINDOW_OCCLUDED:
@@ -231,7 +232,7 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
             windowevent == SDL_EVENT_WINDOW_SAFE_AREA_CHANGED ||
             windowevent == SDL_EVENT_WINDOW_EXPOSED ||
             windowevent == SDL_EVENT_WINDOW_OCCLUDED) {
-            SDL_FilterEvents(RemoveSupercededWindowEvents, &event);
+            SDL_FilterEvents(RemoveSupersededWindowEvents, &event);
         }
         posted = SDL_PushEvent(&event);
     }
