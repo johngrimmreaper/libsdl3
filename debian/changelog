@@ -1,13 +1,15 @@
-libsdl3 (3.3~git20250806+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.3~git20250806+ds-1) experimental; urgency=medium
 
   * New upstream snapshot from the 3.3.x development branch
   * d/control, d/gbp.conf, d/watch: Switch branch for snapshots
   * d/build-shaders.sh, d/rules:
-    Rebuild more SPIR-V shaders from their HLSL source using glslangValidator,
-    avoiding a dependency on shadercross (RFP: #1095081)
+    Rebuild more SPIR-V shaders from their HLSL source using
+    glslangValidator, avoiding a dependency on shadercross (RFP: #1095081)
   * d/copyright, d/clean: Exclude more precompiled shaders
+  * d/patches: Drop patch, applied upstream
+  * d/libsdl3-0.symbols: Update
 
- -- Simon McVittie <smcv@debian.org>  Thu, 07 Aug 2025 10:03:35 +0100
+ -- Simon McVittie <smcv@debian.org>  Thu, 07 Aug 2025 10:53:53 +0100
 
 libsdl3 (3.2.20+ds-1) experimental; urgency=medium
 
