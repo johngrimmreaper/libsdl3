@@ -93,6 +93,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_CreateGPUDevice@SDL3_0.0.0 3.2.0
  SDL_CreateGPUDeviceWithProperties@SDL3_0.0.0 3.2.0
  SDL_CreateGPUGraphicsPipeline@SDL3_0.0.0 3.2.0
+ SDL_CreateGPURenderState@SDL3_0.0.0 3.3~
+ SDL_CreateGPURenderer@SDL3_0.0.0 3.3~
  SDL_CreateGPUSampler@SDL3_0.0.0 3.2.0
  SDL_CreateGPUShader@SDL3_0.0.0 3.2.0
  SDL_CreateGPUTexture@SDL3_0.0.0 3.2.0
@@ -137,6 +139,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_DestroyCursor@SDL3_0.0.0 3.2.0
  SDL_DestroyEnvironment@SDL3_0.0.0 3.2.0
  SDL_DestroyGPUDevice@SDL3_0.0.0 3.2.0
+ SDL_DestroyGPURenderState@SDL3_0.0.0 3.3~
  SDL_DestroyHapticEffect@SDL3_0.0.0 3.2.0
  SDL_DestroyMutex@SDL3_0.0.0 3.2.0
  SDL_DestroyPalette@SDL3_0.0.0 3.2.0
@@ -274,6 +277,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetDefaultAssertionHandler@SDL3_0.0.0 3.2.0
  SDL_GetDefaultCursor@SDL3_0.0.0 3.2.0
  SDL_GetDefaultLogOutputFunction@SDL3_0.0.0 3.2.0
+ SDL_GetDefaultTextureScaleMode@SDL3_0.0.0 3.3~
  SDL_GetDesktopDisplayMode@SDL3_0.0.0 3.2.0
  SDL_GetDisplayBounds@SDL3_0.0.0 3.2.0
  SDL_GetDisplayContentScale@SDL3_0.0.0 3.2.0
@@ -288,10 +292,12 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetEnvironmentVariable@SDL3_0.0.0 3.2.0
  SDL_GetEnvironmentVariables@SDL3_0.0.0 3.2.0
  SDL_GetError@SDL3_0.0.0 3.2.0
+ SDL_GetEventDescription@SDL3_0.0.0 3.3~
  SDL_GetEventFilter@SDL3_0.0.0 3.2.0
  SDL_GetFloatProperty@SDL3_0.0.0 3.2.0
  SDL_GetFullscreenDisplayModes@SDL3_0.0.0 3.2.0
  SDL_GetGPUDeviceDriver@SDL3_0.0.0 3.2.0
+ SDL_GetGPUDeviceProperties@SDL3_0.0.0 3.3~
  SDL_GetGPUDriver@SDL3_0.0.0 3.2.0
  SDL_GetGPUShaderFormats@SDL3_0.0.0 3.2.0
  SDL_GetGPUSwapchainTextureFormat@SDL3_0.0.0 3.2.0
@@ -466,6 +472,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetRenderSafeArea@SDL3_0.0.0 3.2.0
  SDL_GetRenderScale@SDL3_0.0.0 3.2.0
  SDL_GetRenderTarget@SDL3_0.0.0 3.2.0
+ SDL_GetRenderTextureAddressMode@SDL3_0.0.0 3.3~
  SDL_GetRenderVSync@SDL3_0.0.0 3.2.0
  SDL_GetRenderViewport@SDL3_0.0.0 3.2.0
  SDL_GetRenderWindow@SDL3_0.0.0 3.2.0
@@ -557,6 +564,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetWindowPixelDensity@SDL3_0.0.0 3.2.0
  SDL_GetWindowPixelFormat@SDL3_0.0.0 3.2.0
  SDL_GetWindowPosition@SDL3_0.0.0 3.2.0
+ SDL_GetWindowProgressState@SDL3_0.0.0 3.3~
+ SDL_GetWindowProgressValue@SDL3_0.0.0 3.3~
  SDL_GetWindowProperties@SDL3_0.0.0 3.2.0
  SDL_GetWindowRelativeMouseMode@SDL3_0.0.0 3.2.0
  SDL_GetWindowSafeArea@SDL3_0.0.0 3.2.0
@@ -702,6 +711,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_PushGPUFragmentUniformData@SDL3_0.0.0 3.2.0
  SDL_PushGPUVertexUniformData@SDL3_0.0.0 3.2.0
  SDL_PutAudioStreamData@SDL3_0.0.0 3.2.0
+ SDL_PutAudioStreamDataNoCopy@SDL3_0.0.0 3.3~
+ SDL_PutAudioStreamPlanarData@SDL3_0.0.0 3.3~
  SDL_QueryGPUFence@SDL3_0.0.0 3.2.0
  SDL_Quit@SDL3_0.0.0 3.2.0
  SDL_QuitSubSystem@SDL3_0.0.0 3.2.0
@@ -766,6 +777,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_RenderRect@SDL3_0.0.0 3.2.0
  SDL_RenderRects@SDL3_0.0.0 3.2.0
  SDL_RenderTexture9Grid@SDL3_0.0.0 3.2.0
+ SDL_RenderTexture9GridTiled@SDL3_0.0.0 3.3~
  SDL_RenderTexture@SDL3_0.0.0 3.2.0
  SDL_RenderTextureAffine@SDL3_0.0.0 3.2.0
  SDL_RenderTextureRotated@SDL3_0.0.0 3.2.0
@@ -819,6 +831,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetClipboardText@SDL3_0.0.0 3.2.0
  SDL_SetCurrentThreadPriority@SDL3_0.0.0 3.2.0
  SDL_SetCursor@SDL3_0.0.0 3.2.0
+ SDL_SetDefaultTextureScaleMode@SDL3_0.0.0 3.3~
  SDL_SetEnvironmentVariable@SDL3_0.0.0 3.2.0
  SDL_SetError@SDL3_0.0.0 3.2.0
  SDL_SetErrorV@SDL3_0.0.0 3.2.0
@@ -828,6 +841,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetGPUAllowedFramesInFlight@SDL3_0.0.0 3.2.0
  SDL_SetGPUBlendConstants@SDL3_0.0.0 3.2.0
  SDL_SetGPUBufferName@SDL3_0.0.0 3.2.0
+ SDL_SetGPURenderStateFragmentUniforms@SDL3_0.0.0 3.3~
  SDL_SetGPUScissor@SDL3_0.0.0 3.2.0
  SDL_SetGPUStencilReference@SDL3_0.0.0 3.2.0
  SDL_SetGPUSwapchainParameters@SDL3_0.0.0 3.2.0
@@ -865,14 +879,17 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetPointerProperty@SDL3_0.0.0 3.2.0
  SDL_SetPointerPropertyWithCleanup@SDL3_0.0.0 3.2.0
  SDL_SetPrimarySelectionText@SDL3_0.0.0 3.2.0
+ SDL_SetRelativeMouseTransform@SDL3_0.0.0 3.3~
  SDL_SetRenderClipRect@SDL3_0.0.0 3.2.0
  SDL_SetRenderColorScale@SDL3_0.0.0 3.2.0
  SDL_SetRenderDrawBlendMode@SDL3_0.0.0 3.2.0
  SDL_SetRenderDrawColor@SDL3_0.0.0 3.2.0
  SDL_SetRenderDrawColorFloat@SDL3_0.0.0 3.2.0
+ SDL_SetRenderGPUState@SDL3_0.0.0 3.3~
  SDL_SetRenderLogicalPresentation@SDL3_0.0.0 3.2.0
  SDL_SetRenderScale@SDL3_0.0.0 3.2.0
  SDL_SetRenderTarget@SDL3_0.0.0 3.2.0
+ SDL_SetRenderTextureAddressMode@SDL3_0.0.0 3.3~
  SDL_SetRenderVSync@SDL3_0.0.0 3.2.0
  SDL_SetRenderViewport@SDL3_0.0.0 3.2.0
  SDL_SetScancodeName@SDL3_0.0.0 3.2.0
@@ -916,6 +933,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetWindowOpacity@SDL3_0.0.0 3.2.0
  SDL_SetWindowParent@SDL3_0.0.0 3.2.0
  SDL_SetWindowPosition@SDL3_0.0.0 3.2.0
+ SDL_SetWindowProgressState@SDL3_0.0.0 3.3~
+ SDL_SetWindowProgressValue@SDL3_0.0.0 3.3~
  SDL_SetWindowRelativeMouseMode@SDL3_0.0.0 3.2.0
  SDL_SetWindowResizable@SDL3_0.0.0 3.2.0
  SDL_SetWindowShape@SDL3_0.0.0 3.2.0
