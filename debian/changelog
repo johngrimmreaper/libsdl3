@@ -1,3 +1,11 @@
+libsdl3 (3.2.20+ds-3) UNRELEASED; urgency=medium
+
+  [ Pino Toscano ]
+  * d/control: Enable EGL, OpenGL|ES and Vulkan on any OS
+  * d/rules: Only enable Pipewire on Linux
+
+ -- Simon McVittie <smcv@debian.org>  Sat, 30 Aug 2025 11:06:13 +0100
+
 libsdl3 (3.2.20+ds-2) unstable; urgency=medium
 
   * Rebuild for unstable
