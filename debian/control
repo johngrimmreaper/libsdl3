@@ -65,6 +65,8 @@ Depends:
  ${shlibs:Depends}
 Recommends:
  ${dlopen:Recommends},
+ libegl1,
+ libgl1 | libopengl0,
 Suggests:
  ${dlopen:Suggests},
  libayatana-appindicator3-1 | libappindicator3-1,
