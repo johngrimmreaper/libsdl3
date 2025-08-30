@@ -13,7 +13,7 @@ export SDL_VIDEO_DRIVER=dummy
 # Keep the timeout reasonably short for architectures where interactive
 # debugging is more likely, but extend it a lot on architectures that might
 # be very slow or using qemu for buildds.
-ifneq ($(filter amd64 i386,$(DEB_HOST_ARCH_CPU)),)
+ifneq ($(filter amd64 i386,$(DEB_HOST_ARCH)),)
 test_timeout_multiplier = 3
 else
 test_timeout_multiplier = 20
