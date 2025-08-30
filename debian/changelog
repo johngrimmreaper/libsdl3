@@ -2,12 +2,23 @@ libsdl3 (3.3~git20250829+ds-1) UNRELEASED; urgency=medium
 
   [ Simon McVittie ]
   * New upstream snapshot from the 3.3.x development branch
+  * Use dh-sequence-dlopenlibdeps to add dlopen()'d dependencies
+    - Keep Suggests on libayatana-appindicator3-1.
+      This hasn't been set up with dlopen notes upstream yet.
+    - Restore Recommends on libegl1, libgl1.
+      The dlopen metadata makes these Suggests, but that seems too weak
+      in practice - most SDL games will want working GL.
+  * d/libsdl3-0.symbols: Update.
+    Note that SDL_CreateGPURenderState has broken ABI since the previous
+    snapshot. (It was not present in 3.2.x, so this is not an ABI break
+    in stable releases.)
+  * d/copyright: Update
 
   [ Pino Toscano ]
   * d/control: Enable EGL, OpenGL|ES and Vulkan on any OS
   * d/rules: Only enable Pipewire on Linux
 
- -- Simon McVittie <smcv@debian.org>  Sat, 30 Aug 2025 11:09:33 +0100
+ -- Simon McVittie <smcv@debian.org>  Sat, 30 Aug 2025 16:47:50 +0100
 
 libsdl3 (3.3~git20250806+ds-1) experimental; urgency=medium
 
