@@ -1,4 +1,4 @@
-libsdl3 (3.3~git20250829+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.3~git20250829+ds-1) experimental; urgency=medium
 
   [ Simon McVittie ]
   * New upstream snapshot from the 3.3.x development branch
@@ -13,12 +13,15 @@ libsdl3 (3.3~git20250829+ds-1) UNRELEASED; urgency=medium
     snapshot. (It was not present in 3.2.x, so this is not an ABI break
     in stable releases.)
   * d/copyright: Update
+  * d/rules: Treat non-Linux kernels as potentially slow to run tests.
+    The FIFO part of testatomic is apparently rather slow on Hurd,
+    for whatever reason. Let's see whether this is enough.
 
   [ Pino Toscano ]
   * d/control: Enable EGL, OpenGL|ES and Vulkan on any OS
   * d/rules: Only enable Pipewire on Linux
 
- -- Simon McVittie <smcv@debian.org>  Sat, 30 Aug 2025 16:47:50 +0100
+ -- Simon McVittie <smcv@debian.org>  Sat, 30 Aug 2025 16:55:26 +0100
 
 libsdl3 (3.3~git20250806+ds-1) experimental; urgency=medium
 
