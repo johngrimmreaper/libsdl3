@@ -1,4 +1,7 @@
-libsdl3 (3.3~git20250806+ds-2) UNRELEASED; urgency=medium
+libsdl3 (3.3~git20250829+ds-1) UNRELEASED; urgency=medium
+
+  [ Simon McVittie ]
+  * New upstream snapshot from the 3.3.x development branch
 
   [ Pino Toscano ]
   * d/control: Enable EGL, OpenGL|ES and Vulkan on any OS
