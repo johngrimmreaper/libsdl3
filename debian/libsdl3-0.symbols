@@ -5,6 +5,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_AcquireGPUCommandBuffer@SDL3_0.0.0 3.2.0
  SDL_AcquireGPUSwapchainTexture@SDL3_0.0.0 3.2.0
  SDL_AddAtomicInt@SDL3_0.0.0 3.2.0
+ SDL_AddAtomicU32@SDL3_0.0.0 3.3~git20250829
  SDL_AddEventWatch@SDL3_0.0.0 3.2.0
  SDL_AddGamepadMapping@SDL3_0.0.0 3.2.0
  SDL_AddGamepadMappingsFromFile@SDL3_0.0.0 3.2.0
@@ -93,7 +94,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_CreateGPUDevice@SDL3_0.0.0 3.2.0
  SDL_CreateGPUDeviceWithProperties@SDL3_0.0.0 3.2.0
  SDL_CreateGPUGraphicsPipeline@SDL3_0.0.0 3.2.0
- SDL_CreateGPURenderState@SDL3_0.0.0 3.3~
+ SDL_CreateGPURenderState@SDL3_0.0.0 3.3~git20250829
  SDL_CreateGPURenderer@SDL3_0.0.0 3.3~
  SDL_CreateGPUSampler@SDL3_0.0.0 3.2.0
  SDL_CreateGPUShader@SDL3_0.0.0 3.2.0
@@ -1102,6 +1103,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_hid_get_input_report@SDL3_0.0.0 3.2.0
  SDL_hid_get_manufacturer_string@SDL3_0.0.0 3.2.0
  SDL_hid_get_product_string@SDL3_0.0.0 3.2.0
+ SDL_hid_get_properties@SDL3_0.0.0 3.3~git20250829
  SDL_hid_get_report_descriptor@SDL3_0.0.0 3.2.0
  SDL_hid_get_serial_number_string@SDL3_0.0.0 3.2.0
  SDL_hid_init@SDL3_0.0.0 3.2.0
