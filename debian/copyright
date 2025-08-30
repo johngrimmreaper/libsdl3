@@ -124,8 +124,11 @@ Files:
 Copyright: none
 License: PublicDomain
 
-Files: src/video/stb_image.h
-Copyright: 2017 Sean Barrett
+Files:
+ src/video/stb_image.h
+ src/video/stb_image_write.h
+Copyright:
+ 2010-2021 Sean Barrett
 License: Expat or Unlicense
 
 Files: test/main.cpp
