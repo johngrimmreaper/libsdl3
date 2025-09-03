@@ -1,0 +1,28 @@
+From: Simon McVittie <smcv@collabora.com>
+Date: Sat, 30 Aug 2025 19:39:24 +0100
+Subject: wikiheaders: Escape backslash in man pages
+
+Otherwise, groff will interpret it as a macro, causing the man page
+for SDL_GetPrefPath() to be mis-rendered. Escape unescaped backslashes
+as `\(rs` ("reverse solidus") before escaping other characters with
+macros that, themselves, contain backslashes.
+
+Resolves: https://github.com/libsdl-org/SDL/issues/13039
+Signed-off-by: Simon McVittie <smcv@collabora.com>
+Forwarded: https://github.com/libsdl-org/SDL/pull/13834
+---
+ build-scripts/wikiheaders.pl | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/build-scripts/wikiheaders.pl b/build-scripts/wikiheaders.pl
+index 4dd44f8..768f42c 100755
+--- a/build-scripts/wikiheaders.pl
++++ b/build-scripts/wikiheaders.pl
+@@ -436,6 +436,7 @@ sub dewikify_chunk {
+         }
+     } elsif ($dewikify_mode eq 'manpage') {
+         # make sure these can't become part of roff syntax.
++        $str =~ s/\\/\\(rs/gms;
+         $str =~ s/\./\\[char46]/gms;
+         $str =~ s/"/\\(dq/gms;
+         $str =~ s/'/\\(aq/gms;
