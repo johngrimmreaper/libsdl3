@@ -1,4 +1,4 @@
-libsdl3 (3.3~git20250903+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.3~git20250903.1+ds-1) UNRELEASED; urgency=medium
 
   * New upstream snapshot from the 3.3.x development branch
 
