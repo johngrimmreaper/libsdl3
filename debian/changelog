@@ -1,42 +1,9 @@
 libsdl3 (3.3~git20250903.1+ds-1) UNRELEASED; urgency=medium
 
   * New upstream snapshot from the 3.3.x development branch
+  * Merge packaging changes from unstable
 
  -- Simon McVittie <smcv@debian.org>  Wed, 03 Sep 2025 11:03:37 +0100
-
-libsdl3 (3.3~git20250829+ds-1) experimental; urgency=medium
-
-  [ Simon McVittie ]
-  * New upstream snapshot from the 3.3.x development branch
-  * Use dh-sequence-dlopenlibdeps to add dlopen()'d dependencies
-    - Keep Suggests on libayatana-appindicator3-1.
-      This hasn't been set up with dlopen notes upstream yet.
-    - Restore Recommends on libegl1, libgl1.
-      The dlopen metadata makes these Suggests, but that seems too weak
-      in practice - most SDL games will want working GL.
-  * d/libsdl3-0.symbols: Update.
-    Note that SDL_CreateGPURenderState has broken ABI since the previous
-    snapshot. (It was not present in 3.2.x, so this is not an ABI break
-    in stable releases.)
-  * d/copyright: Update
-  * d/rules: Treat non-Linux kernels as potentially slow to run tests.
-    The FIFO part of testatomic is apparently rather slow on Hurd,
-    for whatever reason. Let's see whether this is enough.
-
- -- Simon McVittie <smcv@debian.org>  Sat, 30 Aug 2025 16:55:26 +0100
-
-libsdl3 (3.3~git20250806+ds-1) experimental; urgency=medium
-
-  * New upstream snapshot from the 3.3.x development branch
-  * d/control, d/gbp.conf, d/watch: Switch branch for snapshots
-  * d/build-shaders.sh, d/rules:
-    Rebuild more SPIR-V shaders from their HLSL source using
-    glslangValidator, avoiding a dependency on shadercross (RFP: #1095081)
-  * d/copyright, d/clean: Exclude more precompiled shaders
-  * d/patches: Drop patch, applied upstream
-  * d/libsdl3-0.symbols: Update
-
- -- Simon McVittie <smcv@debian.org>  Thu, 07 Aug 2025 10:53:53 +0100
 
 libsdl3 (3.2.22+ds-1) unstable; urgency=medium
 
@@ -65,6 +32,44 @@ libsdl3 (3.2.22+ds-1) unstable; urgency=medium
   * d/rules: Only enable Pipewire on Linux
 
  -- Simon McVittie <smcv@debian.org>  Wed, 03 Sep 2025 13:13:49 +0100
+
+libsdl3 (3.3~git20250829+ds-1) experimental; urgency=medium
+
+  [ Simon McVittie ]
+  * New upstream snapshot from the 3.3.x development branch
+  * Use dh-sequence-dlopenlibdeps to add dlopen()'d dependencies
+    - Keep Suggests on libayatana-appindicator3-1.
+      This hasn't been set up with dlopen notes upstream yet.
+    - Restore Recommends on libegl1, libgl1.
+      The dlopen metadata makes these Suggests, but that seems too weak
+      in practice - most SDL games will want working GL.
+  * d/libsdl3-0.symbols: Update.
+    Note that SDL_CreateGPURenderState has broken ABI since the previous
+    snapshot. (It was not present in 3.2.x, so this is not an ABI break
+    in stable releases.)
+  * d/copyright: Update
+  * d/rules: Treat non-Linux kernels as potentially slow to run tests.
+    The FIFO part of testatomic is apparently rather slow on Hurd,
+    for whatever reason. Let's see whether this is enough.
+
+  [ Pino Toscano ]
+  * d/control: Enable EGL, OpenGL|ES and Vulkan on any OS
+  * d/rules: Only enable Pipewire on Linux
+
+ -- Simon McVittie <smcv@debian.org>  Sat, 30 Aug 2025 16:55:26 +0100
+
+libsdl3 (3.3~git20250806+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot from the 3.3.x development branch
+  * d/control, d/gbp.conf, d/watch: Switch branch for snapshots
+  * d/build-shaders.sh, d/rules:
+    Rebuild more SPIR-V shaders from their HLSL source using
+    glslangValidator, avoiding a dependency on shadercross (RFP: #1095081)
+  * d/copyright, d/clean: Exclude more precompiled shaders
+  * d/patches: Drop patch, applied upstream
+  * d/libsdl3-0.symbols: Update
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 07 Aug 2025 10:53:53 +0100
 
 libsdl3 (3.2.20+ds-2) unstable; urgency=medium
 
