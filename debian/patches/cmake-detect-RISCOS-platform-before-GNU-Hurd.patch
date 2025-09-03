@@ -1,0 +1,31 @@
+From: Anonymous Maarten <anonymous.maarten@gmail.com>
+Date: Fri, 8 Aug 2025 04:55:32 +0200
+Subject: cmake: detect RISCOS platform before GNU/Hurd
+
+Origin: upstream, 3.4.0, commit:595c37b3a4cb62fee46326cd09efb635e49f2a49
+Bug-Debian: https://salsa.debian.org/sdl-team/libsdl3/-/merge_requests/3
+---
+ cmake/sdlplatform.cmake | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/cmake/sdlplatform.cmake b/cmake/sdlplatform.cmake
+index c5904be..bdba9c1 100644
+--- a/cmake/sdlplatform.cmake
++++ b/cmake/sdlplatform.cmake
+@@ -24,6 +24,8 @@ function(SDL_DetectCMakePlatform)
+     set(sdl_cmake_platform n3ds)
+   elseif(PS2)
+     set(sdl_cmake_platform ps2)
++  elseif(RISCOS)
++    set(sdl_cmake_platform RISCOS)
+   elseif(VITA)
+     set(sdl_cmake_platform Vita)
+   elseif(CMAKE_SYSTEM_NAME MATCHES ".*Linux")
+@@ -35,6 +37,7 @@ function(SDL_DetectCMakePlatform)
+   elseif(CMAKE_SYSTEM_NAME MATCHES "kOpenBSD.*|OpenBSD.*")
+     set(sdl_cmake_platform OpenBSD)
+   elseif(CMAKE_SYSTEM_NAME STREQUAL "GNU")
++    # GNU/Hurd must be checked AFTER RISCOS
+     set(sdl_cmake_platform Hurd)
+   elseif(CMAKE_SYSTEM_NAME MATCHES ".*BSDI.*")
+     set(sdl_cmake_platform BSDi)

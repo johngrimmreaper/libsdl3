@@ -1,3 +1,31 @@
+libsdl3 (3.2.22+ds-1) unstable; urgency=medium
+
+  [ Simon McVittie ]
+  * New upstream stable release
+    - Drop the only patch, included in the new release
+  * d/p/Fix-crash-when-enumerating-Steam-Controllers.patch,
+    d/p/gpu-VK_KHR_get_physical_device_properties2-can-be-optiona.patch,
+    d/p/cmake-use-APPLE-in-dep_option.patch,
+    d/p/Set-the-texture-scale-and-address-mode-when-creating-a-te.patch,
+    d/p/Leave-letterbox-borders-set-to-the-frame-clear-color.patch,
+    d/p/Don-t-set-SDL_SURFACE_LOCK_NEEDED-until-a-surface-is-RLE-.patch:
+    Add post-release bug fixes up to release-3.2.22-10-ge7dd5d841b,
+    excluding most Apple-specific changes
+  * d/p/Add-GNU-Hurd-as-platform.patch,
+    d/p/cmake-detect-RISCOS-platform-before-GNU-Hurd.patch:
+    Cherry-pick patches from 3.3.x development branch to support Hurd.
+    There are still some failing tests (`testatomic` takes a very long time
+    on Hurd, and times out) but this gets us a step closer.
+    Thanks to Pino Toscano
+  * d/p/wikiheaders-Escape-backslash-in-man-pages.patch:
+    Add proposed patch to fix broken man page SDL_GetPrefPath(3)
+
+  [ Pino Toscano ]
+  * d/control: Enable EGL, OpenGL|ES and Vulkan on any OS
+  * d/rules: Only enable Pipewire on Linux
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 03 Sep 2025 13:13:49 +0100
+
 libsdl3 (3.2.20+ds-2) unstable; urgency=medium
 
   * Rebuild for unstable

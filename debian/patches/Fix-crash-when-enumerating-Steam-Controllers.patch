@@ -1,0 +1,26 @@
+From: Sam Lantinga <slouken@libsdl.org>
+Date: Thu, 14 Aug 2025 14:49:04 -0700
+Subject: Fix crash when enumerating Steam Controllers
+
+Bug: https://github.com/libsdl-org/SDL/pull/13746
+Origin: upstream, 3.2.24, commit:a6fd74fa3bdee9b718e213cec35dfb0193ef9f2a
+---
+ src/joystick/hidapi/SDL_hidapi_steam.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/joystick/hidapi/SDL_hidapi_steam.c b/src/joystick/hidapi/SDL_hidapi_steam.c
+index b48d353..6b36651 100644
+--- a/src/joystick/hidapi/SDL_hidapi_steam.c
++++ b/src/joystick/hidapi/SDL_hidapi_steam.c
+@@ -1038,6 +1038,11 @@ static bool HIDAPI_DriverSteam_IsSupportedDevice(SDL_HIDAPI_Device *device, cons
+         return false;
+     }
+ 
++    if (!device) {
++        // Might be supported by this driver, enumerate and find out
++        return true;
++    }
++
+     if (device->is_bluetooth) {
+         return true;
+     }
