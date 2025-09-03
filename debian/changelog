@@ -1,4 +1,7 @@
-libsdl3 (3.2.20+ds-3) UNRELEASED; urgency=medium
+libsdl3 (3.2.22+ds-1) UNRELEASED; urgency=medium
+
+  [ Simon McVittie ]
+  * New upstream stable release
 
   [ Pino Toscano ]
   * d/control: Enable EGL, OpenGL|ES and Vulkan on any OS
