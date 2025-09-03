@@ -15,10 +15,10 @@ Forwarded: https://github.com/libsdl-org/SDL/pull/13834
  1 file changed, 1 insertion(+)
 
 diff --git a/build-scripts/wikiheaders.pl b/build-scripts/wikiheaders.pl
-index d4205b8..63a8dc9 100755
+index 4dd44f8..768f42c 100755
 --- a/build-scripts/wikiheaders.pl
 +++ b/build-scripts/wikiheaders.pl
-@@ -425,6 +425,7 @@ sub dewikify_chunk {
+@@ -436,6 +436,7 @@ sub dewikify_chunk {
          }
      } elsif ($dewikify_mode eq 'manpage') {
          # make sure these can't become part of roff syntax.

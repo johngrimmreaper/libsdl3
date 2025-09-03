@@ -61,6 +61,7 @@ struct SDL_Window
     bool fullscreen_exclusive;  // The window is currently fullscreen exclusive
     SDL_DisplayID last_fullscreen_exclusive_display;  // The last fullscreen_exclusive display
     SDL_DisplayID last_displayID;
+    SDL_DisplayID pending_displayID;
 
     /* Stored position and size for the window in the non-fullscreen state,
      * including when the window is maximized or tiled.
@@ -103,6 +104,7 @@ struct SDL_Window
     bool restore_on_show; // Child was hidden recursively by the parent, restore when shown.
     bool last_position_pending; // This should NOT be cleared by the backend, as it is used for fullscreen positioning.
     bool last_size_pending; // This should be cleared by the backend if the new size cannot be applied.
+    bool update_fullscreen_on_display_changed;
     bool constrain_popup;
     bool is_destroying;
     bool is_dropping; // drag/drop in progress, expecting SDL_SendDropComplete().
@@ -122,6 +124,9 @@ struct SDL_Window
 
     SDL_HitTest hit_test;
     void *hit_test_data;
+
+    SDL_ProgressState progress_state;
+    float progress_value;
 
     SDL_PropertiesID props;
 
@@ -216,7 +221,7 @@ struct SDL_VideoDevice
 
     /*
      * Initialize the native video subsystem, filling in the list of
-     * displays for this driver, returning 0 or -1 if there's an error.
+     * displays for this driver, returning true (success) or false (error).
      */
     bool (*VideoInit)(SDL_VideoDevice *_this);
 
@@ -306,8 +311,10 @@ struct SDL_VideoDevice
     void (*OnWindowEnter)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*UpdateWindowShape)(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape);
     bool (*FlashWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
+    bool (*ApplyWindowProgress)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*SetWindowFocusable)(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
     bool (*SyncWindow)(SDL_VideoDevice *_this, SDL_Window *window);
+    bool (*ReconfigureWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_WindowFlags flags);
 
     /* * * */
     /*
@@ -331,7 +338,7 @@ struct SDL_VideoDevice
      */
     bool (*Vulkan_LoadLibrary)(SDL_VideoDevice *_this, const char *path);
     void (*Vulkan_UnloadLibrary)(SDL_VideoDevice *_this);
-    char const* const* (*Vulkan_GetInstanceExtensions)(SDL_VideoDevice *_this, Uint32 *count);
+    char const * const *(*Vulkan_GetInstanceExtensions)(SDL_VideoDevice *_this, Uint32 *count);
     bool (*Vulkan_CreateSurface)(SDL_VideoDevice *_this, SDL_Window *window, VkInstance instance, const struct VkAllocationCallbacks *allocator, VkSurfaceKHR *surface);
     void (*Vulkan_DestroySurface)(SDL_VideoDevice *_this, VkInstance instance, VkSurfaceKHR surface, const struct VkAllocationCallbacks *allocator);
     bool (*Vulkan_GetPresentationSupport)(SDL_VideoDevice *_this, VkInstance instance, VkPhysicalDevice physicalDevice, Uint32 queueFamilyIndex);
@@ -450,6 +457,7 @@ struct SDL_VideoDevice
         int retained_backing;
         int egl_platform;
         int driver_loaded;
+        int HAS_GL_ARB_color_buffer_float;
         char driver_path[256];
         SDL_SharedObject *dll_handle;
     } gl_config;
@@ -525,6 +533,7 @@ extern VideoBootStrap PSP_bootstrap;
 extern VideoBootStrap VITA_bootstrap;
 extern VideoBootStrap RISCOS_bootstrap;
 extern VideoBootStrap N3DS_bootstrap;
+extern VideoBootStrap NGAGE_bootstrap;
 extern VideoBootStrap RPI_bootstrap;
 extern VideoBootStrap KMSDRM_bootstrap;
 extern VideoBootStrap DUMMY_bootstrap;
@@ -566,6 +575,7 @@ extern void SDL_SetWindowSafeAreaInsets(SDL_Window *window, int left, int right,
 extern void SDL_GL_DeduceMaxSupportedESProfile(int *major, int *minor);
 
 extern bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags);
+extern bool SDL_ReconfigureWindow(SDL_Window *window, SDL_WindowFlags flags);
 extern bool SDL_HasWindows(void);
 extern void SDL_RelativeToGlobalForWindow(SDL_Window *window, int rel_x, int rel_y, int *abs_x, int *abs_y);
 extern void SDL_GlobalToRelativeForWindow(SDL_Window *window, int abs_x, int abs_y, int *rel_x, int *rel_y);

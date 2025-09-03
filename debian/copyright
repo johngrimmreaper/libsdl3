@@ -22,12 +22,8 @@ Files-Excluded: Android.mk
                 src/render/direct3d11/D3D11_*Shader*.h
                 src/render/direct3d12/D3D12_*RootSig*.h
                 src/render/direct3d12/D3D12_*Shader*.h
-                src/render/gpu/shaders/dxbc50.h
-                src/render/gpu/shaders/dxil60.h
-                src/render/gpu/shaders/metal.h
-                src/render/gpu/shaders/*.dxbc.h
                 src/render/gpu/shaders/*.dxil.h
-                src/render/gpu/shaders/*.metal.h
+                src/render/gpu/shaders/*.msl.h
                 src/render/metal/SDL_shaders_metal_*.h
                 test/android
                 test/emscripten
@@ -37,6 +33,8 @@ Files-Excluded: Android.mk
                 test/n3ds
                 test/testgpu/testgpu_dxil.h
                 test/testgpu/testgpu_metallib.h
+                test/testgpu*.dxil.h
+                test/testgpu*.msl.h
                 test/unifont-*
                 VisualC
                 VisualC-GDK
@@ -126,8 +124,11 @@ Files:
 Copyright: none
 License: PublicDomain
 
-Files: src/video/stb_image.h
-Copyright: 2017 Sean Barrett
+Files:
+ src/video/stb_image.h
+ src/video/stb_image_write.h
+Copyright:
+ 2010-2021 Sean Barrett
 License: Expat or Unlicense
 
 Files: test/main.cpp

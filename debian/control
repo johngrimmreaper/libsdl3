@@ -10,6 +10,7 @@ Standards-Version: 4.7.2
 Build-Depends:
  cmake,
  debhelper-compat (= 13),
+ dh-sequence-dlopenlibdeps,
  fcitx-libs-dev,
  glslang-tools (>= 12),
  libasound2-dev [linux-any],
@@ -48,7 +49,7 @@ Build-Depends:
 Build-Depends-Indep:
  graphviz <!nodoc>,
  doxygen <!nodoc>,
-Vcs-Git: https://salsa.debian.org/sdl-team/libsdl3.git
+Vcs-Git: https://salsa.debian.org/sdl-team/libsdl3.git -b debian/snapshots
 Vcs-Browser: https://salsa.debian.org/sdl-team/libsdl3
 Homepage: https://www.libsdl.org/
 Rules-Requires-Root: no
@@ -59,19 +60,16 @@ Multi-Arch: same
 Pre-Depends:
  ${misc:Pre-Depends}
 Depends:
+ ${dlopen:Depends},
  ${misc:Depends},
  ${shlibs:Depends}
 Recommends:
- libdbus-1-3,
+ ${dlopen:Recommends},
  libegl1,
  libgl1 | libopengl0,
- libgles2,
- libudev1 [linux-any],
 Suggests:
+ ${dlopen:Suggests},
  libayatana-appindicator3-1 | libappindicator3-1,
- libpipewire-0.3-0t64 [linux-any],
- liburing2 [linux-any],
- libvulkan1,
  xdg-utils,
 Description: Simple DirectMedia Layer, version 3
  SDL is a cross-platform library designed to make it easy to write

@@ -30,7 +30,11 @@
 #include "../../video/SDL_pixels_c.h"
 
 #include <d3d11_1.h>
+#ifdef HAVE_DXGI1_5_H
+#include <dxgi1_5.h>
+#else
 #include <dxgi1_4.h>
+#endif
 #include <dxgidebug.h>
 
 #include "SDL_shaders_d3d11.h"
@@ -50,16 +54,6 @@
 /* !!! FIXME: vertex buffer bandwidth could be lower; only use UV coords when
    !!! FIXME:  textures are needed. */
 
-// Sampler types
-typedef enum
-{
-    D3D11_SAMPLER_NEAREST_CLAMP,
-    D3D11_SAMPLER_NEAREST_WRAP,
-    D3D11_SAMPLER_LINEAR_CLAMP,
-    D3D11_SAMPLER_LINEAR_WRAP,
-    D3D11_SAMPLER_COUNT
-} D3D11_Sampler;
-
 // Vertex shader, common values
 typedef struct
 {
@@ -74,9 +68,10 @@ static const float TONEMAP_CHROME = 2;
 
 //static const float TEXTURETYPE_NONE = 0;
 static const float TEXTURETYPE_RGB = 1;
-static const float TEXTURETYPE_NV12 = 2;
-static const float TEXTURETYPE_NV21 = 3;
-static const float TEXTURETYPE_YUV = 4;
+static const float TEXTURETYPE_RGB_PIXELART = 2;
+static const float TEXTURETYPE_NV12 = 3;
+static const float TEXTURETYPE_NV21 = 4;
+static const float TEXTURETYPE_YUV = 5;
 
 static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -89,6 +84,11 @@ typedef struct
     float texture_type;
     float input_type;
     float color_scale;
+
+    float texel_width;
+    float texel_height;
+    float texture_width;
+    float texture_height;
 
     float tonemap_method;
     float tonemap_factor1;
@@ -161,6 +161,7 @@ typedef struct
     ID3D11DeviceContext1 *d3dContext;
     IDXGISwapChain1 *swapChain;
     DXGI_SWAP_EFFECT swapEffect;
+    UINT swapChainFlags;
     UINT syncInterval;
     UINT presentFlags;
     ID3D11RenderTargetView *mainRenderTargetView;
@@ -172,7 +173,7 @@ typedef struct
     ID3D11PixelShader *pixelShaders[NUM_SHADERS];
     int blendModesCount;
     D3D11_BlendMode *blendModes;
-    ID3D11SamplerState *samplers[D3D11_SAMPLER_COUNT];
+    ID3D11SamplerState *samplers[RENDER_SAMPLER_COUNT];
     D3D_FEATURE_LEVEL featureLevel;
     bool pixelSizeChanged;
 
@@ -210,6 +211,9 @@ typedef struct
 #pragma GCC diagnostic ignored "-Wunused-const-variable"
 #endif
 
+#ifdef HAVE_DXGI1_5_H
+static const GUID SDL_IID_IDXGIFactory5 = { 0x7632e1f5, 0xee65, 0x4dca, { 0x87, 0xfd, 0x84, 0xcd, 0x75, 0xf8, 0x83, 0x8d } };
+#endif
 static const GUID SDL_IID_IDXGIFactory2 = { 0x50c83a1c, 0xe072, 0x4c48, { 0x87, 0xb0, 0x36, 0x30, 0xfa, 0x36, 0xa6, 0xd0 } };
 static const GUID SDL_IID_IDXGIDevice1 = { 0x77db970f, 0x6276, 0x48ba, { 0xba, 0x28, 0x07, 0x01, 0x43, 0xb4, 0x39, 0x2c } };
 static const GUID SDL_IID_ID3D11Texture2D = { 0x6f15aaf2, 0xd208, 0x4e89, { 0x9a, 0xb4, 0x48, 0x95, 0x35, 0xd3, 0x4f, 0x9c } };
@@ -515,6 +519,9 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     HRESULT result = S_OK;
     UINT creationFlags = 0;
     bool createDebug;
+#ifdef HAVE_DXGI1_5_H
+    IDXGIFactory5 *dxgiFactory5 = NULL;
+#endif
 
     /* This array defines the set of DirectX hardware feature levels this app will support.
      * Note the ordering should be preserved.
@@ -532,7 +539,6 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     };
 
     D3D11_BUFFER_DESC constantBufferDesc;
-    D3D11_SAMPLER_DESC samplerDesc;
     D3D11_RASTERIZER_DESC rasterDesc;
 
     // See if we need debug interfaces
@@ -605,6 +611,20 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("CreateDXGIFactory"), result);
         goto done;
     }
+
+#ifdef HAVE_DXGI1_5_H
+    // Check for tearing support, which requires the IDXGIFactory5 interface.
+    data->swapChainFlags = 0;
+    result = IDXGIFactory2_QueryInterface(data->dxgiFactory, &SDL_IID_IDXGIFactory5, (void **)&dxgiFactory5);
+    if (SUCCEEDED(result)) {
+        BOOL allowTearing = FALSE;
+        result = IDXGIFactory5_CheckFeatureSupport(dxgiFactory5, DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));
+        if (SUCCEEDED(result) && allowTearing) {
+            data->swapChainFlags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+        }
+        IDXGIFactory5_Release(dxgiFactory5);
+    }
+#endif // HAVE_DXGI1_5_H
 
     // FIXME: Should we use the default adapter?
     result = IDXGIFactory2_EnumAdapters(data->dxgiFactory, 0, &data->dxgiAdapter);
@@ -719,38 +739,6 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateBuffer [vertex shader constants]"), result);
         goto done;
-    }
-
-    // Create samplers to use when drawing textures:
-    static struct
-    {
-        D3D11_FILTER filter;
-        D3D11_TEXTURE_ADDRESS_MODE address;
-    } samplerParams[] = {
-        { D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_CLAMP },
-        { D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP },
-        { D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP },
-        { D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP },
-    };
-    SDL_COMPILE_TIME_ASSERT(samplerParams_SIZE, SDL_arraysize(samplerParams) == D3D11_SAMPLER_COUNT);
-    SDL_zero(samplerDesc);
-    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-    samplerDesc.MipLODBias = 0.0f;
-    samplerDesc.MaxAnisotropy = 1;
-    samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-    samplerDesc.MinLOD = 0.0f;
-    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-    for (int i = 0; i < SDL_arraysize(samplerParams); ++i) {
-        samplerDesc.Filter = samplerParams[i].filter;
-        samplerDesc.AddressU = samplerParams[i].address;
-        samplerDesc.AddressV = samplerParams[i].address;
-        result = ID3D11Device_CreateSamplerState(data->d3dDevice,
-                                                 &samplerDesc,
-                                                 &data->samplers[i]);
-        if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateSamplerState [nearest-pixel filter]"), result);
-            goto done;
-        }
     }
 
     // Setup Direct3D rasterizer states
@@ -907,7 +895,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     } else {
         swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; // All Windows Store apps must use this SwapEffect.
     }
-    swapChainDesc.Flags = 0;
+    swapChainDesc.Flags = data->swapChainFlags;
 
     if (coreWindow) {
         result = IDXGIFactory2_CreateSwapChainForCoreWindow(data->dxgiFactory,
@@ -993,6 +981,28 @@ static void D3D11_ReleaseMainRenderTargetView(SDL_Renderer *renderer)
     SAFE_RELEASE(data->mainRenderTargetView);
 }
 
+static void D3D11_UpdatePresentFlags(SDL_Renderer *renderer)
+{
+    D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
+
+    if (data->syncInterval > 0) {
+        data->presentFlags = 0;
+    } else {
+        data->presentFlags = DXGI_PRESENT_DO_NOT_WAIT;
+#ifdef HAVE_DXGI1_5_H
+        // Present tearing requires sync interval 0, a swap chain flag, and not in exclusive fullscreen mode.
+        if ((data->swapChainFlags & DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING)) {
+            HRESULT result = S_OK;
+            BOOL fullscreenState = FALSE;
+            result = IDXGISwapChain_GetFullscreenState(data->swapChain, &fullscreenState, NULL);
+            if (SUCCEEDED(result) && !fullscreenState) {
+                data->presentFlags = DXGI_PRESENT_ALLOW_TEARING;
+            }
+        }
+#endif // HAVE_DXGI1_5_H
+    }
+}
+
 // Initialize all resources that change when the window's size changes.
 static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
 {
@@ -1022,7 +1032,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
                                               0,
                                               w, h,
                                               DXGI_FORMAT_UNKNOWN,
-                                              0);
+                                              data->swapChainFlags);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::ResizeBuffers"), result);
             goto done;
@@ -1033,6 +1043,8 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
             goto done;
         }
     }
+
+    D3D11_UpdatePresentFlags(renderer);
 
     // Set the proper rotation for the swap chain.
     if (WIN_IsWindows8OrGreater()) {
@@ -2106,7 +2118,15 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
             constants->input_type = INPUTTYPE_HDR10;
             break;
         default:
-            constants->texture_type = TEXTURETYPE_RGB;
+            if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+                constants->texture_type = TEXTURETYPE_RGB_PIXELART;
+                constants->texture_width = texture->w;
+                constants->texture_height = texture->h;
+                constants->texel_width = 1.0f / constants->texture_width;
+                constants->texel_height = 1.0f / constants->texture_height;
+            } else {
+                constants->texture_type = TEXTURETYPE_RGB;
+            }
             if (texture->colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 constants->input_type = INPUTTYPE_SCRGB;
             } else if (texture->colorspace == SDL_COLORSPACE_HDR10) {
@@ -2291,6 +2311,64 @@ static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
     return true;
 }
 
+static ID3D11SamplerState *D3D11_GetSamplerState(D3D11_RenderData *data, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
+{
+    Uint32 key = RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v);
+    SDL_assert(key < SDL_arraysize(data->samplers));
+    if (!data->samplers[key]) {
+        D3D11_SAMPLER_DESC samplerDesc;
+        SDL_zero(samplerDesc);
+        samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+        samplerDesc.MipLODBias = 0.0f;
+        samplerDesc.MaxAnisotropy = 1;
+        samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+        samplerDesc.MinLOD = 0.0f;
+        samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+        switch (scale_mode) {
+        case SDL_SCALEMODE_NEAREST:
+            samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+            break;
+        case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
+        case SDL_SCALEMODE_LINEAR:
+            samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+            break;
+        default:
+            SDL_SetError("Unknown scale mode: %d", scale_mode);
+            return NULL;
+        }
+        switch (address_u) {
+        case SDL_TEXTURE_ADDRESS_CLAMP:
+            samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+            break;
+        case SDL_TEXTURE_ADDRESS_WRAP:
+            samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+            break;
+        default:
+            SDL_SetError("Unknown texture address mode: %d", address_u);
+            return NULL;
+        }
+        switch (address_v) {
+        case SDL_TEXTURE_ADDRESS_CLAMP:
+            samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+            break;
+        case SDL_TEXTURE_ADDRESS_WRAP:
+            samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+            break;
+        default:
+            SDL_SetError("Unknown texture address mode: %d", address_v);
+            return NULL;
+        }
+        HRESULT result = ID3D11Device_CreateSamplerState(data->d3dDevice,
+                                                 &samplerDesc,
+                                                 &data->samplers[key]);
+        if (FAILED(result)) {
+            WIN_SetErrorFromHRESULT("ID3D11Device::CreateSamplerState", result);
+            return NULL;
+        }
+    }
+    return data->samplers[key];
+}
+
 static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const Float4X4 *matrix)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
@@ -2305,34 +2383,11 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
 
     D3D11_SetupShaderConstants(renderer, cmd, texture, &constants);
 
-    switch (cmd->data.draw.texture_scale_mode) {
-    case SDL_SCALEMODE_NEAREST:
-        switch (cmd->data.draw.texture_address_mode) {
-        case SDL_TEXTURE_ADDRESS_CLAMP:
-            textureSampler = rendererData->samplers[D3D11_SAMPLER_NEAREST_CLAMP];
-            break;
-        case SDL_TEXTURE_ADDRESS_WRAP:
-            textureSampler = rendererData->samplers[D3D11_SAMPLER_NEAREST_WRAP];
-            break;
-        default:
-            return SDL_SetError("Unknown texture address mode: %d", cmd->data.draw.texture_address_mode);
-        }
-        break;
-    case SDL_SCALEMODE_LINEAR:
-        switch (cmd->data.draw.texture_address_mode) {
-        case SDL_TEXTURE_ADDRESS_CLAMP:
-            textureSampler = rendererData->samplers[D3D11_SAMPLER_LINEAR_CLAMP];
-            break;
-        case SDL_TEXTURE_ADDRESS_WRAP:
-            textureSampler = rendererData->samplers[D3D11_SAMPLER_LINEAR_WRAP];
-            break;
-        default:
-            return SDL_SetError("Unknown texture address mode: %d", cmd->data.draw.texture_address_mode);
-        }
-        break;
-    default:
-        return SDL_SetError("Unknown scale mode: %d", cmd->data.draw.texture_scale_mode);
+    textureSampler = D3D11_GetSamplerState(rendererData, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
+    if (!textureSampler) {
+        return false;
     }
+
 #ifdef SDL_HAVE_YUV
     if (textureData->yuv) {
         ID3D11ShaderResourceView *shaderResources[3];
@@ -2657,11 +2712,10 @@ static bool D3D11_SetVSync(SDL_Renderer *renderer, const int vsync)
 
     if (vsync > 0) {
         data->syncInterval = vsync;
-        data->presentFlags = 0;
     } else {
         data->syncInterval = 0;
-        data->presentFlags = DXGI_PRESENT_DO_NOT_WAIT;
     }
+    D3D11_UpdatePresentFlags(renderer);
     return true;
 }
 
@@ -2727,6 +2781,7 @@ static bool D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
 
+    data->swapChainFlags = 0;
     data->syncInterval = 0;
     data->presentFlags = DXGI_PRESENT_DO_NOT_WAIT;
 

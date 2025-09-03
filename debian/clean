@@ -1,3 +1,6 @@
+src/render/gpu/shaders/*.dxil.h
+src/render/gpu/shaders/*.msl.h
+src/render/gpu/shaders/*.spv.h
 src/render/vulkan/VULKAN_PixelShader_*.h
 src/render/vulkan/VULKAN_VertexShader.h
 test/gamepad_*.h
@@ -7,3 +10,6 @@ test/testgpu/testgpu_dxbc.h
 test/testgpu/testgpu_dxil.h
 test/testgpu/testgpu_metallib.h
 test/testgpu/testgpu_spirv.h
+test/testgpurender_*.dxil.h
+test/testgpurender_*.msl.h
+test/testgpurender_*.spv.h

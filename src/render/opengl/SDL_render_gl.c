@@ -68,6 +68,7 @@ typedef struct
     int drawableh;
     SDL_BlendMode blend;
     GL_Shader shader;
+    float texel_size[4];
     const float *shader_params;
     bool cliprect_enabled_dirty;
     bool cliprect_enabled;
@@ -133,6 +134,7 @@ typedef struct
     GLenum format;
     GLenum formattype;
     GL_Shader shader;
+    float texel_size[4];
     const float *shader_params;
     void *pixels;
     int pitch;
@@ -147,7 +149,8 @@ typedef struct
     bool vtexture_external;
 #endif
     SDL_ScaleMode texture_scale_mode;
-    SDL_TextureAddressMode texture_address_mode;
+    SDL_TextureAddressMode texture_address_mode_u;
+    SDL_TextureAddressMode texture_address_mode_v;
     GL_FBOList *fbo;
 } GL_TextureData;
 
@@ -439,6 +442,43 @@ static bool convert_format(Uint32 pixel_format, GLint *internalFormat, GLenum *f
     return true;
 }
 
+static bool SetTextureScaleMode(GL_RenderData *data, GLenum textype, SDL_ScaleMode scaleMode)
+{
+    switch (scaleMode) {
+    case SDL_SCALEMODE_NEAREST:
+        data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        break;
+    case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
+    case SDL_SCALEMODE_LINEAR:
+        data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        break;
+    default:
+        return SDL_SetError("Unknown texture scale mode: %d", scaleMode);
+    }
+    return true;
+}
+
+static GLint TranslateAddressMode(SDL_TextureAddressMode addressMode)
+{
+    switch (addressMode) {
+    case SDL_TEXTURE_ADDRESS_CLAMP:
+        return GL_CLAMP_TO_EDGE;
+    case SDL_TEXTURE_ADDRESS_WRAP:
+        return GL_REPEAT;
+    default:
+        SDL_assert(!"Unknown texture address mode");
+        return GL_CLAMP_TO_EDGE;
+    }
+}
+
+static void SetTextureAddressMode(GL_RenderData *data, GLenum textype, SDL_TextureAddressMode addressModeU, SDL_TextureAddressMode addressModeV)
+{
+    data->glTexParameteri(textype, GL_TEXTURE_WRAP_S, TranslateAddressMode(addressModeU));
+    data->glTexParameteri(textype, GL_TEXTURE_WRAP_T, TranslateAddressMode(addressModeV));
+}
+
 static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     GL_RenderData *renderdata = (GL_RenderData *)renderer->internal;
@@ -535,10 +575,13 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
 
     data->format = format;
     data->formattype = type;
-    data->texture_scale_mode = SDL_SCALEMODE_INVALID;
-    data->texture_address_mode = SDL_TEXTURE_ADDRESS_INVALID;
+    data->texture_scale_mode = texture->scaleMode;
+    data->texture_address_mode_u = SDL_TEXTURE_ADDRESS_CLAMP;
+    data->texture_address_mode_v = SDL_TEXTURE_ADDRESS_CLAMP;
     renderdata->glEnable(textype);
     renderdata->glBindTexture(textype, data->texture);
+    SetTextureScaleMode(renderdata, textype, data->texture_scale_mode);
+    SetTextureAddressMode(renderdata, textype, data->texture_address_mode_u, data->texture_address_mode_v);
 #ifdef SDL_PLATFORM_MACOS
 #ifndef GL_TEXTURE_STORAGE_HINT_APPLE
 #define GL_TEXTURE_STORAGE_HINT_APPLE 0x85BC
@@ -570,10 +613,11 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         renderdata->glTexImage2D(textype, 0, internalFormat, texture_w,
                                  texture_h, 0, format, type, NULL);
     }
-    renderdata->glDisable(textype);
     if (!GL_CheckError("glTexImage2D()", renderer)) {
         return false;
     }
+    SetTextureScaleMode(renderdata, textype, data->texture_scale_mode);
+    SetTextureAddressMode(renderdata, textype, data->texture_address_mode_u, data->texture_address_mode_v);
 
 #ifdef SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
@@ -596,11 +640,15 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         renderdata->glBindTexture(textype, data->utexture);
         renderdata->glTexImage2D(textype, 0, internalFormat, (texture_w + 1) / 2,
                                  (texture_h + 1) / 2, 0, format, type, NULL);
+        SetTextureScaleMode(renderdata, textype, data->texture_scale_mode);
+        SetTextureAddressMode(renderdata, textype, data->texture_address_mode_u, data->texture_address_mode_v);
         SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_U_NUMBER, data->utexture);
 
         renderdata->glBindTexture(textype, data->vtexture);
         renderdata->glTexImage2D(textype, 0, internalFormat, (texture_w + 1) / 2,
                                  (texture_h + 1) / 2, 0, format, type, NULL);
+        SetTextureScaleMode(renderdata, textype, data->texture_scale_mode);
+        SetTextureAddressMode(renderdata, textype, data->texture_address_mode_u, data->texture_address_mode_v);
         SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_V_NUMBER, data->vtexture);
     }
 
@@ -617,6 +665,8 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         renderdata->glBindTexture(textype, data->utexture);
         renderdata->glTexImage2D(textype, 0, GL_LUMINANCE_ALPHA, (texture_w + 1) / 2,
                                  (texture_h + 1) / 2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, NULL);
+        SetTextureScaleMode(renderdata, textype, data->texture_scale_mode);
+        SetTextureAddressMode(renderdata, textype, data->texture_address_mode_u, data->texture_address_mode_v);
         SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_UV_NUMBER, data->utexture);
     }
 #endif
@@ -626,6 +676,11 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     } else {
         data->shader = SHADER_RGB;
     }
+
+    data->texel_size[2] = texture->w;
+    data->texel_size[3] = texture->h;
+    data->texel_size[0] = 1.0f / data->texel_size[2];
+    data->texel_size[1] = 1.0f / data->texel_size[3];
 
 #ifdef SDL_HAVE_YUV
     if (data->yuv || data->nv12) {
@@ -650,6 +705,8 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         }
     }
 #endif // SDL_HAVE_YUV
+
+    renderdata->glDisable(textype);
 
     return GL_CheckError("", renderer);
 }
@@ -1074,47 +1131,29 @@ static bool SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, cons
     return true;
 }
 
-static bool SetTextureScaleMode(GL_RenderData *data, GLenum textype, SDL_ScaleMode scaleMode)
-{
-    switch (scaleMode) {
-    case SDL_SCALEMODE_NEAREST:
-        data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        break;
-    case SDL_SCALEMODE_LINEAR:
-        data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        break;
-    default:
-        return SDL_SetError("Unknown texture scale mode: %d", scaleMode);
-    }
-    return true;
-}
-
-static bool SetTextureAddressMode(GL_RenderData *data, GLenum textype, SDL_TextureAddressMode addressMode)
-{
-    switch (addressMode) {
-    case SDL_TEXTURE_ADDRESS_CLAMP:
-        data->glTexParameteri(textype, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        data->glTexParameteri(textype, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        break;
-    case SDL_TEXTURE_ADDRESS_WRAP:
-        data->glTexParameteri(textype, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        data->glTexParameteri(textype, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        break;
-    default:
-        return SDL_SetError("Unknown texture address mode: %d", addressMode);
-    }
-    return true;
-}
-
 static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
     GL_TextureData *texturedata = (GL_TextureData *)texture->internal;
     const GLenum textype = data->textype;
+    GL_Shader shader = texturedata->shader;
+    const float *shader_params = texturedata->shader_params;
 
-    SetDrawState(data, cmd, texturedata->shader, texturedata->shader_params);
+    if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+        switch (shader) {
+        case SHADER_RGB:
+            shader = SHADER_RGB_PIXELART;
+            shader_params = texturedata->texel_size;
+            break;
+        case SHADER_RGBA:
+            shader = SHADER_RGBA_PIXELART;
+            shader_params = texturedata->texel_size;
+            break;
+        default:
+            break;
+        }
+    }
+    SetDrawState(data, cmd, shader, shader_params);
 
     if (texture != data->drawstate.texture) {
 #ifdef SDL_HAVE_YUV
@@ -1168,34 +1207,28 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
         texturedata->texture_scale_mode = cmd->data.draw.texture_scale_mode;
     }
 
-    if (cmd->data.draw.texture_address_mode != texturedata->texture_address_mode) {
+    if (cmd->data.draw.texture_address_mode_u != texturedata->texture_address_mode_u ||
+        cmd->data.draw.texture_address_mode_v != texturedata->texture_address_mode_v) {
 #ifdef SDL_HAVE_YUV
         if (texturedata->yuv) {
             data->glActiveTextureARB(GL_TEXTURE2);
-            if (!SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode)) {
-                return false;
-            }
+            SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
 
             data->glActiveTextureARB(GL_TEXTURE1);
-            if (!SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode)) {
-                return false;
-            }
+            SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
 
             data->glActiveTextureARB(GL_TEXTURE0_ARB);
         } else if (texturedata->nv12) {
             data->glActiveTextureARB(GL_TEXTURE1);
-            if (!SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode)) {
-                return false;
-            }
+            SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
 
             data->glActiveTextureARB(GL_TEXTURE0);
         }
 #endif
-        if (!SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode)) {
-            return false;
-        }
+        SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
 
-        texturedata->texture_address_mode = cmd->data.draw.texture_address_mode;
+        texturedata->texture_address_mode_u = cmd->data.draw.texture_address_mode_u;
+        texturedata->texture_address_mode_v = cmd->data.draw.texture_address_mode_v;
     }
 
     return true;
@@ -1382,7 +1415,8 @@ static bool GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             SDL_Texture *thistexture = cmd->data.draw.texture;
             SDL_BlendMode thisblend = cmd->data.draw.blend;
             SDL_ScaleMode thisscalemode = cmd->data.draw.texture_scale_mode;
-            SDL_TextureAddressMode thisaddressmode = cmd->data.draw.texture_address_mode;
+            SDL_TextureAddressMode thisaddressmode_u = cmd->data.draw.texture_address_mode_u;
+            SDL_TextureAddressMode thisaddressmode_v = cmd->data.draw.texture_address_mode_v;
             const SDL_RenderCommandType thiscmdtype = cmd->command;
             SDL_RenderCommand *finalcmd = cmd;
             SDL_RenderCommand *nextcmd = cmd->next;
@@ -1394,7 +1428,8 @@ static bool GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
                     break; // can't go any further on this draw call, different render command up next.
                 } else if (nextcmd->data.draw.texture != thistexture ||
                            nextcmd->data.draw.texture_scale_mode != thisscalemode ||
-                           nextcmd->data.draw.texture_address_mode != thisaddressmode ||
+                           nextcmd->data.draw.texture_address_mode_u != thisaddressmode_u ||
+                           nextcmd->data.draw.texture_address_mode_v != thisaddressmode_v ||
                            nextcmd->data.draw.blend != thisblend) {
                     break; // can't go any further on this draw call, different texture/blendmode copy up next.
                 } else {
@@ -1642,7 +1677,7 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, RENDERER_CONTEXT_MAJOR);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, RENDERER_CONTEXT_MINOR);
 
-        if (!SDL_RecreateWindow(window, (window_flags & ~(SDL_WINDOW_VULKAN | SDL_WINDOW_METAL)) | SDL_WINDOW_OPENGL)) {
+        if (!SDL_ReconfigureWindow(window, (window_flags & ~(SDL_WINDOW_VULKAN | SDL_WINDOW_METAL)) | SDL_WINDOW_OPENGL)) {
             goto error;
         }
     }

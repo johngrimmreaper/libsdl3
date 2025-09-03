@@ -49,7 +49,7 @@ bool SDL_SurfaceValid(SDL_Surface *surface)
 
 void SDL_UpdateSurfaceLockFlag(SDL_Surface *surface)
 {
-    if (SDL_SurfaceHasRLE(surface)) {
+    if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
         surface->flags |= SDL_SURFACE_LOCK_NEEDED;
     } else {
         surface->flags &= ~SDL_SURFACE_LOCK_NEEDED;
@@ -611,7 +611,6 @@ bool SDL_SetSurfaceRLE(SDL_Surface *surface, bool enabled)
     if (surface->map.info.flags != flags) {
         SDL_InvalidateMap(&surface->map);
     }
-    SDL_UpdateSurfaceLockFlag(surface);
     return true;
 }
 
@@ -1107,8 +1106,17 @@ bool SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surfac
         return SDL_InvalidParamError("dst");
     } else if ((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
         return SDL_SetError("Surfaces must not be locked during blit");
-    } else if (scaleMode != SDL_SCALEMODE_NEAREST &&
-               scaleMode != SDL_SCALEMODE_LINEAR) {
+    }
+
+    switch (scaleMode) {
+    case SDL_SCALEMODE_NEAREST:
+        break;
+    case SDL_SCALEMODE_LINEAR:
+        break;
+    case SDL_SCALEMODE_PIXELART:
+        scaleMode = SDL_SCALEMODE_NEAREST;
+        break;
+    default:
         return SDL_InvalidParamError("scaleMode");
     }
 
@@ -1274,7 +1282,7 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
         SDL_InvalidateMap(&src->map);
     }
 
-    if (scaleMode == SDL_SCALEMODE_NEAREST) {
+    if (scaleMode == SDL_SCALEMODE_NEAREST || scaleMode == SDL_SCALEMODE_PIXELART) {
         if (!(src->map.info.flags & complex_copy_flags) &&
             src->format == dst->format &&
             !SDL_ISPIXELFORMAT_INDEXED(src->format) &&
@@ -1751,6 +1759,7 @@ bool SDL_LockSurface(SDL_Surface *surface)
         if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
             SDL_UnRLESurface(surface, true);
             surface->internal_flags |= SDL_INTERNAL_SURFACE_RLEACCEL; // save accel'd state
+            SDL_UpdateSurfaceLockFlag(surface);
         }
 #endif
     }
@@ -1865,14 +1874,23 @@ bool SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode flip)
         return true;
     }
 
+    bool result = true;
     switch (flip) {
     case SDL_FLIP_HORIZONTAL:
-        return SDL_FlipSurfaceHorizontal(surface);
+        result = SDL_FlipSurfaceHorizontal(surface);
+        break;
     case SDL_FLIP_VERTICAL:
-        return SDL_FlipSurfaceVertical(surface);
+        result = SDL_FlipSurfaceVertical(surface);
+        break;
+    case SDL_FLIP_HORIZONTAL_AND_VERTICAL:
+        result &= SDL_FlipSurfaceHorizontal(surface);
+        result &= SDL_FlipSurfaceVertical(surface);
+        break;
     default:
-        return SDL_InvalidParamError("flip");
+        result = SDL_InvalidParamError("flip");
+        break;
     }
+    return result;
 }
 
 SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelFormat format, SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props)
