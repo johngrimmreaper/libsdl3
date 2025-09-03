@@ -1,9 +1,9 @@
-libsdl3 (3.3~git20250903.1+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.3~git20250903.1+ds-1) experimental; urgency=medium
 
   * New upstream snapshot from the 3.3.x development branch
   * Merge packaging changes from unstable
 
- -- Simon McVittie <smcv@debian.org>  Wed, 03 Sep 2025 11:03:37 +0100
+ -- Simon McVittie <smcv@debian.org>  Wed, 03 Sep 2025 20:54:18 +0100
 
 libsdl3 (3.2.22+ds-1) unstable; urgency=medium
 
