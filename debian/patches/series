@@ -1,0 +1,6 @@
+Fix-crash-when-enumerating-Steam-Controllers.patch
+gpu-VK_KHR_get_physical_device_properties2-can-be-optiona.patch
+cmake-use-APPLE-in-dep_option.patch
+Set-the-texture-scale-and-address-mode-when-creating-a-te.patch
+Leave-letterbox-borders-set-to-the-frame-clear-color.patch
+Don-t-set-SDL_SURFACE_LOCK_NEEDED-until-a-surface-is-RLE-.patch

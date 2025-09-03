@@ -1,0 +1,80 @@
+From: Ethan Lee <flibitijibibo@gmail.com>
+Date: Tue, 2 Sep 2025 12:28:58 -0400
+Subject: gpu: VK_KHR_get_physical_device_properties2 can be optional
+
+(cherry picked from commit 689049f8ecd66efc41a118edd4364d7ac2c38f99)
+
+Origin: upstream, 3.2.24, commit:03dd1520a371c19d9f29be2f6a9f8891d0a3c928
+---
+ src/gpu/vulkan/SDL_gpu_vulkan.c | 23 +++++++++++++++++------
+ 1 file changed, 17 insertions(+), 6 deletions(-)
+
+diff --git a/src/gpu/vulkan/SDL_gpu_vulkan.c b/src/gpu/vulkan/SDL_gpu_vulkan.c
+index d189653..b46157b 100644
+--- a/src/gpu/vulkan/SDL_gpu_vulkan.c
++++ b/src/gpu/vulkan/SDL_gpu_vulkan.c
+@@ -1143,6 +1143,7 @@ struct VulkanRenderer
+     VulkanExtensions supports;
+     bool supportsDebugUtils;
+     bool supportsColorspace;
++    bool supportsPhysicalDeviceProperties2;
+     bool supportsFillModeNonSolid;
+     bool supportsMultiDrawIndirect;
+ 
+@@ -11036,7 +11037,8 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
+     const char **requiredExtensions,
+     Uint32 requiredExtensionsLength,
+     bool *supportsDebugUtils,
+-    bool *supportsColorspace)
++    bool *supportsColorspace,
++    bool *supportsPhysicalDeviceProperties2)
+ {
+     Uint32 extensionCount, i;
+     VkExtensionProperties *availableExtensions;
+@@ -11075,6 +11077,12 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
+         availableExtensions,
+         extensionCount);
+ 
++    // Only needed for KHR_driver_properties!
++    *supportsPhysicalDeviceProperties2 = SupportsInstanceExtension(
++        VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
++        availableExtensions,
++        extensionCount);
++
+     SDL_free(availableExtensions);
+     return allExtensionsSupported;
+ }
+@@ -11185,10 +11193,6 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
+         instanceExtensionCount + 4);
+     SDL_memcpy((void *)instanceExtensionNames, originalInstanceExtensionNames, instanceExtensionCount * sizeof(const char *));
+ 
+-    // Core since 1.1
+-    instanceExtensionNames[instanceExtensionCount++] =
+-        VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
+-
+ #ifdef SDL_PLATFORM_APPLE
+     instanceExtensionNames[instanceExtensionCount++] =
+         VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
+@@ -11199,7 +11203,8 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
+             instanceExtensionNames,
+             instanceExtensionCount,
+             &renderer->supportsDebugUtils,
+-            &renderer->supportsColorspace)) {
++            &renderer->supportsColorspace,
++            &renderer->supportsPhysicalDeviceProperties2)) {
+         SDL_stack_free((char *)instanceExtensionNames);
+         SET_STRING_ERROR_AND_RETURN("Required Vulkan instance extensions not supported", false);
+     }
+@@ -11221,6 +11226,12 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
+             VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME;
+     }
+ 
++    if (renderer->supportsPhysicalDeviceProperties2) {
++        // Append KHR_physical_device_properties2 extension
++        instanceExtensionNames[instanceExtensionCount++] =
++            VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
++    }
++
+     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+     createInfo.pNext = NULL;
+     createInfo.flags = createFlags;

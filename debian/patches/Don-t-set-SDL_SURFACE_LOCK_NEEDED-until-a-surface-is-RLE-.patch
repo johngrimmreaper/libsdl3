@@ -1,0 +1,83 @@
+From: Sam Lantinga <slouken@libsdl.org>
+Date: Tue, 2 Sep 2025 21:18:55 -0700
+Subject: Don't set SDL_SURFACE_LOCK_NEEDED until a surface is RLE encoded
+
+(cherry picked from commit 437d78499cc2ce3f6f49a4efc9461ef1ada7a7b6)
+
+Bug: https://github.com/libsdl-org/sdl2-compat/issues/476
+Origin: upstream, 3.2.24, commit:e7dd5d841ba7f8905f1b586a31a9460f1b41e427
+---
+ src/video/SDL_RLEaccel.c | 6 ++++--
+ src/video/SDL_blit.c     | 2 +-
+ src/video/SDL_surface.c  | 4 ++--
+ 3 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/src/video/SDL_RLEaccel.c b/src/video/SDL_RLEaccel.c
+index 890b825..2ca6d7e 100644
+--- a/src/video/SDL_RLEaccel.c
++++ b/src/video/SDL_RLEaccel.c
+@@ -1434,6 +1434,7 @@ bool SDL_RLESurface(SDL_Surface *surface)
+ 
+     // The surface is now accelerated
+     surface->internal_flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
++    SDL_UpdateSurfaceLockFlag(surface);
+ 
+     return true;
+ }
+@@ -1565,11 +1566,12 @@ void SDL_UnRLESurface(SDL_Surface *surface, bool recode)
+                 }
+             }
+         }
+-        surface->map.info.flags &=
+-            ~(SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY);
++        surface->map.info.flags &= ~(SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY);
+ 
+         SDL_free(surface->map.data);
+         surface->map.data = NULL;
++
++        SDL_UpdateSurfaceLockFlag(surface);
+     }
+ }
+ 
+diff --git a/src/video/SDL_blit.c b/src/video/SDL_blit.c
+index 5ffd181..860a2a9 100644
+--- a/src/video/SDL_blit.c
++++ b/src/video/SDL_blit.c
+@@ -191,7 +191,7 @@ bool SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst)
+ 
+ #ifdef SDL_HAVE_RLE
+     // Clean everything out to start
+-    if (surface->flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
++    if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
+         SDL_UnRLESurface(surface, true);
+     }
+ #endif
+diff --git a/src/video/SDL_surface.c b/src/video/SDL_surface.c
+index 92715d2..dc1b884 100644
+--- a/src/video/SDL_surface.c
++++ b/src/video/SDL_surface.c
+@@ -49,7 +49,7 @@ bool SDL_SurfaceValid(SDL_Surface *surface)
+ 
+ void SDL_UpdateSurfaceLockFlag(SDL_Surface *surface)
+ {
+-    if (SDL_SurfaceHasRLE(surface)) {
++    if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
+         surface->flags |= SDL_SURFACE_LOCK_NEEDED;
+     } else {
+         surface->flags &= ~SDL_SURFACE_LOCK_NEEDED;
+@@ -611,7 +611,6 @@ bool SDL_SetSurfaceRLE(SDL_Surface *surface, bool enabled)
+     if (surface->map.info.flags != flags) {
+         SDL_InvalidateMap(&surface->map);
+     }
+-    SDL_UpdateSurfaceLockFlag(surface);
+     return true;
+ }
+ 
+@@ -1751,6 +1750,7 @@ bool SDL_LockSurface(SDL_Surface *surface)
+         if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
+             SDL_UnRLESurface(surface, true);
+             surface->internal_flags |= SDL_INTERNAL_SURFACE_RLEACCEL; // save accel'd state
++            SDL_UpdateSurfaceLockFlag(surface);
+         }
+ #endif
+     }
