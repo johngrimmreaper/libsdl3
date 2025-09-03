@@ -4,3 +4,4 @@ cmake-use-APPLE-in-dep_option.patch
 Set-the-texture-scale-and-address-mode-when-creating-a-te.patch
 Leave-letterbox-borders-set-to-the-frame-clear-color.patch
 Don-t-set-SDL_SURFACE_LOCK_NEEDED-until-a-surface-is-RLE-.patch
+wikiheaders-Escape-backslash-in-man-pages.patch
