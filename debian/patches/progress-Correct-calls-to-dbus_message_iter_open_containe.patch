@@ -1,0 +1,59 @@
+From: Simon McVittie <smcv@collabora.com>
+Date: Tue, 23 Sep 2025 10:46:43 +0100
+Subject: progress: Correct calls to dbus_message_iter_open_container with
+ variants
+
+As documented, the contained_signature is to be passed in as a
+nul-terminated C string.
+
+For basic types that are represented by a single character, on
+little-endian platforms, putting the type in the least significant
+byte of an int and casting its address to `char *` happens to result in
+a valid string, because the int's in-memory representation looks like
+`(char []){ 'b', 0, 0, 0 }`. However, on big-endian platforms, the int's
+in-memory representation is `(char []){ 0, 0, 0, 'b' }` which is not
+a valid type for a D-Bus variant to hold (it is interpreted as an empty
+string, and variants are not allowed to be empty).
+
+Instead, do this the straightforward way, with a mnemonic string and
+no casts (in the same style used in `SDL_portaldialog`).
+
+Fixes: 3f2226a9 "Add progress bar support for Linux"
+Bug: https://github.com/libsdl-org/SDL/issues/13953
+Bug-Debian: https://bugs.debian.org/1115705
+Signed-off-by: Simon McVittie <smcv@collabora.com>
+Forwarded: https://github.com/libsdl-org/SDL/pull/14029
+---
+ src/core/linux/SDL_progressbar.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/src/core/linux/SDL_progressbar.c b/src/core/linux/SDL_progressbar.c
+index ac0789b..9f98e6a 100644
+--- a/src/core/linux/SDL_progressbar.c
++++ b/src/core/linux/SDL_progressbar.c
+@@ -120,8 +120,6 @@ bool DBUS_ApplyWindowProgress(SDL_VideoDevice *_this, SDL_Window *window)
+ 
+     const char *progress_visible_str = "progress-visible";
+     const char *progress_str = "progress";
+-    int dbus_type_boolean_str = DBUS_TYPE_BOOLEAN;
+-    int dbus_type_double_str = DBUS_TYPE_DOUBLE;
+ 
+     const int progress_visible = ShouldShowProgress(window->progress_state);
+     double progress = (double)window->progress_value;
+@@ -134,14 +132,14 @@ bool DBUS_ApplyWindowProgress(SDL_VideoDevice *_this, SDL_Window *window)
+     // Set progress visible property
+     dbus->message_iter_open_container(&props, DBUS_TYPE_DICT_ENTRY, NULL, &key_it);
+     dbus->message_iter_append_basic(&key_it, DBUS_TYPE_STRING, &progress_visible_str); // Append progress-visible key data
+-    dbus->message_iter_open_container(&key_it, DBUS_TYPE_VARIANT, (const char *)&dbus_type_boolean_str, &value_it);
++    dbus->message_iter_open_container(&key_it, DBUS_TYPE_VARIANT, "b", &value_it);
+     dbus->message_iter_append_basic(&value_it, DBUS_TYPE_BOOLEAN, &progress_visible); // Append progress-visible value data
+     dbus->message_iter_close_container(&key_it, &value_it);
+     dbus->message_iter_close_container(&props, &key_it);
+     // Set progress value property
+     dbus->message_iter_open_container(&props, DBUS_TYPE_DICT_ENTRY, NULL, &key_it);
+     dbus->message_iter_append_basic(&key_it, DBUS_TYPE_STRING, &progress_str); // Append progress key data
+-    dbus->message_iter_open_container(&key_it, DBUS_TYPE_VARIANT, (const char *)&dbus_type_double_str, &value_it);
++    dbus->message_iter_open_container(&key_it, DBUS_TYPE_VARIANT, "d", &value_it);
+     dbus->message_iter_append_basic(&value_it, DBUS_TYPE_DOUBLE, &progress); // Append progress value data
+     dbus->message_iter_close_container(&key_it, &value_it);
+     dbus->message_iter_close_container(&props, &key_it);
