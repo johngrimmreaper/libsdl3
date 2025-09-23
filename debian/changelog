@@ -1,3 +1,9 @@
+libsdl3 (3.3~git20250923.0+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream snapshot, commit release-3.2.6-1285-gc13e74be6b
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 23 Sep 2025 16:53:49 +0100
+
 libsdl3 (3.3~git20250903.1+ds-2) experimental; urgency=medium
 
   * d/p/progress-Correct-calls-to-dbus_message_iter_open_containe.patch:

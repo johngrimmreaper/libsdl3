@@ -74,9 +74,9 @@ else
   confflags += -DSDL_WAYLAND=OFF
 endif
 
-#ifeq ($(DEB_VERSION_UPSTREAM),3.2.14~git20250513+ds)
-#  confflags += -DSDL_REVISION=release-3.2.12-30-gc038d6f7f
-#endif
+ifeq ($(DEB_VERSION_UPSTREAM),3.3~git20250923.0+ds)
+  confflags += -DSDL_REVISION=release-3.2.6-1285-gc13e74be6b
+endif
 
 %:
 	dh $@ --buildsystem=cmake
