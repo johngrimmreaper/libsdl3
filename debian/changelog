@@ -1,3 +1,11 @@
+libsdl3 (3.3~git20250903.1+ds-2) experimental; urgency=medium
+
+  * d/p/progress-Correct-calls-to-dbus_message_iter_open_containe.patch:
+    Add proposed patch to fix uses of libdbus on big-endian architectures
+    (Closes: #1115705, hopefully)
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 23 Sep 2025 11:02:55 +0100
+
 libsdl3 (3.3~git20250903.1+ds-1) experimental; urgency=medium
 
   * New upstream snapshot from the 3.3.x development branch
