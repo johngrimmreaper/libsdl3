@@ -1,0 +1,30 @@
+From: Simon McVittie <smcv@debian.org>
+Date: Wed, 24 Sep 2025 18:14:48 +0100
+Subject: test: Set a much longer timeout for testatomic on GNU/Hurd
+
+The `FIFO test` part of this test-case exercises not only atomic
+operations, but also multi-threading more generally, because it has
+multiple threads that artificially cause lock contention. libpthread
+on the Hurd is mostly implemented in user-space without kernel assistance,
+its kernel and user-space are not well-optimized, and Hurd on i386 in
+particular only supports one CPU core, so this can be very slow.
+
+Tested-by: Pino Toscano
+---
+ test/CMakeLists.txt | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
+index 8bf5c25..2e34aa9 100644
+--- a/test/CMakeLists.txt
++++ b/test/CMakeLists.txt
+@@ -301,6 +301,9 @@ add_sdl_test_executable(testmultiaudio NEEDS_RESOURCES TESTUTILS SOURCES testmul
+ add_sdl_test_executable(testaudiohotplug NEEDS_RESOURCES TESTUTILS SOURCES testaudiohotplug.c)
+ add_sdl_test_executable(testaudiorecording MAIN_CALLBACKS SOURCES testaudiorecording.c)
+ add_sdl_test_executable(testatomic NONINTERACTIVE DISABLE_THREADS_ARGS "--no-threads" SOURCES testatomic.c)
++if(HURD)
++    set_property(TARGET testatomic PROPERTY SDL_NONINTERACTIVE_TIMEOUT 1500)
++endif()
+ add_sdl_test_executable(testintersections SOURCES testintersections.c)
+ add_sdl_test_executable(testrelative SOURCES testrelative.c)
+ add_sdl_test_executable(testhittesting SOURCES testhittesting.c)

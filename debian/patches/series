@@ -7,3 +7,4 @@ Don-t-set-SDL_SURFACE_LOCK_NEEDED-until-a-surface-is-RLE-.patch
 Add-GNU-Hurd-as-platform.patch
 cmake-detect-RISCOS-platform-before-GNU-Hurd.patch
 wikiheaders-Escape-backslash-in-man-pages.patch
+test-Set-a-much-longer-timeout-for-testatomic-on-GNU-Hurd.patch
