@@ -1,4 +1,4 @@
-libsdl3 (3.3~git20250925.ed2cdce+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.3~git20250925~ed2cdce+ds-1) UNRELEASED; urgency=medium
 
   [ Simon McVittie ]
   * New upstream snapshot, commit release-3.2.6-1294-ged2cdceb66
