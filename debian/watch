@@ -1,12 +1,13 @@
-version=4
+Version: 5
+
 # Upstream releases official source tarballs, so we use
 # those in preference to git tags
-opts="\
-    compression=xz, \
-    dversionmangle=s/[+~](?:ds|dfsg)[0-9]*$//;s/\+(?:git)?[0-9]+(?:\+g[0-9a-f]*)?$//, \
-    downloadurlmangle=s#/tag/#/download/#;s#((?:prerelease|preview|release)-?@ANY_VERSION@)$#$1/SDL3-$2.tar.gz#, \
-    filenamemangle=s#(?:prerelease|preview|release)-?@ANY_VERSION@#SDL3-$1.tar.gz#, \
-    pgpmode=none, \
-    repack, \
-    repacksuffix=+ds" \
-https://github.com/libsdl-org/SDL/tags .*/releases/tag/(?:release)-?@ANY_VERSION@
+Source: https://github.com/libsdl-org/SDL/tags
+Matching-Pattern: .*/releases/tag/(?:release)-?@ANY_VERSION@
+Compression: xz
+Download-Url-Mangle: s#/tag/#/download/#;s#((?:prerelease|preview|release)-?@ANY_VERSION@)$#$1/SDL3-$2.tar.gz#
+Dversion-Mangle: s/[+~](?:ds|dfsg)[0-9]*$//;s/\+(?:git)?[0-9]+(?:\+g[0-9a-f]*)?$//
+Filename-Mangle: s#(?:prerelease|preview|release)-?@ANY_VERSION@#SDL3-$1.tar.gz#
+Pgpmode: none
+Repack: yes
+Repacksuffix: +ds
