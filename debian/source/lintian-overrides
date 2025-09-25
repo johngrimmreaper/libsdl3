@@ -1,0 +1,6 @@
+# While packaging git snapshots we cannot verify the signature,
+# but we still want to keep the signing key around for when we go back
+# to using upstream's official tarballs
+debian-watch-could-verify-download debian/upstream/signing-key.asc [debian/watch]
+# https://bugs.debian.org/1115463
+debian-watch-not-mangling-version Version: 5 *
