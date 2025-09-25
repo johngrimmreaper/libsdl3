@@ -1,11 +1,11 @@
-version=4
-opts="\
-    compression=xz, \
-    dversionmangle=s/[+~](?:ds|dfsg)[0-9]*$//;s/\+(?:git)?[0-9]+(?:\+g[0-9a-f]*)?$//, \
-    mode=git, \
-    pgpmode=none, \
-    pretty=3.2.14+git%cd, \
-    repack, \
-    repacksuffix=+ds" \
-https://github.com/libsdl-org/SDL.git \
-heads/release-3.2.x
+Version: 5
+
+Source: https://github.com/libsdl-org/SDL.git
+Matching-Pattern: HEAD
+Compression: xz
+Dversion-Mangle: s/[+~](?:ds|dfsg)[0-9]*$//;s/\+(?:git)?[0-9]+(?:\+g[0-9a-f]*)?$//
+Mode: git
+Pgp-Mode: none
+Git-Pretty: 3.2.22+git%cd
+Repack: yes
+Repacksuffix: +ds
