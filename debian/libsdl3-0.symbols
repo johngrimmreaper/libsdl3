@@ -302,6 +302,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetGPUDriver@SDL3_0.0.0 3.2.0
  SDL_GetGPUShaderFormats@SDL3_0.0.0 3.2.0
  SDL_GetGPUSwapchainTextureFormat@SDL3_0.0.0 3.2.0
+ SDL_GetGPUTextureFormatFromPixelFormat@SDL3_0.0.0 3.3~git20250924
  SDL_GetGamepadAppleSFSymbolsNameForAxis@SDL3_0.0.0 3.2.0
  SDL_GetGamepadAppleSFSymbolsNameForButton@SDL3_0.0.0 3.2.0
  SDL_GetGamepadAxis@SDL3_0.0.0 3.2.0
@@ -434,6 +435,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetPerformanceFrequency@SDL3_0.0.0 3.2.0
  SDL_GetPixelFormatDetails@SDL3_0.0.0 3.2.0
  SDL_GetPixelFormatForMasks@SDL3_0.0.0 3.2.0
+ SDL_GetPixelFormatFromGPUTextureFormat@SDL3_0.0.0 3.3~git20250924
  SDL_GetPixelFormatName@SDL3_0.0.0 3.2.0
  SDL_GetPlatform@SDL3_0.0.0 3.2.0
  SDL_GetPointerProperty@SDL3_0.0.0 3.2.0
@@ -866,8 +868,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetJoystickVirtualButton@SDL3_0.0.0 3.2.0
  SDL_SetJoystickVirtualHat@SDL3_0.0.0 3.2.0
  SDL_SetJoystickVirtualTouchpad@SDL3_0.0.0 3.2.0
- SDL_SetLinuxThreadPriority@SDL3_0.0.0 3.2.0
- SDL_SetLinuxThreadPriorityAndPolicy@SDL3_0.0.0 3.2.0
+ (arch=linux-any)SDL_SetLinuxThreadPriority@SDL3_0.0.0 3.2.0
+ (arch=linux-any)SDL_SetLinuxThreadPriorityAndPolicy@SDL3_0.0.0 3.2.0
  SDL_SetLogOutputFunction@SDL3_0.0.0 3.2.0
  SDL_SetLogPriorities@SDL3_0.0.0 3.2.0
  SDL_SetLogPriority@SDL3_0.0.0 3.2.0

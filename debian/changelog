@@ -1,3 +1,26 @@
+libsdl3 (3.3~git20250925~ed2cdce+ds-1) experimental; urgency=medium
+
+  [ Simon McVittie ]
+  * New upstream snapshot, commit release-3.2.6-1294-ged2cdceb66
+  * d/libsdl3-0.symbols: Update
+  * d/control: Add Build-Depends on libopengl-dev,
+    so that dh_dlopenlibdeps can find libOpenGL.so.0
+  * d/watch*: Convert to uscan format v5
+  * d/watch*: Include the short commit hash in versions from upstream git
+  * d/watch.devel, d/upstream/signing-key.asc: Check signatures before
+    repacking.
+    Upstream tarball releases are signed again. This is only a 1024-bit
+    DSA key but it's better than nothing.
+  * d/p/test-Set-a-much-longer-timeout-for-testatomic-on-GNU-Hurd.patch:
+    Add patch to extend the timeout of testatomic on Hurd.
+    Based on discussion with Pino Toscano on sdl-team/libsdl3!3.
+  * d/source/lintian-overrides: Ignore d/watch-related false positives
+
+  [ Pino Toscano ]
+  * d/libsdl3-0.symbols: Mark Linux-specific symbols as such
+
+ -- Simon McVittie <smcv@debian.org>  Fri, 26 Sep 2025 10:15:20 +0100
+
 libsdl3 (3.3~git20250903.1+ds-2) experimental; urgency=medium
 
   * d/p/progress-Correct-calls-to-dbus_message_iter_open_containe.patch:

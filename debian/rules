@@ -74,9 +74,10 @@ else
   confflags += -DSDL_WAYLAND=OFF
 endif
 
-#ifeq ($(DEB_VERSION_UPSTREAM),3.2.14~git20250513+ds)
-#  confflags += -DSDL_REVISION=release-3.2.12-30-gc038d6f7f
-#endif
+ifeq ($(DEB_VERSION_UPSTREAM),3.3~git20250925~ed2cdce+ds)
+  # git describe --tags <hash>
+  confflags += -DSDL_REVISION=release-3.2.6-1294-ged2cdceb66
+endif
 
 %:
 	dh $@ --buildsystem=cmake
