@@ -1,15 +1,38 @@
-Tests: build
-Depends: build-essential, clang:native, libsdl3-dev, pkgconf
-Restrictions: superficial, allow-stderr
+Tests:
+ build,
+Depends:
+ build-essential,
+ clang:native,
+ libsdl3-dev,
+ pkgconf,
+Restrictions:
+ allow-stderr,
+ superficial,
 
-Tests: cmake
-Depends: build-essential, cmake, libsdl3-dev, pkgconf
-Restrictions: superficial, allow-stderr
+Tests:
+ cmake,
+Depends:
+ build-essential,
+ cmake,
+ libsdl3-dev,
+ pkgconf,
+Restrictions:
+ allow-stderr,
+ superficial,
 
-Tests: flaky
-Depends: libsdl3-tests
-Restrictions: allow-stderr, flaky, superficial
+Tests:
+ flaky,
+Depends:
+ libsdl3-tests,
+Restrictions:
+ allow-stderr,
+ flaky,
+ superficial,
 
-Tests: installed-tests
-Depends: gnome-desktop-testing, libsdl3-tests
-Restrictions: allow-stderr
+Tests:
+ installed-tests,
+Depends:
+ gnome-desktop-testing,
+ libsdl3-tests,
+Restrictions:
+ allow-stderr,

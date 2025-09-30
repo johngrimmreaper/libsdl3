@@ -8,4 +8,4 @@ Mode: git
 Pgp-Mode: none
 Git-Pretty: 3.2.22+git%cd~%h
 Repack: yes
-Repacksuffix: +ds
+Repack-Suffix: +ds
