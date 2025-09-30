@@ -10,4 +10,4 @@ Dversion-Mangle: s/[+~](?:ds|dfsg)[0-9]*$//;s/\+(?:git)?[0-9]+(?:\+g[0-9a-f]*)?$
 Filename-Mangle: s#(?:prerelease|preview|release)-?@ANY_VERSION@#SDL3-$1.tar.gz#
 Pgpmode: auto
 Repack: yes
-Repacksuffix: +ds
+Repack-Suffix: +ds

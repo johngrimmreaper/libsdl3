@@ -1,16 +1,17 @@
 Source: libsdl3
+X-Style: black
 Priority: optional
 Section: libs
 Maintainer: Debian SDL packages maintainers <pkg-sdl-maintainers@lists.alioth.debian.org>
 Uploaders:
  Manuel A. Fernandez Montecelo <mafm@debian.org>,
  Felix Geyer <fgeyer@debian.org>,
- Simon McVittie <smcv@debian.org>
+ Simon McVittie <smcv@debian.org>,
 Standards-Version: 4.7.2
 Build-Depends:
- cmake,
  debhelper-compat (= 13),
  dh-sequence-dlopenlibdeps,
+ cmake,
  fcitx-libs-dev,
  glslang-tools (>= 12),
  libasound2-dev [linux-any],
@@ -49,8 +50,8 @@ Build-Depends:
  wayland-protocols,
  xxd,
 Build-Depends-Indep:
- graphviz <!nodoc>,
  doxygen <!nodoc>,
+ graphviz <!nodoc>,
 Vcs-Git: https://salsa.debian.org/sdl-team/libsdl3.git -b debian/snapshots
 Vcs-Browser: https://salsa.debian.org/sdl-team/libsdl3
 Homepage: https://www.libsdl.org/
@@ -59,19 +60,19 @@ Package: libsdl3-0
 Architecture: any
 Multi-Arch: same
 Pre-Depends:
- ${misc:Pre-Depends}
+ ${misc:Pre-Depends},
 Depends:
  ${dlopen:Depends},
  ${misc:Depends},
- ${shlibs:Depends}
+ ${shlibs:Depends},
 Recommends:
- ${dlopen:Recommends},
  libegl1,
  libgl1 | libopengl0,
+ ${dlopen:Recommends},
 Suggests:
- ${dlopen:Suggests},
  libayatana-appindicator3-1 | libappindicator3-1,
  xdg-utils,
+ ${dlopen:Suggests},
 Description: Simple DirectMedia Layer, version 3
  SDL is a cross-platform library designed to make it easy to write
  multimedia software such as games and emulators.
@@ -113,7 +114,7 @@ Depends:
  libxv-dev,
  libxxf86vm-dev,
  ${misc:Depends},
- ${shlibs:Depends}
+ ${shlibs:Depends},
 Description: Simple DirectMedia Layer, version 3 development files
  SDL is a cross-platform library designed to make it easy to write
  multimedia software such as games and emulators.
@@ -144,9 +145,9 @@ Architecture: any
 Build-Profiles: <!noinsttest>
 Depends:
  ${misc:Depends},
- ${shlibs:Depends}
+ ${shlibs:Depends},
 Suggests:
- gnome-desktop-testing
+ gnome-desktop-testing,
 Description: Simple DirectMedia Layer automated and manual tests
  SDL is a cross-platform library designed to make it easy to write
  multimedia software such as games and emulators.
