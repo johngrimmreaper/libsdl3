@@ -80,7 +80,7 @@ ifeq ($(DEB_VERSION_UPSTREAM),3.3~git20250930~e3d6579+ds)
 endif
 
 %:
-	dh $@ --buildsystem=cmake
+	dh $@ -Scmake+ninja
 
 override_dh_auto_configure:
 	set -e; for bmp in test/icon.bmp test/gamepad_*.bmp test/glass.bmp; do \
