@@ -86,6 +86,11 @@ typedef struct GPU_RenderData
     SDL_GPUSampler *samplers[RENDER_SAMPLER_COUNT];
 } GPU_RenderData;
 
+typedef struct GPU_PaletteData
+{
+    SDL_GPUTexture *texture;
+} GPU_PaletteData;
+
 typedef struct GPU_TextureData
 {
     SDL_GPUTexture *texture;
@@ -117,6 +122,88 @@ static bool GPU_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMod
     return true;
 }
 
+static bool GPU_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
+    GPU_PaletteData *palettedata = (GPU_PaletteData *)SDL_calloc(1, sizeof(*palettedata));
+    if (!palettedata) {
+        return false;
+    }
+    palette->internal = palettedata;
+
+    SDL_GPUTextureCreateInfo tci;
+    SDL_zero(tci);
+    tci.format = SDL_GetGPUTextureFormatFromPixelFormat(SDL_PIXELFORMAT_RGBA32);
+    tci.layer_count_or_depth = 1;
+    tci.num_levels = 1;
+    tci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+    tci.width = 256;
+    tci.height = 1;
+    tci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+
+    palettedata->texture = SDL_CreateGPUTexture(data->device, &tci);
+    if (!palettedata->texture) {
+        return false;
+    }
+    return true;
+}
+
+static bool GPU_UpdatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette, int ncolors, SDL_Color *colors)
+{
+    GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
+    GPU_PaletteData *palettedata = (GPU_PaletteData *)palette->internal;
+    const Uint32 data_size = ncolors * sizeof(*colors);
+
+    SDL_GPUTransferBufferCreateInfo tbci;
+    SDL_zero(tbci);
+    tbci.size = data_size;
+    tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+
+    SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(data->device, &tbci);
+    if (tbuf == NULL) {
+        return false;
+    }
+
+    Uint8 *output = SDL_MapGPUTransferBuffer(data->device, tbuf, false);
+    SDL_memcpy(output, colors, data_size);
+    SDL_UnmapGPUTransferBuffer(data->device, tbuf);
+
+    SDL_GPUCommandBuffer *cbuf = data->state.command_buffer;
+    SDL_GPUCopyPass *cpass = SDL_BeginGPUCopyPass(cbuf);
+
+    SDL_GPUTextureTransferInfo tex_src;
+    SDL_zero(tex_src);
+    tex_src.transfer_buffer = tbuf;
+    tex_src.rows_per_layer = 1;
+    tex_src.pixels_per_row = ncolors;
+
+    SDL_GPUTextureRegion tex_dst;
+    SDL_zero(tex_dst);
+    tex_dst.texture = palettedata->texture;
+    tex_dst.x = 0;
+    tex_dst.y = 0;
+    tex_dst.w = ncolors;
+    tex_dst.h = 1;
+    tex_dst.d = 1;
+
+    SDL_UploadToGPUTexture(cpass, &tex_src, &tex_dst, false);
+    SDL_EndGPUCopyPass(cpass);
+    SDL_ReleaseGPUTransferBuffer(data->device, tbuf);
+
+    return true;
+}
+
+static void GPU_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
+    GPU_PaletteData *palettedata = (GPU_PaletteData *)palette->internal;
+
+    if (palettedata) {
+        SDL_ReleaseGPUTexture(data->device, palettedata->texture);
+        SDL_free(palettedata);
+    }
+}
+
 static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     GPU_RenderData *renderdata = (GPU_RenderData *)renderer->internal;
@@ -124,8 +211,11 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     SDL_GPUTextureFormat format;
     SDL_GPUTextureUsageFlags usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
 
-    format = SDL_GetGPUTextureFormatFromPixelFormat(texture->format);
-
+    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
+        format = SDL_GPU_TEXTUREFORMAT_R8_UNORM;
+    } else {
+        format = SDL_GetGPUTextureFormatFromPixelFormat(texture->format);
+    }
     if (format == SDL_GPU_TEXTUREFORMAT_INVALID) {
         return SDL_SetError("Texture format %s not supported by SDL_GPU",
                             SDL_GetPixelFormatName(texture->format));
@@ -539,7 +629,13 @@ static void Draw(
         SDL_Texture *texture = cmd->data.draw.texture;
         if (texture) {
             v_shader = VERT_SHADER_TRI_TEXTURE;
-            if (texture->format == SDL_PIXELFORMAT_RGBA32 || texture->format == SDL_PIXELFORMAT_BGRA32) {
+            if (texture->format == SDL_PIXELFORMAT_INDEX8) {
+                if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+                    f_shader = FRAG_SHADER_TEXTURE_PALETTE_PIXELART;
+                } else {
+                    f_shader = FRAG_SHADER_TEXTURE_PALETTE;
+                }
+            } else if (texture->format == SDL_PIXELFORMAT_RGBA32 || texture->format == SDL_PIXELFORMAT_BGRA32) {
                 if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
                     f_shader = FRAG_SHADER_TEXTURE_RGBA_PIXELART;
                 } else {
@@ -589,12 +685,21 @@ static void Draw(
 
     Uint32 sampler_slot = 0;
     if (cmd->data.draw.texture) {
-        GPU_TextureData *tdata = (GPU_TextureData *)cmd->data.draw.texture->internal;
+        SDL_Texture *texture = cmd->data.draw.texture;
+        GPU_TextureData *tdata = (GPU_TextureData *)texture->internal;
         SDL_GPUTextureSamplerBinding sampler_bind;
         SDL_zero(sampler_bind);
         sampler_bind.sampler = GetSampler(data, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
         sampler_bind.texture = tdata->texture;
         SDL_BindGPUFragmentSamplers(pass, sampler_slot++, &sampler_bind, 1);
+
+        if (texture->palette) {
+            GPU_PaletteData *palette = (GPU_PaletteData *)texture->palette->internal;
+
+            sampler_bind.sampler = GetSampler(data, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
+            sampler_bind.texture = palette->texture;
+            SDL_BindGPUFragmentSamplers(pass, sampler_slot++, &sampler_bind, 1);
+        }
     }
     if (custom_state) {
         if (custom_state->num_sampler_bindings > 0) {
@@ -1168,6 +1273,9 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     }
 
     renderer->SupportsBlendMode = GPU_SupportsBlendMode;
+    renderer->CreatePalette = GPU_CreatePalette;
+    renderer->UpdatePalette = GPU_UpdatePalette;
+    renderer->DestroyPalette = GPU_DestroyPalette;
     renderer->CreateTexture = GPU_CreateTexture;
     renderer->UpdateTexture = GPU_UpdateTexture;
     renderer->LockTexture = GPU_LockTexture;
@@ -1205,17 +1313,17 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN, true);
     }
     // These properties allow using the renderer on more Android devices.
-    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOLEAN)) {
-        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOLEAN, false);
+    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN)) {
+        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, false);
     }
-    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOLEAN)) {
-        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOLEAN, false);
+    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN)) {
+        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, false);
     }
-    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOLEAN)) {
-        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOLEAN, false);
+    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN)) {
+        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, false);
     }
-    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOLEAN)) {
-        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOLEAN, false);
+    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN)) {
+        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, false);
     }
 
     GPU_FillSupportedShaderFormats(create_props);
@@ -1256,6 +1364,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX32);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX32);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
 
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 16384);
 
