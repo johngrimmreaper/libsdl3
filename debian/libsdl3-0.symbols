@@ -1,5 +1,6 @@
 libSDL3.so.0 libsdl3-0 #MINVER#
 * Build-Depends-Package: libsdl3-dev
+ (optional)JNI_OnLoad@SDL3_0.0.0 3.3~git20250930~
  SDL3_0.0.0@SDL3_0.0.0 3.2.0
  SDL_AcquireCameraFrame@SDL3_0.0.0 3.2.0
  SDL_AcquireGPUCommandBuffer@SDL3_0.0.0 3.2.0
@@ -190,7 +191,9 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_FlushEvents@SDL3_0.0.0 3.2.0
  SDL_FlushIO@SDL3_0.0.0 3.2.0
  SDL_FlushRenderer@SDL3_0.0.0 3.2.0
+ SDL_GDKResumeGPU@SDL3_0.0.0 3.3~git20250930~
  SDL_GDKSuspendComplete@SDL3_0.0.0 3.2.0
+ SDL_GDKSuspendGPU@SDL3_0.0.0 3.3~git20250930~
  SDL_GL_CreateContext@SDL3_0.0.0 3.2.0
  SDL_GL_DestroyContext@SDL3_0.0.0 3.2.0
  SDL_GL_ExtensionSupported@SDL3_0.0.0 3.2.0
@@ -219,6 +222,13 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GamepadHasSensor@SDL3_0.0.0 3.2.0
  SDL_GamepadSensorEnabled@SDL3_0.0.0 3.2.0
  SDL_GenerateMipmapsForGPUTexture@SDL3_0.0.0 3.2.0
+ SDL_GetAndroidActivity@SDL3_0.0.0 3.3~git20250930~
+ SDL_GetAndroidCachePath@SDL3_0.0.0 3.3~git20250930~
+ SDL_GetAndroidExternalStoragePath@SDL3_0.0.0 3.3~git20250930~
+ SDL_GetAndroidExternalStorageState@SDL3_0.0.0 3.3~git20250930~
+ SDL_GetAndroidInternalStoragePath@SDL3_0.0.0 3.3~git20250930~
+ SDL_GetAndroidJNIEnv@SDL3_0.0.0 3.3~git20250930~
+ SDL_GetAndroidSDKVersion@SDL3_0.0.0 3.3~git20250930~
  SDL_GetAppMetadataProperty@SDL3_0.0.0 3.2.0
  SDL_GetAssertionHandler@SDL3_0.0.0 3.2.0
  SDL_GetAssertionReport@SDL3_0.0.0 3.2.0
@@ -271,6 +281,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetCurrentTime@SDL3_0.0.0 3.2.0
  SDL_GetCurrentVideoDriver@SDL3_0.0.0 3.2.0
  SDL_GetCursor@SDL3_0.0.0 3.2.0
+ SDL_GetDXGIOutputInfo@SDL3_0.0.0 3.3~git20250930~
  SDL_GetDateTimeLocalePreferences@SDL3_0.0.0 3.2.0
  SDL_GetDayOfWeek@SDL3_0.0.0 3.2.0
  SDL_GetDayOfYear@SDL3_0.0.0 3.2.0
@@ -280,6 +291,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetDefaultLogOutputFunction@SDL3_0.0.0 3.2.0
  SDL_GetDefaultTextureScaleMode@SDL3_0.0.0 3.3~
  SDL_GetDesktopDisplayMode@SDL3_0.0.0 3.2.0
+ SDL_GetDirect3D9AdapterIndex@SDL3_0.0.0 3.3~git20250930~
  SDL_GetDisplayBounds@SDL3_0.0.0 3.2.0
  SDL_GetDisplayContentScale@SDL3_0.0.0 3.2.0
  SDL_GetDisplayForPoint@SDL3_0.0.0 3.2.0
@@ -297,6 +309,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetEventFilter@SDL3_0.0.0 3.2.0
  SDL_GetFloatProperty@SDL3_0.0.0 3.2.0
  SDL_GetFullscreenDisplayModes@SDL3_0.0.0 3.2.0
+ SDL_GetGDKDefaultUser@SDL3_0.0.0 3.3~git20250930~
+ SDL_GetGDKTaskQueue@SDL3_0.0.0 3.3~git20250930~
  SDL_GetGPUDeviceDriver@SDL3_0.0.0 3.2.0
  SDL_GetGPUDeviceProperties@SDL3_0.0.0 3.3~
  SDL_GetGPUDriver@SDL3_0.0.0 3.2.0
@@ -524,6 +538,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetTextureBlendMode@SDL3_0.0.0 3.2.0
  SDL_GetTextureColorMod@SDL3_0.0.0 3.2.0
  SDL_GetTextureColorModFloat@SDL3_0.0.0 3.2.0
+ SDL_GetTexturePalette@SDL3_0.0.0 3.3~git20250930~
  SDL_GetTextureProperties@SDL3_0.0.0 3.2.0
  SDL_GetTextureScaleMode@SDL3_0.0.0 3.2.0
  SDL_GetTextureSize@SDL3_0.0.0 3.2.0
@@ -624,6 +639,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_InsertTrayEntryAt@SDL3_0.0.0 3.2.0
  SDL_IsAudioDevicePhysical@SDL3_0.0.0 3.2.0
  SDL_IsAudioDevicePlayback@SDL3_0.0.0 3.2.0
+ SDL_IsChromebook@SDL3_0.0.0 3.3~git20250930~
+ SDL_IsDeXMode@SDL3_0.0.0 3.3~git20250930~
  SDL_IsGamepad@SDL3_0.0.0 3.2.0
  SDL_IsJoystickHaptic@SDL3_0.0.0 3.2.0
  SDL_IsJoystickVirtual@SDL3_0.0.0 3.2.0
@@ -676,6 +693,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_Metal_GetLayer@SDL3_0.0.0 3.2.0
  SDL_MinimizeWindow@SDL3_0.0.0 3.2.0
  SDL_MixAudio@SDL3_0.0.0 3.2.0
+ SDL_OnApplicationDidChangeStatusBarOrientation@SDL3_0.0.0 3.3~git20250930~
  SDL_OnApplicationDidEnterBackground@SDL3_0.0.0 3.2.0
  SDL_OnApplicationDidEnterForeground@SDL3_0.0.0 3.2.0
  SDL_OnApplicationDidReceiveMemoryWarning@SDL3_0.0.0 3.2.0
@@ -740,6 +758,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ReadU64BE@SDL3_0.0.0 3.2.0
  SDL_ReadU64LE@SDL3_0.0.0 3.2.0
  SDL_ReadU8@SDL3_0.0.0 3.2.0
+ SDL_RegisterApp@SDL3_0.0.0 3.3~git20250930~
  SDL_RegisterEvents@SDL3_0.0.0 3.2.0
  SDL_ReleaseCameraFrame@SDL3_0.0.0 3.2.0
  SDL_ReleaseGPUBuffer@SDL3_0.0.0 3.2.0
@@ -787,6 +806,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_RenderTextureTiled@SDL3_0.0.0 3.2.0
  SDL_RenderViewportSet@SDL3_0.0.0 3.2.0
  SDL_ReportAssertion@SDL3_0.0.0 3.2.0
+ SDL_RequestAndroidPermission@SDL3_0.0.0 3.3~git20250930~
  SDL_ResetAssertionReport@SDL3_0.0.0 3.2.0
  SDL_ResetHint@SDL3_0.0.0 3.2.0
  SDL_ResetHints@SDL3_0.0.0 3.2.0
@@ -811,6 +831,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ScreenKeyboardShown@SDL3_0.0.0 3.2.0
  SDL_ScreenSaverEnabled@SDL3_0.0.0 3.2.0
  SDL_SeekIO@SDL3_0.0.0 3.2.0
+ SDL_SendAndroidBackButton@SDL3_0.0.0 3.3~git20250930~
+ SDL_SendAndroidMessage@SDL3_0.0.0 3.3~git20250930~
  SDL_SendGamepadEffect@SDL3_0.0.0 3.2.0
  SDL_SendJoystickEffect@SDL3_0.0.0 3.2.0
  SDL_SendJoystickVirtualSensorData@SDL3_0.0.0 3.2.0
@@ -912,6 +934,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetTextureBlendMode@SDL3_0.0.0 3.2.0
  SDL_SetTextureColorMod@SDL3_0.0.0 3.2.0
  SDL_SetTextureColorModFloat@SDL3_0.0.0 3.2.0
+ SDL_SetTexturePalette@SDL3_0.0.0 3.3~git20250930~
  SDL_SetTextureScaleMode@SDL3_0.0.0 3.2.0
  SDL_SetTrayEntryCallback@SDL3_0.0.0 3.2.0
  SDL_SetTrayEntryChecked@SDL3_0.0.0 3.2.0
@@ -944,9 +967,13 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetWindowSize@SDL3_0.0.0 3.2.0
  SDL_SetWindowSurfaceVSync@SDL3_0.0.0 3.2.0
  SDL_SetWindowTitle@SDL3_0.0.0 3.2.0
+ SDL_SetWindowsMessageHook@SDL3_0.0.0 3.3~git20250930~
  SDL_SetX11EventHook@SDL3_0.0.0 3.2.0
+ SDL_SetiOSAnimationCallback@SDL3_0.0.0 3.3~git20250930~
+ SDL_SetiOSEventPump@SDL3_0.0.0 3.3~git20250930~
  SDL_ShouldInit@SDL3_0.0.0 3.2.0
  SDL_ShouldQuit@SDL3_0.0.0 3.2.0
+ SDL_ShowAndroidToast@SDL3_0.0.0 3.3~git20250930~
  SDL_ShowCursor@SDL3_0.0.0 3.2.0
  SDL_ShowFileDialogWithProperties@SDL3_0.0.0 3.2.0
  SDL_ShowMessageBox@SDL3_0.0.0 3.2.0
@@ -999,6 +1026,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_UnlockSurface@SDL3_0.0.0 3.2.0
  SDL_UnlockTexture@SDL3_0.0.0 3.2.0
  SDL_UnmapGPUTransferBuffer@SDL3_0.0.0 3.2.0
+ SDL_UnregisterApp@SDL3_0.0.0 3.3~git20250930~
  SDL_UnsetEnvironmentVariable@SDL3_0.0.0 3.2.0
  SDL_UpdateGamepads@SDL3_0.0.0 3.2.0
  SDL_UpdateHapticEffect@SDL3_0.0.0 3.2.0
