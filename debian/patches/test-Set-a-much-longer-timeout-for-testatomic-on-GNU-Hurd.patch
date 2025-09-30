@@ -15,7 +15,7 @@ Tested-by: Pino Toscano
  1 file changed, 3 insertions(+)
 
 diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
-index e1b020f..0c64881 100644
+index 640d02b..6854ee3 100644
 --- a/test/CMakeLists.txt
 +++ b/test/CMakeLists.txt
 @@ -312,6 +312,9 @@ add_sdl_test_executable(testmultiaudio NEEDS_RESOURCES TESTUTILS SOURCES testmul
