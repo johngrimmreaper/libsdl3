@@ -79,7 +79,7 @@ endif
 #endif
 
 %:
-	dh $@ -Scmake+ninja
+	dh $@ -Scmake+ninja -Bbuild
 
 override_dh_auto_configure:
 	set -e; for bmp in test/icon.bmp test/gamepad_*.bmp test/glass.bmp; do \
