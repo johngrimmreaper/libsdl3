@@ -76,7 +76,7 @@ endif
 
 ifeq ($(DEB_VERSION_UPSTREAM),3.3~git20250930~fd4c2f8+ds)
   # git describe --tags <hash>
-  confflags += -DSDL_REVISION=release-3.2.6-1342-gfd4c2f8cfd
+  confflags += -DSDL_REVISION=SDL-release-3.2.6-1342-gfd4c2f8cfd
 endif
 
 %:
