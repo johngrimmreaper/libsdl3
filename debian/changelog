@@ -1,10 +1,8 @@
-libsdl3 (3.3~git20250930~e3d6579+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.3~git20250930~fd4c2f8+ds-1) UNRELEASED; urgency=medium
 
-  * New upstream snapshot, commit release-3.2.6-1338-ge3d65796f4
+  * New upstream snapshot, commit release-3.2.6-1342-gfd4c2f8cfd
   * d/build-shaders.sh: Update naming scheme for test shaders
   * d/libsdl3-0.symbols: Update
-  * d/p/test-Space-separate-arguments-in-as-installed-tests-.test.patch:
-    Add patch to fix one of the autopkgtests
   * d/control, d/rules: Build using ninja-build
   * d/rules: Do the build in a directory covered by upstream's .gitignore
   * d/control: Remove Rules-Requires-Root, no longer needed since Debian 13
