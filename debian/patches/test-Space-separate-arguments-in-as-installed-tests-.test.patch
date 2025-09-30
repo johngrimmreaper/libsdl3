@@ -14,6 +14,7 @@ and currently none of the tests have arguments that need quoting.
 
 Signed-off-by: Simon McVittie <smcv@collabora.com>
 Forwarded: https://github.com/libsdl-org/SDL/pull/14086
+Applied-upstream: 3.3.0, commit:c81b4e84937d770676c705b751a5c591291ce677
 ---
  test/CMakeLists.txt | 4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)
