@@ -7,7 +7,6 @@ make-header() {
     xxd -i "$1" | sed \
         -e 's/^unsigned /const unsigned /g' \
         -e 's,^const,static const,' \
-        -e 's, testgpurender_effects, testgpu_effects,' \
         > "$1.h"
 }
 
