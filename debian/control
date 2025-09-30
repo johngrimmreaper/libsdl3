@@ -54,7 +54,6 @@ Build-Depends-Indep:
 Vcs-Git: https://salsa.debian.org/sdl-team/libsdl3.git -b debian/snapshots
 Vcs-Browser: https://salsa.debian.org/sdl-team/libsdl3
 Homepage: https://www.libsdl.org/
-Rules-Requires-Root: no
 
 Package: libsdl3-0
 Architecture: any
