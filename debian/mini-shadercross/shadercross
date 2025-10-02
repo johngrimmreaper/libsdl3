@@ -1,0 +1,45 @@
+#!/usr/bin/python3
+# Minimal reimplementation of https://github.com/libsdl-org/SDL_shadercross
+# using glslangValidator to avoid being blocked by
+# https://bugs.debian.org/1095081, https://bugs.debian.org/1095077
+
+import argparse
+import subprocess
+import sys
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-o', dest='output', default='')
+    parser.add_argument('input', default='')
+
+    args = parser.parse_args()
+
+    if not args.output:
+        parser.error('requires -o OUTPUT')
+
+    if args.output.endswith('.spv'):
+        subprocess.run(
+            [
+                'glslangValidator',
+                '-e', 'main',
+                '-o', args.output,
+                '-V',
+                '-D',
+                args.input,
+            ],
+            check=True,
+        )
+    elif args.output.endswith(('.dxil', '.msl')):
+        # We don't use these on Linux, they just need to exist
+        with open(args.output, 'wb'):
+            pass
+    else:
+        parser.error('unrecognised output format')
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except subprocess.CalledProcessError as e:
+        raise SystemExit(str(e))
