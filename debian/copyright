@@ -31,8 +31,6 @@ Files-Excluded: Android.mk
                 test/glass.h
                 test/icon.h
                 test/n3ds
-                test/testgpu/testgpu_dxil.h
-                test/testgpu/testgpu_metallib.h
                 test/testgpu*.dxil.h
                 test/testgpu*.msl.h
                 test/unifont-*

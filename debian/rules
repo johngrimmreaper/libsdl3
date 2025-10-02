@@ -76,7 +76,7 @@ endif
 
 ifeq ($(DEB_VERSION_UPSTREAM),3.3~git20250930~fd4c2f8+ds)
   # git describe --tags <hash>
-  confflags += -DSDL_REVISION=release-3.2.6-1342-gfd4c2f8cfd
+  confflags += -DSDL_REVISION=SDL-release-3.2.6-1342-gfd4c2f8cfd
 endif
 
 %:
@@ -87,12 +87,12 @@ override_dh_auto_configure:
 		python3 cmake/xxd.py -i "$${bmp}" -o "$${bmp%.bmp}.h"; \
 	done
 	cd build-scripts && ./makecasefoldhashtable.pl > ../src/stdlib/SDL_casefolding.h
-	debian/build-shaders.sh
+	set -e; for dir in src/render/gpu/shaders test test/testgpu; do \
+		PATH=$(CURDIR)/debian/mini-shadercross:$$PATH env -C "$$dir" $(CURDIR)/$$dir/build-shaders.sh; \
+	done
 	# This is intended as a Windows batch file, but at the time of writing
 	# it's so simple that it's also a valid shell script
 	cd src/render/vulkan && sh -ex ./compile_shaders.bat
-	cd test/testgpu && OSTYPE=$(DEB_HOST_ARCH_OS) bash -ex ./build-shaders.sh
-	cp debian/placeholders/testgpu_*.h test/testgpu/
 	dh_auto_configure -- $(confflags)
 
 execute_after_dh_auto_build:

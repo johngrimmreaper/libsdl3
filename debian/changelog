@@ -1,3 +1,24 @@
+libsdl3 (3.3~git20251002~a864dca+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot, commit release-3.2.6-1356-ga864dcac25
+  * d/rules: Include SDL- prefix in SDL_REVISION.
+    This allows it to be retrieved from the binary with strings(1)
+    and grep(1).
+  * Revert "d/libsdl3-0.symbols: Mark Linux symbols as such".
+    It was correct at the time it was added, but in the latest snapshots
+    the platform-specific symbols exist as ABI on all platforms: they
+    just don't do anything on platforms where they aren't relevant.
+  * d/copyright: Update list of excluded files
+  * d/libsdl3-0.symbols: Update.
+    Note that there is an ABI break since the previous snapshot:
+    SDL_SetRenderGPUState() is now named SDL_SetGPURenderState().
+    This only affects development snapshots and experimental, so the SONAME
+    has not been changed.
+  * Update regeneration of shader files, replacing d/build-shaders.sh with
+    a script implementing a small subset of shadercross' interface
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 02 Oct 2025 11:11:44 +0100
+
 libsdl3 (3.3~git20250930~fd4c2f8+ds-1) experimental; urgency=medium
 
   * New upstream snapshot, commit release-3.2.6-1342-gfd4c2f8cfd
