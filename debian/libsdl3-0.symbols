@@ -314,6 +314,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetGPUDeviceDriver@SDL3_0.0.0 3.2.0
  SDL_GetGPUDeviceProperties@SDL3_0.0.0 3.3~
  SDL_GetGPUDriver@SDL3_0.0.0 3.2.0
+ SDL_GetGPURendererDevice@SDL3_0.0.0 3.3~git20251002~
  SDL_GetGPUShaderFormats@SDL3_0.0.0 3.2.0
  SDL_GetGPUSwapchainTextureFormat@SDL3_0.0.0 3.2.0
  SDL_GetGPUTextureFormatFromPixelFormat@SDL3_0.0.0 3.3~git20250924
@@ -866,6 +867,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetGPUAllowedFramesInFlight@SDL3_0.0.0 3.2.0
  SDL_SetGPUBlendConstants@SDL3_0.0.0 3.2.0
  SDL_SetGPUBufferName@SDL3_0.0.0 3.2.0
+ SDL_SetGPURenderState@SDL3_0.0.0 3.3~git20251002~
  SDL_SetGPURenderStateFragmentUniforms@SDL3_0.0.0 3.3~
  SDL_SetGPUScissor@SDL3_0.0.0 3.2.0
  SDL_SetGPUStencilReference@SDL3_0.0.0 3.2.0
@@ -910,7 +912,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetRenderDrawBlendMode@SDL3_0.0.0 3.2.0
  SDL_SetRenderDrawColor@SDL3_0.0.0 3.2.0
  SDL_SetRenderDrawColorFloat@SDL3_0.0.0 3.2.0
- SDL_SetRenderGPUState@SDL3_0.0.0 3.3~
  SDL_SetRenderLogicalPresentation@SDL3_0.0.0 3.2.0
  SDL_SetRenderScale@SDL3_0.0.0 3.2.0
  SDL_SetRenderTarget@SDL3_0.0.0 3.2.0
