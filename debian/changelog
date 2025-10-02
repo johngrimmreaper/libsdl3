@@ -1,5 +1,6 @@
-libsdl3 (3.3~git20250930~fd4c2f8+ds-2) UNRELEASED; urgency=medium
+libsdl3 (3.3~git20251002~a864dca+ds-1) UNRELEASED; urgency=medium
 
+  * New upstream snapshot, commit release-3.2.6-1356-ga864dcac25
   * d/rules: Include SDL- prefix in SDL_REVISION.
     This allows it to be retrieved from the binary with strings(1)
     and grep(1).
