@@ -91,8 +91,6 @@ override_dh_auto_configure:
 	# This is intended as a Windows batch file, but at the time of writing
 	# it's so simple that it's also a valid shell script
 	cd src/render/vulkan && sh -ex ./compile_shaders.bat
-	cd test/testgpu && OSTYPE=$(DEB_HOST_ARCH_OS) bash -ex ./build-shaders.sh
-	cp debian/placeholders/testgpu_*.h test/testgpu/
 	dh_auto_configure -- $(confflags)
 
 execute_after_dh_auto_build:

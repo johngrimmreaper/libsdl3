@@ -10,7 +10,7 @@ make-header() {
         > "$1.h"
 }
 
-for filename in src/render/gpu/shaders/*.hlsl test/*.hlsl; do
+for filename in src/render/gpu/shaders/*.hlsl test/*.hlsl test/testgpu/*.hlsl; do
     if [ -f "$filename" ]; then
         dir=${filename%/*}
         name=${filename##*/}
