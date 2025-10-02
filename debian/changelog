@@ -3,9 +3,13 @@ libsdl3 (3.3~git20250930~fd4c2f8+ds-2) UNRELEASED; urgency=medium
   * d/rules: Include SDL- prefix in SDL_REVISION.
     This allows it to be retrieved from the binary with strings(1)
     and grep(1).
+  * Revert "d/libsdl3-0.symbols: Mark Linux symbols as such".
+    It was correct at the time it was added, but in the latest snapshots
+    the platform-specific symbols exist as ABI on all platforms: they
+    just don't do anything on platforms where they aren't relevant.
   * d/copyright: Update list of excluded files
 
- -- Simon McVittie <smcv@debian.org>  Thu, 02 Oct 2025 10:27:45 +0100
+ -- Simon McVittie <smcv@debian.org>  Thu, 02 Oct 2025 10:28:44 +0100
 
 libsdl3 (3.3~git20250930~fd4c2f8+ds-1) experimental; urgency=medium
 
