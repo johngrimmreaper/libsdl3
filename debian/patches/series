@@ -1,1 +1,2 @@
 test-Set-a-much-longer-timeout-for-testatomic-on-GNU-Hurd.patch
+unix-Mark-SDL_FRIBIDI_DYNAMIC-as-a-weak-dependency.patch

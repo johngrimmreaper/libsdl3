@@ -1,0 +1,28 @@
+From: Simon McVittie <smcv@collabora.com>
+Date: Sat, 4 Oct 2025 11:39:15 +0100
+Subject: unix: Mark SDL_FRIBIDI_DYNAMIC as a weak dependency
+
+Signed-off-by: Simon McVittie <smcv@collabora.com>
+Forwarded: https://github.com/libsdl-org/SDL/pull/14138
+---
+ src/core/unix/SDL_fribidi.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/src/core/unix/SDL_fribidi.c b/src/core/unix/SDL_fribidi.c
+index 1c7f863..d4451d7 100644
+--- a/src/core/unix/SDL_fribidi.c
++++ b/src/core/unix/SDL_fribidi.c
+@@ -25,6 +25,13 @@
+ #include "SDL_fribidi.h"
+ #include <fribidi.h>
+ 
++SDL_ELF_NOTE_DLOPEN(
++    "fribidi",
++    "Bidirectional text support",
++    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
++    SDL_FRIBIDI_DYNAMIC
++);
++
+ SDL_FriBidi *SDL_FriBidi_Create(void) {
+ 	SDL_FriBidi *fribidi;
+ 
