@@ -98,7 +98,6 @@ Depends:
  libpipewire-0.3-dev (>= 0.3.44) [linux-any],
  libpulse-dev,
  libsdl3-0 (= ${binary:Version}),
- libsndio-dev,
  libudev-dev [linux-any],
  libusb2-dev [kfreebsd-any],
  libusbhid-dev [kfreebsd-any],
