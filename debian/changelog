@@ -1,8 +1,10 @@
 libsdl3 (3.3~git20251004~f3815ed+ds-1) UNRELEASED; urgency=medium
 
   * New upstream snapshot, commit release-3.2.6-1388-gf3815ede24
+  * d/control: Build-Depend on libfribidi-dev, for the new support for
+    bidirectional text in the X11 toolkit
 
- -- Simon McVittie <smcv@debian.org>  Sat, 04 Oct 2025 11:30:05 +0100
+ -- Simon McVittie <smcv@debian.org>  Sat, 04 Oct 2025 11:51:17 +0100
 
 libsdl3 (3.3~git20251002~a864dca+ds-1) experimental; urgency=medium
 
