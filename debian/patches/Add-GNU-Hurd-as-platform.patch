@@ -109,7 +109,7 @@ index 996e216..8bf3349 100644
  #elif defined(SDL_PLATFORM_FREEBSD)
          const char *proc_path = "/proc/curproc/file";
 diff --git a/test/testgles2.c b/test/testgles2.c
-index 1184eab..ba3e0dd 100644
+index 5fad872..2f054fc 100644
 --- a/test/testgles2.c
 +++ b/test/testgles2.c
 @@ -19,7 +19,7 @@
