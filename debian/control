@@ -90,6 +90,7 @@ Depends:
  libdecor-0-dev (>= 0.2.0) [linux-any],
  libdrm-dev [linux-any],
  libegl-dev,
+ libfribidi-dev,
  libgbm-dev [linux-any],
  libgl-dev,
  libgles-dev,
