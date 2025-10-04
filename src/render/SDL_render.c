@@ -1015,7 +1015,7 @@ static SDL_RenderLineMethod SDL_GetRenderLineMethod(void)
 
 static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Window *window)
 {
-    SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
+    SDL_DisplayID displayID = window ? SDL_GetDisplayForWindow(window) : 0;
     const SDL_DisplayMode *mode;
     int refresh_num, refresh_den;
 
@@ -1209,9 +1209,9 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         SDL_SetPointerProperty(new_props, SDL_PROP_RENDERER_SURFACE_POINTER, surface);
     }
     SDL_SetNumberProperty(new_props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, renderer->output_colorspace);
-    UpdateHDRProperties(renderer);
 
     if (window) {
+        UpdateHDRProperties(renderer);
         SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_RENDERER_POINTER, renderer);
         SDL_AddWindowRenderer(window, renderer);
     }
@@ -1525,9 +1525,8 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     texture->color.b = 1.0f;
     texture->color.a = 1.0f;
     texture->blendMode = SDL_ISPIXELFORMAT_ALPHA(format) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE;
-    if (renderer->scale_mode == SDL_SCALEMODE_LINEAR &&
-        SDL_ISPIXELFORMAT_INDEXED(format)) {
-        texture->scaleMode = SDL_SCALEMODE_PIXELART;
+    if (SDL_ISPIXELFORMAT_INDEXED(format)) {
+        texture->scaleMode = SDL_SCALEMODE_NEAREST;
     } else {
         texture->scaleMode = renderer->scale_mode;
     }
@@ -2163,11 +2162,11 @@ bool SDL_SetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode scaleMode)
 
     switch (scaleMode) {
     case SDL_SCALEMODE_NEAREST:
-    case SDL_SCALEMODE_PIXELART:
         break;
+    case SDL_SCALEMODE_PIXELART:
     case SDL_SCALEMODE_LINEAR:
         if (SDL_ISPIXELFORMAT_INDEXED(texture->format)) {
-            scaleMode = SDL_SCALEMODE_PIXELART;
+            scaleMode = SDL_SCALEMODE_NEAREST;
         }
         break;
     default:
