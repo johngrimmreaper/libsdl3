@@ -1,4 +1,4 @@
-libsdl3 (3.2.24+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.2.24+ds-1) unstable; urgency=medium
 
   * New upstream stable release
   * d/patches: Drop several patches that were included in the upstream
@@ -16,11 +16,12 @@ libsdl3 (3.2.24+ds-1) UNRELEASED; urgency=medium
   * d/watch, d/upstream/signing-key.asc: Check signatures before repacking
   * d/control: Remove Rules-Requires-Root, no longer needed since Debian 13
   * Reformat packaging files using debputy
+  * Update Lintian overrides
 
   [ Pino Toscano ]
   * d/libsdl3-0.symbols: Mark Linux symbols as such
 
- -- Simon McVittie <smcv@debian.org>  Sat, 04 Oct 2025 11:14:22 +0100
+ -- Simon McVittie <smcv@debian.org>  Sat, 04 Oct 2025 14:20:25 +0100
 
 libsdl3 (3.2.22+ds-1) unstable; urgency=medium
 
