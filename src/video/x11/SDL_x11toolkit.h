@@ -29,6 +29,9 @@
 #include "SDL_x11settings.h"
 #include "SDL_x11toolkit.h"
 #include "xsettings-client.h"
+#ifdef HAVE_FRIBIDI_H
+#include "../../core/unix/SDL_fribidi.h"
+#endif
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
@@ -95,7 +98,6 @@ typedef struct SDL_ToolkitWindowX11
 	Bool shm_pixmap;
 #endif
     bool utf8;
-
     /* Atoms */
     Atom wm_protocols;
     Atom wm_delete_message;
@@ -103,7 +105,7 @@ typedef struct SDL_ToolkitWindowX11
     /* Window and pixmap sizes */
     int window_width;  // Window width.
     int window_height; // Window height.
-    int pixmap_width;  
+    int pixmap_width;
     int pixmap_height;
     int window_x;
     int window_y;
@@ -129,10 +131,10 @@ typedef struct SDL_ToolkitWindowX11
 
     /* Control list */
     bool has_focus;
-    struct SDL_ToolkitControlX11 *focused_control;  
+    struct SDL_ToolkitControlX11 *focused_control;
     struct SDL_ToolkitControlX11 *fiddled_control;
     struct SDL_ToolkitControlX11 **controls;
-    size_t controls_sz;  
+    size_t controls_sz;
     struct SDL_ToolkitControlX11 **dyn_controls;
     size_t dyn_controls_sz;
 
@@ -155,6 +157,12 @@ typedef struct SDL_ToolkitWindowX11
     bool draw;
     bool close;
     long event_mask;
+
+#ifdef HAVE_FRIBIDI_H
+    /* BIDI engine */
+	SDL_FriBidi *fribidi;
+	bool do_shaping;
+#endif
 } SDL_ToolkitWindowX11;
 
 typedef enum SDL_ToolkitControlStateX11
@@ -176,7 +184,7 @@ typedef struct SDL_ToolkitControlX11
     bool is_default_enter;
     bool is_default_esc;
 	bool do_size;
-	
+
     /* User data */
     void *data;
 

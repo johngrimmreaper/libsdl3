@@ -1,3 +1,25 @@
+libsdl3 (3.3~git20251006~f90c179+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot, commit release-3.2.6-1409-gf90c179c5d
+  * d/control, d/rules: Enable fribidi dependency, for the new support for
+    bidirectional text in X11 dialogs
+  * d/rules: Switch on SDL_DEPS_SHARED.
+    For anything that can either be dlopen'd or a hard dependency,
+    setting this option forces it to be a hard dependency, so the only
+    way we can have any such library be dynamically loaded is to turn
+    this option off.
+    This turns libpipewire-0.3-0 and libsndio7.0 into weak dependencies.
+    - d/control: libsdl3-dev no longer needs libpipewire-0.3-dev on Linux
+    - d/control: libsdl3-dev no longer needs libsndio-dev
+  * d/rules: Also make JACK a weak dependency.
+    On systems where this audio backend is used, the sound server (jackd1
+    or jackd2) will pull in the appropriate library anyway, and on other
+    systems, the library is unnecessary.
+  * Merge packaging changes from unstable
+    - Reformat packaging files using debputy
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 06 Oct 2025 16:35:31 +0100
+
 libsdl3 (3.3~git20251002~a864dca+ds-1) experimental; urgency=medium
 
   * New upstream snapshot, commit release-3.2.6-1356-ga864dcac25
@@ -68,6 +90,31 @@ libsdl3 (3.3~git20250903.1+ds-1) experimental; urgency=medium
   * Merge packaging changes from unstable
 
  -- Simon McVittie <smcv@debian.org>  Wed, 03 Sep 2025 20:54:18 +0100
+
+libsdl3 (3.2.24+ds-1) unstable; urgency=medium
+
+  * New upstream stable release
+  * d/patches: Drop several patches that were included in the upstream
+    release
+  * d/patches: Add post-release bug fixes from upstream git
+    - Generalize code to avoid treating non-gamepads as gamepads
+    - Fix scaling with the software renderer
+  * d/p/test-Set-a-much-longer-timeout-for-testatomic-on-GNU-Hurd.patch:
+    Add patch to extend the timeout of testatomic on Hurd,
+    based on discussion with Pino Toscano on sdl-team/libsdl3!3
+  * d/control, d/rules: Build using ninja-build
+  * d/rules: Do the build in a directory covered by upstream's .gitignore
+  * d/watch*: Convert to uscan format v5
+  * d/watch*: Include the short commit hash in versions from upstream git
+  * d/watch, d/upstream/signing-key.asc: Check signatures before repacking
+  * d/control: Remove Rules-Requires-Root, no longer needed since Debian 13
+  * Reformat packaging files using debputy
+  * Update Lintian overrides
+
+  [ Pino Toscano ]
+  * d/libsdl3-0.symbols: Mark Linux symbols as such
+
+ -- Simon McVittie <smcv@debian.org>  Sat, 04 Oct 2025 14:20:25 +0100
 
 libsdl3 (3.2.22+ds-1) unstable; urgency=medium
 

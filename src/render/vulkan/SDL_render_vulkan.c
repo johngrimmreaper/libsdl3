@@ -184,8 +184,9 @@ static const float TONEMAP_CHROME = 2;
 //static const float TEXTURETYPE_NONE = 0;
 static const float TEXTURETYPE_RGB = 1;
 static const float TEXTURETYPE_RGB_PIXELART = 2;
-static const float TEXTURETYPE_PALETTE = 3;
-static const float TEXTURETYPE_PALETTE_PIXELART = 4;
+static const float TEXTURETYPE_PALETTE_NEAREST = 3;
+static const float TEXTURETYPE_PALETTE_LINEAR = 4;
+static const float TEXTURETYPE_PALETTE_PIXELART = 5;
 
 static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -3424,10 +3425,19 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
         }
 
         if (texture->format == SDL_PIXELFORMAT_INDEX8) {
-            if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+            switch (cmd->data.draw.texture_scale_mode) {
+            case SDL_SCALEMODE_NEAREST:
+                constants->texture_type = TEXTURETYPE_PALETTE_NEAREST;
+                break;
+            case SDL_SCALEMODE_LINEAR:
+                constants->texture_type = TEXTURETYPE_PALETTE_LINEAR;
+                break;
+            case SDL_SCALEMODE_PIXELART:
                 constants->texture_type = TEXTURETYPE_PALETTE_PIXELART;
-            } else {
-                constants->texture_type = TEXTURETYPE_PALETTE;
+                break;
+            default:
+                SDL_assert(!"Unknown scale mode");
+                break;
             }
         } else {
             if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
@@ -3437,7 +3447,9 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
             }
         }
 
-        if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+        if (constants->texture_type == TEXTURETYPE_PALETTE_LINEAR ||
+            constants->texture_type == TEXTURETYPE_PALETTE_PIXELART ||
+            constants->texture_type == TEXTURETYPE_RGB_PIXELART) {
             constants->texture_width = texture->w;
             constants->texture_height = texture->h;
             constants->texel_width = 1.0f / constants->texture_width;
@@ -3810,7 +3822,7 @@ static bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand 
     return true;
 }
 
-static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
+static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_PixelFormat format, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
 {
     Uint32 key = RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v);
     SDL_assert(key < SDL_arraysize(data->samplers));
@@ -3831,8 +3843,14 @@ static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_ScaleMode scale_
             break;
         case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
         case SDL_SCALEMODE_LINEAR:
-            samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
-            samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+            if (format == SDL_PIXELFORMAT_INDEX8) {
+                // We'll do linear sampling in the shader
+                samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
+                samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
+            } else {
+                samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+                samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+            }
             break;
         default:
             SDL_SetError("Unknown scale mode: %d", scale_mode);
@@ -3907,7 +3925,7 @@ static bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand 
     }
     imageViews[numImageViews++] = textureData->mainImage.imageView;
 
-    samplers[numSamplers] = VULKAN_GetSampler(rendererData, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
+    samplers[numSamplers] = VULKAN_GetSampler(rendererData, texture->format, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
     if (samplers[numSamplers] == VK_NULL_HANDLE) {
         return false;
     }
@@ -3938,7 +3956,7 @@ static bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand 
         }
         imageViews[numImageViews++] = palette->image.imageView;
 
-        samplers[numSamplers] = VULKAN_GetSampler(rendererData, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
+        samplers[numSamplers] = VULKAN_GetSampler(rendererData, SDL_PIXELFORMAT_UNKNOWN, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
         if (samplers[numSamplers] == VK_NULL_HANDLE) {
             return false;
         }
