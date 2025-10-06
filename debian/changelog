@@ -1,6 +1,6 @@
-libsdl3 (3.3~git20251004~bcf3afb+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.3~git20251006~f90c179+ds-1) UNRELEASED; urgency=medium
 
-  * New upstream snapshot, commit release-3.2.6-1395-gbcf3afb6f3
+  * New upstream snapshot, commit release-3.2.6-1409-gf90c179c5d
   * d/control, d/rules: Enable fribidi dependency, for the new support for
     bidirectional text in X11 dialogs
   * Merge packaging changes from unstable

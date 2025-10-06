@@ -76,9 +76,9 @@ else
   confflags += -DSDL_WAYLAND=OFF
 endif
 
-ifeq ($(DEB_VERSION_UPSTREAM),3.3~git20251004~bcf3afb+ds)
+ifeq ($(DEB_VERSION_UPSTREAM),3.3~git20251006~f90c179+ds)
   # git describe --tags <hash>
-  confflags += -DSDL_REVISION=SDL-release-3.2.6-1395-gbcf3afb6f3
+  confflags += -DSDL_REVISION=SDL-release-3.2.6-1409-gf90c179c5d
 endif
 
 %:
