@@ -1,3 +1,11 @@
+libsdl3 (3.3~git20251006~f90c179+ds-2) UNRELEASED; urgency=medium
+
+  * Correct an inaccuracy in the previous changelog entry.
+    The JACK audio backend is not currently enabled, dynamically or
+    otherwise.
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 07 Oct 2025 17:11:54 +0100
+
 libsdl3 (3.3~git20251006~f90c179+ds-1) experimental; urgency=medium
 
   * New upstream snapshot, commit release-3.2.6-1409-gf90c179c5d
@@ -11,10 +19,6 @@ libsdl3 (3.3~git20251006~f90c179+ds-1) experimental; urgency=medium
     This turns libpipewire-0.3-0 and libsndio7.0 into weak dependencies.
     - d/control: libsdl3-dev no longer needs libpipewire-0.3-dev on Linux
     - d/control: libsdl3-dev no longer needs libsndio-dev
-  * d/rules: Also make JACK a weak dependency.
-    On systems where this audio backend is used, the sound server (jackd1
-    or jackd2) will pull in the appropriate library anyway, and on other
-    systems, the library is unnecessary.
   * Merge packaging changes from unstable
     - Reformat packaging files using debputy
 
