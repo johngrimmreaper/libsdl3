@@ -144,10 +144,14 @@ Section: misc
 Architecture: any
 Build-Profiles: <!noinsttest>
 Depends:
+ ${dlopen:Depends},
  ${misc:Depends},
  ${shlibs:Depends},
+Recommends:
+ ${dlopen:Recommends},
 Suggests:
  gnome-desktop-testing,
+ ${dlopen:Suggests},
 Description: Simple DirectMedia Layer automated and manual tests
  SDL is a cross-platform library designed to make it easy to write
  multimedia software such as games and emulators.
