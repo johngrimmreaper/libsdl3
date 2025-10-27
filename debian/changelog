@@ -2,11 +2,19 @@ libsdl3 (3.3.2+ds-1) UNRELEASED; urgency=medium
 
   * New upstream preview release
   * d/watch: Download preview releases for this branch
+  * d/copyright: Update
+  * d/libsdl3-0.symbols: Update
+  * d/rules: Test image resources are now PNGs
+  * d/control: Add dlopen dependencies to libsdl3-tests
+  * d/source/lintian-overrides: Remove obsolete lintian overrides
+  * d/patches: Update to upstream commit preview-3.3.2-26-g5ad12c47dc,
+    excluding Emscripten-, FreeBSD-, iOS-, macOS-, Windows-specific
+    changes.
   * Correct an inaccuracy in the previous changelog entry.
     The JACK audio backend is not currently enabled, dynamically or
     otherwise.
 
- -- Simon McVittie <smcv@debian.org>  Mon, 27 Oct 2025 11:42:02 +0000
+ -- Simon McVittie <smcv@debian.org>  Mon, 27 Oct 2025 13:27:57 +0000
 
 libsdl3 (3.3~git20251006~f90c179+ds-1) experimental; urgency=medium
 
