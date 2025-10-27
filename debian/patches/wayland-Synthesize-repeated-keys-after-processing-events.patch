@@ -1,0 +1,51 @@
+From: Frank Praznik <frank.praznik@gmail.com>
+Date: Fri, 24 Oct 2025 15:46:50 -0400
+Subject: wayland: Synthesize repeated keys after processing events
+
+Otherwise, long delays between pumping events can result in repeating keys that were already lifted some time ago.
+
+Origin: upstream, 3.3.3, commit:537e92b1582c64198f5af4f1f1ea12155424981b
+---
+ src/video/wayland/SDL_waylandevents.c | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/src/video/wayland/SDL_waylandevents.c b/src/video/wayland/SDL_waylandevents.c
+index 9b869c1..46c8877 100644
+--- a/src/video/wayland/SDL_waylandevents.c
++++ b/src/video/wayland/SDL_waylandevents.c
+@@ -599,16 +599,6 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
+     }
+ #endif
+ 
+-    // Synthesize key repeat events.
+-    wl_list_for_each (seat, &d->seat_list, link) {
+-        if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
+-            Wayland_SeatSetKeymap(seat);
+-
+-            const Uint64 elapsed = SDL_GetTicksNS() - seat->keyboard.repeat.sdl_press_time_ns;
+-            keyboard_repeat_handle(&seat->keyboard.repeat, elapsed);
+-        }
+-    }
+-
+ #ifdef HAVE_LIBDECOR_H
+     if (d->shell.libdecor) {
+         libdecor_dispatch(d->shell.libdecor, 0);
+@@ -661,6 +651,18 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
+         ret = WAYLAND_wl_display_dispatch_pending(d->display);
+     }
+ 
++    if (ret >= 0) {
++        // Synthesize key repeat events.
++        wl_list_for_each (seat, &d->seat_list, link) {
++            if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
++                Wayland_SeatSetKeymap(seat);
++
++                const Uint64 elapsed = SDL_GetTicksNS() - seat->keyboard.repeat.sdl_press_time_ns;
++                keyboard_repeat_handle(&seat->keyboard.repeat, elapsed);
++            }
++        }
++    }
++
+ connection_error:
+     if (ret < 0 && !d->display_disconnected) {
+         /* Something has failed with the Wayland connection -- for example,

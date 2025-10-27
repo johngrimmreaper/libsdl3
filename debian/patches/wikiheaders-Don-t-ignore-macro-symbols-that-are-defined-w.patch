@@ -1,0 +1,25 @@
+From: "Ryan C. Gordon" <icculus@icculus.org>
+Date: Sat, 25 Oct 2025 15:05:36 -0400
+Subject: wikiheaders: Don't ignore macro symbols that are defined without any
+ content.
+
+Reference PR #12676.
+
+Origin: upstream, 3.3.3, commit:a0fa64a91ca8ab623cb5eb6be6331d134b8f45c3
+---
+ build-scripts/wikiheaders.pl | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/build-scripts/wikiheaders.pl b/build-scripts/wikiheaders.pl
+index 768f42c..6e542c6 100755
+--- a/build-scripts/wikiheaders.pl
++++ b/build-scripts/wikiheaders.pl
+@@ -1449,7 +1449,7 @@ while (my $d = readdir(DH)) {
+             }
+             $decl .= $additional_decl;
+         } elsif ($symtype == 2) {  # a macro
+-            if ($decl =~ /\A\s*\#\s*define\s+(.*?)(\(.*?\)|)\s+/) {
++            if ($decl =~ /\A\s*\#\s*define\s+(.*?)(\(.*?\)|)(\s+|\Z)/) {
+                 $sym = $1;
+             } else {
+                 #print "Found doxygen but no macro:\n$str\n\n";
