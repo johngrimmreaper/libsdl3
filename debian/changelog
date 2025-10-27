@@ -1,5 +1,6 @@
-libsdl3 (3.3~git20251006~f90c179+ds-2) UNRELEASED; urgency=medium
+libsdl3 (3.3.2+ds-1) UNRELEASED; urgency=medium
 
+  * New upstream preview release
   * d/watch: Download preview releases for this branch
   * Correct an inaccuracy in the previous changelog entry.
     The JACK audio backend is not currently enabled, dynamically or
