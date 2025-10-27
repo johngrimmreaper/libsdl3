@@ -1,0 +1,53 @@
+From: SDL Wiki Bot <icculus-sdlwikibot@icculus.org>
+Date: Sat, 25 Oct 2025 19:08:01 +0000
+Subject: Sync SDL3 wiki -> header
+
+[ci skip]
+
+Origin: upstream, 3.3.3, commit:e7e2b26b2ed76504b0e219e4abf901d96ac7ccad
+---
+ include/SDL3/SDL_intrin.h |  1 +
+ include/SDL3/SDL_main.h   | 10 ++++++----
+ 2 files changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/include/SDL3/SDL_intrin.h b/include/SDL3/SDL_intrin.h
+index bac6d7a..ab2dfee 100644
+--- a/include/SDL3/SDL_intrin.h
++++ b/include/SDL3/SDL_intrin.h
+@@ -268,6 +268,7 @@ _m_prefetch(void *__P)
+ #endif /* compiler version */
+ 
+ #ifdef SDL_WIKI_DOCUMENTATION_SECTION
++
+ /**
+  * A macro to decide if the compiler supports `__attribute__((target))`.
+  *
+diff --git a/include/SDL3/SDL_main.h b/include/SDL3/SDL_main.h
+index 411d64c..1e745e8 100644
+--- a/include/SDL3/SDL_main.h
++++ b/include/SDL3/SDL_main.h
+@@ -110,7 +110,8 @@
+  * Even if available, an app can define SDL_MAIN_HANDLED and provide their
+  * own, if they know what they're doing.
+  *
+- * This macro is used internally by SDL, and apps probably shouldn't rely on it.
++ * This macro is used internally by SDL, and apps probably shouldn't rely on
++ * it.
+  *
+  * \since This macro is available since SDL 3.2.0.
+  */
+@@ -125,10 +126,11 @@
+  * This macro is defined by `SDL_main.h`, which is not automatically included
+  * by `SDL.h`.
+  *
+- * Even if required, an app can define SDL_MAIN_HANDLED and provide their
+- * own, if they know what they're doing.
++ * Even if required, an app can define SDL_MAIN_HANDLED and provide their own,
++ * if they know what they're doing.
+  *
+- * This macro is used internally by SDL, and apps probably shouldn't rely on it.
++ * This macro is used internally by SDL, and apps probably shouldn't rely on
++ * it.
+  *
+  * \since This macro is available since SDL 3.2.0.
+  */

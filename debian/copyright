@@ -123,8 +123,12 @@ Copyright: none
 License: PublicDomain
 
 Files:
+ src/video/miniz.h
+Copyright: in public domain
+License: Unlicense
+
+Files:
  src/video/stb_image.h
- src/video/stb_image_write.h
 Copyright:
  2010-2021 Sean Barrett
 License: Expat or Unlicense

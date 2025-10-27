@@ -85,8 +85,8 @@ endif
 	dh $@ -Scmake+ninja -Bbuild
 
 override_dh_auto_configure:
-	set -e; for bmp in test/icon.bmp test/gamepad_*.bmp test/glass.bmp; do \
-		python3 cmake/xxd.py -i "$${bmp}" -o "$${bmp%.bmp}.h"; \
+	set -e; for png in test/icon.png test/gamepad_*.png test/glass.png; do \
+		python3 cmake/xxd.py -i "$${png}" -o "$${png%.png}.h"; \
 	done
 	cd build-scripts && ./makecasefoldhashtable.pl > ../src/stdlib/SDL_casefolding.h
 	set -e; for dir in src/render/gpu/shaders test test/testgpu; do \

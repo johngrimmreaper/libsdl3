@@ -1,0 +1,102 @@
+From: Frank Praznik <frank.praznik@gmail.com>
+Date: Thu, 23 Oct 2025 20:31:20 -0400
+Subject: events: Pump DBus messages in the main event loop
+
+DBus does not require a video backend, and DBus messages still need to be processed even when a video backend is not initialized. Move the DBus pump call to the main event message pump function so that DBus events are still dispatched, even when a video backend has not been initialized.
+
+Origin: upstream, 3.3.3, commit:39aedcef6432d5078206a29d009f3993ce062e4f
+---
+ src/events/SDL_events.c               | 16 ++++++++++++++++
+ src/video/wayland/SDL_waylandevents.c |  4 ----
+ src/video/x11/SDL_x11events.c         |  8 --------
+ 3 files changed, 16 insertions(+), 12 deletions(-)
+
+diff --git a/src/events/SDL_events.c b/src/events/SDL_events.c
+index 7a50c66..3ecaed7 100644
+--- a/src/events/SDL_events.c
++++ b/src/events/SDL_events.c
+@@ -36,6 +36,9 @@
+ #ifndef SDL_SENSOR_DISABLED
+ #include "../sensor/SDL_sensor_c.h"
+ #endif
++#ifdef HAVE_DBUS_DBUS_H
++#include "core/linux/SDL_dbus.h"
++#endif
+ #include "../video/SDL_sysvideo.h"
+ 
+ #ifdef SDL_PLATFORM_ANDROID
+@@ -59,6 +62,9 @@
+ // Determines how often to pump events if tray items are active
+ #define TRAY_POLL_INTERVAL_NS SDL_MS_TO_NS(50)
+ 
++// Determines how often to pump events if DBus is active
++#define DBUS_POLL_INTERVAL_NS (3 * SDL_NS_PER_SECOND)
++
+ // Make sure the type in the SDL_Event aligns properly across the union
+ SDL_COMPILE_TIME_ASSERT(SDL_Event_type, sizeof(Uint32) == sizeof(SDL_EventType));
+ 
+@@ -1496,6 +1502,11 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
+     // Run any pending main thread callbacks
+     SDL_RunMainThreadCallbacks();
+ 
++#ifdef SDL_USE_LIBDBUS
++    // DBus event processing is independent of the video subsystem
++    SDL_DBus_PumpEvents();
++#endif
++
+ #ifdef SDL_PLATFORM_ANDROID
+     // Android event processing is independent of the video subsystem
+     Android_PumpEvents(0);
+@@ -1566,6 +1577,11 @@ static Sint64 SDL_events_get_polling_interval(void)
+         poll_intervalNS = SDL_min(poll_intervalNS, TRAY_POLL_INTERVAL_NS);
+     }
+ #endif
++
++#ifdef SDL_USE_LIBDBUS
++    // Wake periodically to pump DBus events
++    poll_intervalNS = SDL_min(poll_intervalNS, DBUS_POLL_INTERVAL_NS);
++#endif
+     return poll_intervalNS;
+ }
+ 
+diff --git a/src/video/wayland/SDL_waylandevents.c b/src/video/wayland/SDL_waylandevents.c
+index 5378ddf..9b869c1 100644
+--- a/src/video/wayland/SDL_waylandevents.c
++++ b/src/video/wayland/SDL_waylandevents.c
+@@ -599,10 +599,6 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
+     }
+ #endif
+ 
+-#ifdef SDL_USE_LIBDBUS
+-    SDL_DBus_PumpEvents();
+-#endif
+-
+     // Synthesize key repeat events.
+     wl_list_for_each (seat, &d->seat_list, link) {
+         if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
+diff --git a/src/video/x11/SDL_x11events.c b/src/video/x11/SDL_x11events.c
+index 15066f9..960d254 100644
+--- a/src/video/x11/SDL_x11events.c
++++ b/src/video/x11/SDL_x11events.c
+@@ -2271,10 +2271,6 @@ int X11_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
+     }
+ 
+     X11_DispatchEvent(_this, &xevent);
+-
+-#ifdef SDL_USE_LIBDBUS
+-    SDL_DBus_PumpEvents();
+-#endif
+     return 1;
+ }
+ 
+@@ -2327,10 +2323,6 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
+         X11_DispatchEvent(_this, &xevent);
+     }
+ 
+-#ifdef SDL_USE_LIBDBUS
+-    SDL_DBus_PumpEvents();
+-#endif
+-
+     // FIXME: Only need to do this when there are pending focus changes
+     X11_HandleFocusChanges(_this);
+ 

@@ -1,0 +1,61 @@
+From: Anonymous Maarten <anonymous.maarten@gmail.com>
+Date: Mon, 27 Oct 2025 03:01:57 +0100
+Subject: cmake: make sure VARIABLE of check_linker_supports_version_file ends
+ up in cache
+
+Origin: upstream, 3.3.3, commit:5ad12c47dc82eb46f7b830a8327ed256fc789bb1
+---
+ cmake/PreseedEmscriptenCache.cmake | 2 +-
+ cmake/PreseedNokiaNGageCache.cmake | 2 +-
+ cmake/macros.cmake                 | 6 +++---
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/cmake/PreseedEmscriptenCache.cmake b/cmake/PreseedEmscriptenCache.cmake
+index ea0f04b..3e81c3d 100644
+--- a/cmake/PreseedEmscriptenCache.cmake
++++ b/cmake/PreseedEmscriptenCache.cmake
+@@ -153,7 +153,7 @@ if(EMSCRIPTEN)
+     set(HAVE_O_CLOEXEC                                   "1"   CACHE INTERNAL "Test HAVE_O_CLOEXEC")
+     set(COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR             "1"   CACHE INTERNAL "Test COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR")
+     set(COMPILER_SUPPORTS_GCC_ATOMICS                    "1"   CACHE INTERNAL "Test COMPILER_SUPPORTS_GCC_ATOMICS")
+-    set(LINKER_SUPPORTS_VERSION_SCRIPT                   ""    CACHE INTERNAL "Test LINKER_SUPPORTS_VERSION_SCRIPT")
++    set(HAVE_WL_VERSION_SCRIPT                           ""    CACHE INTERNAL "Test HAVE_WL_VERSION_SCRIPT")
+     set(LINKER_SUPPORTS_WL_NO_UNDEFINED                  ""    CACHE INTERNAL "Test LINKER_SUPPORTS_WL_NO_UNDEFINED")
+     set(ICONV_IN_LIBC                                    "1"   CACHE INTERNAL "Test ICONV_IN_LIBC")
+     set(ICONV_IN_LIBICONV                                ""    CACHE INTERNAL "Test ICONV_IN_LIBICONV")
+diff --git a/cmake/PreseedNokiaNGageCache.cmake b/cmake/PreseedNokiaNGageCache.cmake
+index 298177b..9873727 100644
+--- a/cmake/PreseedNokiaNGageCache.cmake
++++ b/cmake/PreseedNokiaNGageCache.cmake
+@@ -155,7 +155,7 @@ if(NGAGESDK)
+     #set(HAVE_O_CLOEXEC                                   ""    CACHE INTERNAL "Test HAVE_O_CLOEXEC")
+     #set(COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR             ""    CACHE INTERNAL "Test COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR")
+     set(COMPILER_SUPPORTS_GCC_ATOMICS                    ""    CACHE INTERNAL "Test COMPILER_SUPPORTS_GCC_ATOMICS")
+-    set(LINKER_SUPPORTS_VERSION_SCRIPT                   ""    CACHE INTERNAL "Test LINKER_SUPPORTS_VERSION_SCRIPT")
++    set(HAVE_WL_VERSION_SCRIPT                           ""    CACHE INTERNAL "Test HAVE_WL_VERSION_SCRIPT")
+     set(LINKER_SUPPORTS_WL_NO_UNDEFINED                  ""    CACHE INTERNAL "Test LINKER_SUPPORTS_WL_NO_UNDEFINED")
+     set(ICONV_IN_LIBC                                    ""    CACHE INTERNAL "Test ICONV_IN_LIBC")
+     set(ICONV_IN_LIBICONV                                ""    CACHE INTERNAL "Test ICONV_IN_LIBICONV")
+diff --git a/cmake/macros.cmake b/cmake/macros.cmake
+index 59f6d24..5822eae 100644
+--- a/cmake/macros.cmake
++++ b/cmake/macros.cmake
+@@ -296,15 +296,15 @@ endfunction()
+ function(check_linker_supports_version_file VAR)
+   SDL_detect_linker()
+   if(CMAKE_C_COMPILER_LINKER_ID MATCHES "^(MSVC)$")
+-    set(LINKER_SUPPORTS_VERSION_SCRIPT FALSE)
++    set(${VAR} FALSE)
+   else()
+     cmake_push_check_state(RESET)
+     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/dummy.sym" "n_0 {\n global:\n  func;\n local: *;\n};\n")
+     list(APPEND CMAKE_REQUIRED_LINK_OPTIONS "-Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/dummy.sym")
+-    check_c_source_compiles("int func(void) {return 0;} int main(int argc,char*argv[]){(void)argc;(void)argv;return func();}" LINKER_SUPPORTS_VERSION_SCRIPT FAIL_REGEX "(unsupported|syntax error|unrecognized option)")
++    check_c_source_compiles("int func(void) {return 0;} int main(int argc,char*argv[]){(void)argc;(void)argv;return func();}" ${VAR} FAIL_REGEX "(unsupported|syntax error|unrecognized option)")
+     cmake_pop_check_state()
+   endif()
+-  set(${VAR} "${LINKER_SUPPORTS_VERSION_SCRIPT}" PARENT_SCOPE)
++  set(${VAR} "${${VAR}}" PARENT_SCOPE)
+ endfunction()
+ 
+ if(CMAKE_VERSION VERSION_LESS 3.18)

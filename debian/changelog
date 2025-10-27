@@ -1,3 +1,24 @@
+libsdl3 (3.3.2+ds-1) experimental; urgency=medium
+
+  * New upstream preview release
+  * d/watch: Download preview releases for this branch
+  * d/patches: Update to upstream commit preview-3.3.2-26-g5ad12c47dc,
+    excluding Emscripten-, FreeBSD-, iOS-, macOS-, Windows-specific
+    changes.
+  * d/libsdl3-doc: Install SDLMAIN_DECLSPEC(3).
+    If other SDLMAIN_-namespaced man pages are added in future, we'll
+    want to install those too, so use a wildcard.
+  * d/copyright: Update
+  * d/libsdl3-0.symbols: Update
+  * d/rules: Test image resources are now PNGs
+  * d/control: Add dlopen dependencies to libsdl3-tests
+  * d/source/lintian-overrides: Update
+  * Correct an inaccuracy in the previous changelog entry.
+    The JACK audio backend is not currently enabled, dynamically or
+    otherwise.
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 27 Oct 2025 15:14:46 +0000
+
 libsdl3 (3.3~git20251006~f90c179+ds-1) experimental; urgency=medium
 
   * New upstream snapshot, commit release-3.2.6-1409-gf90c179c5d
@@ -11,10 +32,6 @@ libsdl3 (3.3~git20251006~f90c179+ds-1) experimental; urgency=medium
     This turns libpipewire-0.3-0 and libsndio7.0 into weak dependencies.
     - d/control: libsdl3-dev no longer needs libpipewire-0.3-dev on Linux
     - d/control: libsdl3-dev no longer needs libsndio-dev
-  * d/rules: Also make JACK a weak dependency.
-    On systems where this audio backend is used, the sound server (jackd1
-    or jackd2) will pull in the appropriate library anyway, and on other
-    systems, the library is unnecessary.
   * Merge packaging changes from unstable
     - Reformat packaging files using debputy
 
