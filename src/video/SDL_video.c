@@ -1064,6 +1064,7 @@ bool SDL_GetDisplayBounds(SDL_DisplayID displayID, SDL_Rect *rect)
     }
 
     if (_this->GetDisplayBounds) {
+        SDL_zerop(rect);
         if (_this->GetDisplayBounds(_this, display, rect)) {
             return true;
         }
@@ -1103,6 +1104,7 @@ bool SDL_GetDisplayUsableBounds(SDL_DisplayID displayID, SDL_Rect *rect)
     }
 
     if (_this->GetDisplayUsableBounds) {
+        SDL_zerop(rect);
         if (_this->GetDisplayUsableBounds(_this, display, rect)) {
             return true;
         }
@@ -1451,9 +1453,7 @@ void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode 
 
     SDL_copyp(&last_mode, &display->desktop_mode);
 
-    if (display->desktop_mode.internal) {
-        SDL_free(display->desktop_mode.internal);
-    }
+    SDL_free(display->desktop_mode.internal);
     SDL_copyp(&display->desktop_mode, mode);
     display->desktop_mode.displayID = display->id;
     SDL_FinalizeDisplayMode(&display->desktop_mode);
@@ -2309,9 +2309,11 @@ static void SDL_FinishWindowCreation(SDL_Window *window, SDL_WindowFlags flags)
     }
 
 #if defined(SDL_PLATFORM_LINUX)
-    // On Linux the progress state is persisted throughout multiple program runs, so reset state on window creation
-    SDL_SetWindowProgressState(window, SDL_PROGRESS_STATE_NONE);
-    SDL_SetWindowProgressValue(window, 0.0f);
+    if (!SDL_WINDOW_IS_POPUP(window)) {
+        // On Linux the progress state is persisted throughout multiple program runs, so reset state on window creation
+        SDL_SetWindowProgressState(window, SDL_PROGRESS_STATE_NONE);
+        SDL_SetWindowProgressValue(window, 0.0f);
+    }
 #endif
 }
 
@@ -5819,10 +5821,39 @@ bool SDL_ScreenKeyboardShown(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, false);
 
-    if (_this->IsScreenKeyboardShown) {
-        return _this->IsScreenKeyboardShown(_this, window);
+    return _this->screen_keyboard_shown;
+}
+
+void SDL_SendScreenKeyboardShown(void)
+{
+    if (_this->screen_keyboard_shown) {
+        return;
     }
-    return false;
+
+    _this->screen_keyboard_shown = true;
+
+    if (SDL_EventEnabled(SDL_EVENT_SCREEN_KEYBOARD_SHOWN)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_SCREEN_KEYBOARD_SHOWN;
+        event.common.timestamp = 0;
+        SDL_PushEvent(&event);
+    }
+}
+
+void SDL_SendScreenKeyboardHidden(void)
+{
+    if (!_this->screen_keyboard_shown) {
+        return;
+    }
+
+    _this->screen_keyboard_shown = false;
+
+    if (SDL_EventEnabled(SDL_EVENT_SCREEN_KEYBOARD_HIDDEN)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_SCREEN_KEYBOARD_HIDDEN;
+        event.common.timestamp = 0;
+        SDL_PushEvent(&event);
+    }
 }
 
 int SDL_GetMessageBoxCount(void)
