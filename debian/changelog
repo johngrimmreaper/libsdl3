@@ -4,8 +4,10 @@ libsdl3 (3.3.2+git20251029~d9ca045+ds-1) UNRELEASED; urgency=medium
   * d/watch.git, d/watch: Look for git snapshots again
   * d/copyright: Exclude .github/ from git snapshots to reduce the diff vs.
     official tarball releases
+  * d/patches: Drop patches that were taken from upstream git
+  * d/rules: Apply staticness fix when regenerating Vulkan shader headers
 
- -- Simon McVittie <smcv@debian.org>  Thu, 30 Oct 2025 11:16:39 +0000
+ -- Simon McVittie <smcv@debian.org>  Thu, 30 Oct 2025 11:29:56 +0000
 
 libsdl3 (3.3.2+ds-1) experimental; urgency=medium
 
