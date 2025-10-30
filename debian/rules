@@ -76,9 +76,9 @@ else
   confflags += -DSDL_WAYLAND=OFF
 endif
 
-ifeq ($(DEB_VERSION_UPSTREAM),3.3~git20251006~f90c179+ds)
+ifeq ($(DEB_VERSION_UPSTREAM),3.3.2+git20251029~d9ca045+ds)
   # git describe --tags <hash>
-  confflags += -DSDL_REVISION=SDL-release-3.2.6-1409-gf90c179c5d
+  confflags += -DSDL_REVISION=SDL-preview-3.3.2-50-gd9ca0457b5
 endif
 
 %:
@@ -95,6 +95,7 @@ override_dh_auto_configure:
 	# This is intended as a Windows batch file, but at the time of writing
 	# it's so simple that it's also a valid shell script
 	cd src/render/vulkan && sh -ex ./compile_shaders.bat
+	sed -i -e 's/^const uint32_t/static &/' src/render/vulkan/VULKAN_*.h
 	dh_auto_configure -- $(confflags)
 
 execute_after_dh_auto_build:
