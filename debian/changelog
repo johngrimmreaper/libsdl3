@@ -6,8 +6,10 @@ libsdl3 (3.3.2+git20251029~d9ca045+ds-1) UNRELEASED; urgency=medium
     official tarball releases
   * d/patches: Drop patches that were taken from upstream git
   * d/rules: Apply staticness fix when regenerating Vulkan shader headers
+  * d/p/wayland-Fix-compile-with-libdecor-0.2-and-SDL_WAYLAND_LIB.patch:
+    Add proposed patch to fix FTBFS with libdecor 0.2.x
 
- -- Simon McVittie <smcv@debian.org>  Thu, 30 Oct 2025 11:29:56 +0000
+ -- Simon McVittie <smcv@debian.org>  Thu, 30 Oct 2025 12:31:50 +0000
 
 libsdl3 (3.3.2+ds-1) experimental; urgency=medium
 
