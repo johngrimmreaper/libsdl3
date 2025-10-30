@@ -17,6 +17,7 @@ case the build will fail if the signature doesn't match.
 Fixes: 33834360 "wayland: Fix libdecor incompatible pointer types"
 Signed-off-by: Simon McVittie <smcv@collabora.com>
 Forwarded: https://github.com/libsdl-org/SDL/pull/14363
+Applied-upstream: 3.3.3, commit:https://github.com/libsdl-org/SDL/commit/8b64dd67d238e122057e4a454da786e53812ebec
 ---
  src/video/wayland/SDL_waylandsym.h | 14 ++++++++++++--
  1 file changed, 12 insertions(+), 2 deletions(-)
