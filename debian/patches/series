@@ -1,17 +1,1 @@
-events-Pump-DBus-messages-in-the-main-event-loop.patch
-Define-SDL_FILE-as-__FILE_NAME__-if-available.patch
-wayland-Remove-unused-struct-member.patch
-wayland-Synthesize-repeated-keys-after-processing-events.patch
-miniz.h-fix-PNG-compression-when-pitch-w.patch
-Fix-uninitialized-length-in-X11_GetClipboardData-causing-.patch
-miniz.h-do-not-overallocate-out_buf.patch
-wayland-Destroy-the-seats-before-stopping-the-cursor-surf.patch
-wikiheaders-Don-t-ignore-macro-symbols-that-are-defined-w.patch
-Sync-SDL3-wiki-header.patch
-Perform-full-rectangle-intersection-for-empty-rects.patch
-Log-object-leaks-at-debug-level.patch
-Use-cast-operators-in-headers-to-avoid-warnings.patch
-Fix-NULL-pointer-dereference-in-SDL_RenderGeometryRaw-wit.patch
-cmake-SDL_process-on-unix-needs-vfork-symbol.patch
-cmake-make-sure-VARIABLE-of-check_linker_supports_version.patch
 test-Set-a-much-longer-timeout-for-testatomic-on-GNU-Hurd.patch
