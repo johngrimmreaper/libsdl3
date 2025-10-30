@@ -6,6 +6,6 @@ Compression: xz
 Dversion-Mangle: s/[+~](?:ds|dfsg)[0-9]*$//;s/\+(?:git)?[0-9]+(?:\+g[0-9a-f]*)?$//
 Mode: git
 Pgp-Mode: none
-Git-Pretty: 3.3~git%cd~%h
+Git-Pretty: 3.3.2+git%cd~%h
 Repack: yes
 Repack-Suffix: +ds
