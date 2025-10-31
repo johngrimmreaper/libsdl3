@@ -1,3 +1,9 @@
+libsdl3 (3.3.2+git20251031~446fb65+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream snapshot, commit preview-3.3.2-60-g446fb65ca6
+
+ -- Simon McVittie <smcv@debian.org>  Fri, 31 Oct 2025 16:58:55 +0000
+
 libsdl3 (3.3.2+git20251029~d9ca045+ds-1) experimental; urgency=medium
 
   * New upstream snapshot, commit preview-3.3.2-50-gd9ca0457b5
