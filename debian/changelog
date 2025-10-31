@@ -1,4 +1,4 @@
-libsdl3 (3.3.2+git20251031~446fb65+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.3.2+git20251031~446fb65+ds-1) experimental; urgency=medium
 
   * New upstream snapshot, commit preview-3.3.2-60-g446fb65ca6
   * d/p/wayland-Fix-compile-with-libdecor-0.2-and-SDL_WAYLAND_LIB.patch:
@@ -7,7 +7,7 @@ libsdl3 (3.3.2+git20251031~446fb65+ds-1) UNRELEASED; urgency=medium
     Add a Lintian override for git snapshots not being signed
   * Merge packaging changes from unstable (no functional change)
 
- -- Simon McVittie <smcv@debian.org>  Fri, 31 Oct 2025 17:10:32 +0000
+ -- Simon McVittie <smcv@debian.org>  Fri, 31 Oct 2025 18:15:10 +0000
 
 libsdl3 (3.3.2+git20251029~d9ca045+ds-1) experimental; urgency=medium
 
