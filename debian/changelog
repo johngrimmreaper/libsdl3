@@ -1,3 +1,10 @@
+libsdl3 (3.3.2+git20251103~dc5b136+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot, commit preview-3.3.2-89-gdc5b136930
+  * Merge packaging changes from unstable (no functional change)
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 03 Nov 2025 16:57:25 +0000
+
 libsdl3 (3.3.2+git20251031~446fb65+ds-1) experimental; urgency=medium
 
   * New upstream snapshot, commit preview-3.3.2-60-g446fb65ca6
@@ -132,6 +139,14 @@ libsdl3 (3.3~git20250903.1+ds-1) experimental; urgency=medium
   * Merge packaging changes from unstable
 
  -- Simon McVittie <smcv@debian.org>  Wed, 03 Sep 2025 20:54:18 +0100
+
+libsdl3 (3.2.26+ds-2) unstable; urgency=medium
+
+  * d/patches: Add post-release bug fixes from upstream git up to
+    release-3.2.x commit release-3.2.26-9-g4ae517e24e, excluding
+    CI- and D3D-specific changes
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 03 Nov 2025 15:22:00 +0000
 
 libsdl3 (3.2.26+ds-1) unstable; urgency=medium
 
