@@ -1,3 +1,10 @@
+libsdl3 (3.3.2+git20251103~dc5b136+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream snapshot, commit preview-3.3.2-89-gdc5b136930
+  * Merge packaging changes from unstable (no functional change)
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 03 Nov 2025 16:55:43 +0000
+
 libsdl3 (3.3.2+git20251031~446fb65+ds-1) experimental; urgency=medium
 
   * New upstream snapshot, commit preview-3.3.2-60-g446fb65ca6
