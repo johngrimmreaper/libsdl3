@@ -1,0 +1,47 @@
+From: Sam Lantinga <slouken@libsdl.org>
+Date: Sun, 2 Nov 2025 09:50:16 -0800
+Subject: Clamp the audio drain delay to 100 ms
+
+(cherry picked from commit 08826230923dfb70e4558a41179ac0744e69fdb8)
+
+Bug: https://github.com/libsdl-org/SDL/issues/9829
+Origin: upstream, 3.2.28, commit:bfe046b60f0ee5e67ec5a6e08bcafc639937cd4a
+---
+ src/audio/SDL_audio.c           | 6 +++++-
+ src/audio/alsa/SDL_alsa_audio.c | 6 +++++-
+ 2 files changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/src/audio/SDL_audio.c b/src/audio/SDL_audio.c
+index 5e3e1fb..140e55a 100644
+--- a/src/audio/SDL_audio.c
++++ b/src/audio/SDL_audio.c
+@@ -1254,7 +1254,11 @@ void SDL_PlaybackAudioThreadShutdown(SDL_AudioDevice *device)
+     const int frames = device->buffer_size / SDL_AUDIO_FRAMESIZE(device->spec);
+     // Wait for the audio to drain if device didn't die.
+     if (!SDL_GetAtomicInt(&device->zombie)) {
+-        SDL_Delay(((frames * 1000) / device->spec.freq) * 2);
++        int delay = ((frames * 1000) / device->spec.freq) * 2;
++        if (delay > 100) {
++            delay = 100;
++        }
++        SDL_Delay(delay);
+     }
+     current_audio.impl.ThreadDeinit(device);
+     SDL_AudioThreadFinalize(device);
+diff --git a/src/audio/alsa/SDL_alsa_audio.c b/src/audio/alsa/SDL_alsa_audio.c
+index cb8c907..1d25490 100644
+--- a/src/audio/alsa/SDL_alsa_audio.c
++++ b/src/audio/alsa/SDL_alsa_audio.c
+@@ -462,7 +462,11 @@ static void ALSA_CloseDevice(SDL_AudioDevice *device)
+     if (device->hidden) {
+         if (device->hidden->pcm) {
+             // Wait for the submitted audio to drain. ALSA_snd_pcm_drop() can hang, so don't use that.
+-            SDL_Delay(((device->sample_frames * 1000) / device->spec.freq) * 2);
++            int delay = ((device->sample_frames * 1000) / device->spec.freq) * 2;
++            if (delay > 100) {
++                delay = 100;
++            }
++            SDL_Delay(delay);
+             ALSA_snd_pcm_close(device->hidden->pcm);
+         }
+         SDL_free(device->hidden->mixbuf);

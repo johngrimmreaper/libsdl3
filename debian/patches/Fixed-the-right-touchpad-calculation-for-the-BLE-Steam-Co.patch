@@ -1,0 +1,91 @@
+From: Sam Lantinga <slouken@libsdl.org>
+Date: Sun, 2 Nov 2025 08:23:18 -0800
+Subject: Fixed the right touchpad calculation for the BLE Steam Controller
+
+(cherry picked from commit eb87a36940f34a8ea4eb73061b84f9b94b3d3b03)
+
+Bug: https://github.com/libsdl-org/SDL/issues/14368
+Origin: upstream, 3.2.28, commit:11fc77b704deb812c4b72b18ac0388d81f427897
+---
+ src/joystick/hidapi/SDL_hidapi_steam.c | 34 ++++++++++++++++++----------------
+ 1 file changed, 18 insertions(+), 16 deletions(-)
+
+diff --git a/src/joystick/hidapi/SDL_hidapi_steam.c b/src/joystick/hidapi/SDL_hidapi_steam.c
+index 6b36651..3818018 100644
+--- a/src/joystick/hidapi/SDL_hidapi_steam.c
++++ b/src/joystick/hidapi/SDL_hidapi_steam.c
+@@ -706,13 +706,6 @@ static void RotatePad(int *pX, int *pY, float flAngleInRad)
+     *pX = (int)(SDL_cosf(flAngleInRad) * origX - SDL_sinf(flAngleInRad) * origY);
+     *pY = (int)(SDL_sinf(flAngleInRad) * origX + SDL_cosf(flAngleInRad) * origY);
+ }
+-static void RotatePadShort(short *pX, short *pY, float flAngleInRad)
+-{
+-    int origX = *pX, origY = *pY;
+-
+-    *pX = (short)(SDL_cosf(flAngleInRad) * origX - SDL_sinf(flAngleInRad) * origY);
+-    *pY = (short)(SDL_sinf(flAngleInRad) * origX + SDL_cosf(flAngleInRad) * origY);
+-}
+ 
+ //---------------------------------------------------------------------------
+ // Format the first part of the state packet
+@@ -836,9 +829,16 @@ static void FormatStatePacketUntilGyro(SteamControllerStateInternal_t *pState, V
+ //---------------------------------------------------------------------------
+ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, SteamControllerStateInternal_t *pState)
+ {
+-    const float flRotationAngle = 0.261799f;
++    int nLeftPadX;
++    int nLeftPadY;
++    int nRightPadX;
++    int nRightPadY;
++    int nPadOffset;
+     uint32_t ucOptionDataMask;
+ 
++    // 15 degrees in rad
++    const float flRotationAngle = 0.261799f;
++
+     pState->unPacketNum++;
+     ucOptionDataMask = (*pData++ & 0xF0);
+     ucOptionDataMask |= (uint32_t)(*pData++) << 8;
+@@ -867,7 +867,6 @@ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, S
+     }
+     if (ucOptionDataMask & k_EBLELeftTrackpadChunk) {
+         int nLength = sizeof(pState->sLeftPadX) + sizeof(pState->sLeftPadY);
+-        int nPadOffset;
+         SDL_memcpy(&pState->sLeftPadX, pData, nLength);
+         if (pState->ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK) {
+             nPadOffset = 1000;
+@@ -875,14 +874,15 @@ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, S
+             nPadOffset = 0;
+         }
+ 
+-        RotatePadShort(&pState->sLeftPadX, &pState->sLeftPadY, -flRotationAngle);
+-        pState->sLeftPadX = (short)clamp(pState->sLeftPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+-        pState->sLeftPadY = (short)clamp(pState->sLeftPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
++        nLeftPadX = pState->sLeftPadX;
++        nLeftPadY = pState->sLeftPadY;
++        RotatePad(&nLeftPadX, &nLeftPadY, -flRotationAngle);
++        pState->sLeftPadX = (short)clamp(nLeftPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
++        pState->sLeftPadY = (short)clamp(nLeftPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+         pData += nLength;
+     }
+     if (ucOptionDataMask & k_EBLERightTrackpadChunk) {
+         int nLength = sizeof(pState->sRightPadX) + sizeof(pState->sRightPadY);
+-        int nPadOffset = 0;
+ 
+         SDL_memcpy(&pState->sRightPadX, pData, nLength);
+ 
+@@ -892,9 +892,11 @@ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, S
+             nPadOffset = 0;
+         }
+ 
+-        RotatePadShort(&pState->sRightPadX, &pState->sRightPadY, flRotationAngle);
+-        pState->sRightPadX = (short)clamp(pState->sRightPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+-        pState->sRightPadY = (short)clamp(pState->sRightPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
++        nRightPadX = pState->sRightPadX;
++        nRightPadY = pState->sRightPadY;
++        RotatePad(&nRightPadX, &nRightPadY, flRotationAngle);
++        pState->sRightPadX = (short)clamp(nRightPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
++        pState->sRightPadY = (short)clamp(nRightPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+         pData += nLength;
+     }
+     if (ucOptionDataMask & k_EBLEIMUAccelChunk) {

@@ -1,3 +1,9 @@
+pulseaudio-Match-channel-map-to-SDL-s-chosen-order.patch
+Fixed-the-right-touchpad-calculation-for-the-BLE-Steam-Co.patch
+Fix-NULL-pointer-dereference-in-SDL_GlobStorageDirectory.patch
+Fixed-the-paddle-mapping-for-Steam-Controllers.patch
+Clamp-the-audio-drain-delay-to-100-ms.patch
+Removed-redundant-wait-at-shutdown-in-the-ALSA-audio-driv.patch
 Add-GNU-Hurd-as-platform.patch
 cmake-detect-RISCOS-platform-before-GNU-Hurd.patch
 wikiheaders-Escape-backslash-in-man-pages.patch

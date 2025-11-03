@@ -1,0 +1,28 @@
+From: Sam Lantinga <slouken@libsdl.org>
+Date: Sun, 2 Nov 2025 18:30:12 -0800
+Subject: Removed redundant wait at shutdown in the ALSA audio driver
+
+(cherry picked from commit 97e2951875fbc306e03f115a6f73992ffa167593)
+
+Origin: upstream, 3.2.28, commit:4ae517e24ee1c1dc8d27f96a4b360651c6875fcd
+---
+ src/audio/alsa/SDL_alsa_audio.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/src/audio/alsa/SDL_alsa_audio.c b/src/audio/alsa/SDL_alsa_audio.c
+index 1d25490..4e6003b 100644
+--- a/src/audio/alsa/SDL_alsa_audio.c
++++ b/src/audio/alsa/SDL_alsa_audio.c
+@@ -461,12 +461,6 @@ static void ALSA_CloseDevice(SDL_AudioDevice *device)
+ {
+     if (device->hidden) {
+         if (device->hidden->pcm) {
+-            // Wait for the submitted audio to drain. ALSA_snd_pcm_drop() can hang, so don't use that.
+-            int delay = ((device->sample_frames * 1000) / device->spec.freq) * 2;
+-            if (delay > 100) {
+-                delay = 100;
+-            }
+-            SDL_Delay(delay);
+             ALSA_snd_pcm_close(device->hidden->pcm);
+         }
+         SDL_free(device->hidden->mixbuf);
