@@ -45,6 +45,7 @@ Build-Depends:
  libxrandr-dev,
  libxss-dev,
  libxt-dev,
+ libxtst-dev,
  libxv-dev,
  libxxf86vm-dev,
  ninja-build,
