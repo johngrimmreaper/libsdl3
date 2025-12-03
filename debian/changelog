@@ -1,3 +1,9 @@
+libsdl3 (3.2.28+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream stable release
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 03 Dec 2025 13:41:33 +0000
+
 libsdl3 (3.2.26+ds-2) unstable; urgency=medium
 
   * d/patches: Add post-release bug fixes from upstream git up to
