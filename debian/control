@@ -28,6 +28,7 @@ Build-Depends:
  libpipewire-0.3-dev (>= 0.3.44) [linux-any],
  libpulse-dev,
  libsndio-dev,
+ libthai-dev,
  libudev-dev [linux-any],
  liburing-dev [linux-any],
  libusb2-dev [kfreebsd-any],
