@@ -1,6 +1,9 @@
 libsdl3 (3.3.2+git20251204~c61497b+ds-1) UNRELEASED; urgency=medium
 
   * New upstream snapshot, commit preview-3.3.2-354-gc61497b744
+  * d/control: Build-depend on libthai-dev, libxtst-dev
+  * d/control: -dev package now depends on libxtst-dev
+  * d/libsdl3-0.symbols: Update
 
  -- Simon McVittie <smcv@debian.org>  Wed, 03 Dec 2025 14:22:10 +0000
 
