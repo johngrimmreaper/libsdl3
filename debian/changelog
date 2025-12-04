@@ -1,6 +1,6 @@
-libsdl3 (3.3.2+git20251202~bffc4cc+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.3.2+git20251204~c61497b+ds-1) UNRELEASED; urgency=medium
 
-  * New upstream snapshot, commit preview-3.3.2-341-gbffc4ccc50
+  * New upstream snapshot, commit preview-3.3.2-354-gc61497b744
 
  -- Simon McVittie <smcv@debian.org>  Wed, 03 Dec 2025 14:22:10 +0000
 
