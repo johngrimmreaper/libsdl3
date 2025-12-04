@@ -1,4 +1,4 @@
-libsdl3 (3.3.2+git20251204~c61497b+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.3.2+git20251204~c61497b+ds-1) experimental; urgency=medium
 
   * New upstream snapshot, commit preview-3.3.2-354-gc61497b744
   * d/control: Build-depend on libthai-dev, libxtst-dev
@@ -6,7 +6,7 @@ libsdl3 (3.3.2+git20251204~c61497b+ds-1) UNRELEASED; urgency=medium
   * d/libsdl3-0.symbols: Update
   * Merge packaging changes from unstable (no functional change)
 
- -- Simon McVittie <smcv@debian.org>  Wed, 03 Dec 2025 14:22:10 +0000
+ -- Simon McVittie <smcv@debian.org>  Thu, 04 Dec 2025 12:14:42 +0000
 
 libsdl3 (3.3.2+git20251103~dc5b136+ds-1) experimental; urgency=medium
 
