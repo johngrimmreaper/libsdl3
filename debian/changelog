@@ -1,3 +1,13 @@
+libsdl3 (3.3.2+git20251204~c61497b+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot, commit preview-3.3.2-354-gc61497b744
+  * d/control: Build-depend on libthai-dev, libxtst-dev
+  * d/control: -dev package now depends on libxtst-dev
+  * d/libsdl3-0.symbols: Update
+  * Merge packaging changes from unstable (no functional change)
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 04 Dec 2025 12:14:42 +0000
+
 libsdl3 (3.3.2+git20251103~dc5b136+ds-1) experimental; urgency=medium
 
   * New upstream snapshot, commit preview-3.3.2-89-gdc5b136930
@@ -139,6 +149,16 @@ libsdl3 (3.3~git20250903.1+ds-1) experimental; urgency=medium
   * Merge packaging changes from unstable
 
  -- Simon McVittie <smcv@debian.org>  Wed, 03 Sep 2025 20:54:18 +0100
+
+libsdl3 (3.2.28+ds-1) unstable; urgency=medium
+
+  * New upstream stable release
+  * Drop patches that were included in the upstream release
+  * d/p/build-scripts-Include-SDL-prefix-in-SDL_REVISION-when-bui.patch,
+    d/p/dist/SDL_revision.h-Include-SDL-prefix-in-SDL_REVISION.patch:
+    Add the expected SDL- prefix to SDL_REVISION
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 03 Dec 2025 17:03:25 +0000
 
 libsdl3 (3.2.26+ds-2) unstable; urgency=medium
 

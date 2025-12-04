@@ -297,20 +297,6 @@ static Uint32 SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
     return 0;
 }
 
-static void SDLCALL SDL_CleanupWindowTextureData(void *userdata, void *value)
-{
-    SDL_WindowTextureData *data = (SDL_WindowTextureData *)value;
-
-    if (data->texture) {
-        SDL_DestroyTexture(data->texture);
-    }
-    if (data->renderer) {
-        SDL_DestroyRenderer(data->renderer);
-    }
-    SDL_free(data->pixels);
-    SDL_free(data);
-}
-
 static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
@@ -401,7 +387,7 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
             SDL_DestroyRenderer(renderer);
             return false;
         }
-        if (!SDL_SetPointerPropertyWithCleanup(props, SDL_PROP_WINDOW_TEXTUREDATA_POINTER, data, SDL_CleanupWindowTextureData, NULL)) {
+        if (!SDL_SetPointerProperty(props, SDL_PROP_WINDOW_TEXTUREDATA_POINTER, data)) {
             SDL_DestroyRenderer(renderer);
             return false;
         }
@@ -430,6 +416,7 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
         if (!SDL_ISPIXELFORMAT_FOURCC(texture_format) &&
             !SDL_ISPIXELFORMAT_10BIT(texture_format) &&
             !SDL_ISPIXELFORMAT_FLOAT(texture_format) &&
+            !SDL_ISPIXELFORMAT_INDEXED(texture_format) &&
             transparent == SDL_ISPIXELFORMAT_ALPHA(texture_format)) {
             *format = texture_format;
             break;
@@ -529,7 +516,21 @@ static bool SDL_UpdateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
 
 static void SDL_DestroyWindowTexture(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_ClearProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_TEXTUREDATA_POINTER);
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    if (SDL_HasProperty(props, SDL_PROP_WINDOW_TEXTUREDATA_POINTER)) {
+        SDL_WindowTextureData *data = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
+
+        if (data->texture) {
+            SDL_DestroyTexture(data->texture);
+        }
+        if (data->renderer) {
+            SDL_DestroyRenderer(data->renderer);
+        }
+        SDL_free(data->pixels);
+        SDL_free(data);
+
+        SDL_ClearProperty(props, SDL_PROP_WINDOW_TEXTUREDATA_POINTER);
+    }
 }
 
 static SDL_VideoDevice *_this = NULL;
@@ -820,11 +821,11 @@ static void SDL_FinalizeDisplayMode(SDL_DisplayMode *mode)
         if (mode->refresh_rate_denominator <= 0) {
             mode->refresh_rate_denominator = 1;
         }
-        mode->refresh_rate = ((100 * (Sint64)mode->refresh_rate_numerator) / mode->refresh_rate_denominator) / 100.0f;
+        mode->refresh_rate = (float)mode->refresh_rate_numerator / mode->refresh_rate_denominator;
     } else {
         SDL_CalculateFraction(mode->refresh_rate, &mode->refresh_rate_numerator, &mode->refresh_rate_denominator);
-        mode->refresh_rate = (int)(mode->refresh_rate * 100) / 100.0f;
     }
+    mode->refresh_rate = SDL_roundf(mode->refresh_rate * 100) / 100.0f;
 }
 
 SDL_DisplayID SDL_AddBasicVideoDisplay(const SDL_DisplayMode *desktop_mode)
@@ -1726,7 +1727,7 @@ SDL_VideoDisplay *SDL_GetVideoDisplayForFullscreenWindow(SDL_Window *window)
 {
     SDL_DisplayID displayID = 0;
 
-    CHECK_WINDOW_MAGIC(window, 0);
+    CHECK_WINDOW_MAGIC(window, NULL);
 
     // An explicit fullscreen display overrides all
     if (window->current_fullscreen_mode.displayID) {
@@ -4052,16 +4053,21 @@ bool SDL_SetWindowMouseRect(SDL_Window *window, const SDL_Rect *rect)
 {
     CHECK_WINDOW_MAGIC(window, false);
 
-    if (rect) {
-        SDL_memcpy(&window->mouse_rect, rect, sizeof(*rect));
-    } else {
-        SDL_zero(window->mouse_rect);
+    if (!_this->SetWindowMouseRect) {
+        return SDL_Unsupported();
     }
 
-    if (_this->SetWindowMouseRect) {
-        return _this->SetWindowMouseRect(_this, window);
+    SDL_Rect zero = { 0, 0, 0, 0 };
+    if (!rect) {
+        rect = &zero;
     }
-    return true;
+
+    if (SDL_memcmp(&window->mouse_rect, rect, sizeof(*rect)) == 0) {
+        return true;
+    }
+    SDL_memcpy(&window->mouse_rect, rect, sizeof(*rect));
+
+    return _this->SetWindowMouseRect(_this, window);
 }
 
 const SDL_Rect *SDL_GetWindowMouseRect(SDL_Window *window)
@@ -4094,8 +4100,15 @@ bool SDL_SetWindowRelativeMouseMode(SDL_Window *window, bool enabled)
     } else {
         window->flags &= ~SDL_WINDOW_MOUSE_RELATIVE_MODE;
     }
-    SDL_UpdateRelativeMouseMode();
 
+    if (!SDL_UpdateRelativeMouseMode()) {
+        if (enabled) {
+            window->flags &= ~SDL_WINDOW_MOUSE_RELATIVE_MODE;
+        } else {
+            window->flags |= SDL_WINDOW_MOUSE_RELATIVE_MODE;
+        }
+        return false;
+    }
     return true;
 }
 
@@ -4479,6 +4492,8 @@ void SDL_DestroyWindow(SDL_Window *window)
     }
 
     SDL_DestroyProperties(window->text_input_props);
+
+    SDL_DestroyWindowTexture(_this, window);
     SDL_DestroyProperties(window->props);
 
     /* Clear the modal status, but don't unset the parent just yet, as it
@@ -4611,6 +4626,8 @@ void SDL_VideoQuit(void)
     if (!_this) {
         return;
     }
+
+    _this->is_quitting = true;
 
     // Halt event processing before doing anything else
 #if 0 // This was moved to the end to fix a memory leak
@@ -4935,7 +4952,7 @@ void SDL_GL_ResetAttributes(void)
     }
 
     _this->gl_config.flags = 0;
-    _this->gl_config.framebuffer_srgb_capable = 0;
+    _this->gl_config.framebuffer_srgb_capable = -1;
     _this->gl_config.no_error = 0;
     _this->gl_config.release_behavior = SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH;
     _this->gl_config.reset_notification = SDL_GL_CONTEXT_RESET_NO_NOTIFICATION;
