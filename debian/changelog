@@ -1,3 +1,9 @@
+libsdl3 (3.3.4+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream preview release
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 08 Dec 2025 11:02:48 +0000
+
 libsdl3 (3.3.2+git20251204~c61497b+ds-1) experimental; urgency=medium
 
   * New upstream snapshot, commit preview-3.3.2-354-gc61497b744
