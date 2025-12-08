@@ -76,10 +76,10 @@ else
   confflags += -DSDL_WAYLAND=OFF
 endif
 
-ifeq ($(DEB_VERSION_UPSTREAM),3.3.2+git20251204~c61497b+ds)
-  # git describe --tags <hash>
-  confflags += -DSDL_REVISION=SDL-preview-3.3.2-354-gc61497b744
-endif
+#ifeq ($(DEB_VERSION_UPSTREAM),3.3.2+git20251204~c61497b+ds)
+#  # git describe --tags <hash>
+#  confflags += -DSDL_REVISION=SDL-preview-3.3.2-354-gc61497b744
+#endif
 
 %:
 	dh $@ -Scmake+ninja -Bbuild

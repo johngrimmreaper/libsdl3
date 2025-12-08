@@ -37,7 +37,6 @@ Files-Excluded: Android.mk
                 VisualC
                 VisualC-GDK
                 Xcode
-                .github
 
 Files: *
 Copyright:
