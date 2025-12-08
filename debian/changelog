@@ -1,8 +1,14 @@
 libsdl3 (3.3.4+ds-1) UNRELEASED; urgency=medium
 
+  * d/watch, d/source/lintian-overrides: Look for formal prereleases
   * New upstream preview release
+  * d/patches: Add post-release bug fixes up to commit
+    prerelease-3.3.4-11-gb428c1834f
+  * d/libsdl3-0.symbols: Generate dependencies on 3.3.4 rather than
+    intermediate git snapshots
+  * d/libsdl3-0.symbols: Add a new symbol
 
- -- Simon McVittie <smcv@debian.org>  Mon, 08 Dec 2025 11:02:48 +0000
+ -- Simon McVittie <smcv@debian.org>  Mon, 08 Dec 2025 12:30:58 +0000
 
 libsdl3 (3.3.2+git20251204~c61497b+ds-1) experimental; urgency=medium
 
