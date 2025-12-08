@@ -1,0 +1,260 @@
+From: "Ryan C. Gordon" <icculus@icculus.org>
+Date: Sun, 7 Dec 2025 15:26:31 -0500
+Subject: surface: Surface rotation property should be float, not int.
+
+Adjusted camera internals to work in floats, too.
+
+Reference Issue #14616.
+
+Origin: upstream, 3.3.6, commit:4194879df1b6dd1be5109cdf818a007cc2c85496
+---
+ include/SDL3/SDL_surface.h                              |  4 ++--
+ src/camera/SDL_camera.c                                 |  6 +++---
+ src/camera/SDL_syscamera.h                              |  4 ++--
+ src/camera/android/SDL_camera_android.c                 |  4 ++--
+ src/camera/coremedia/SDL_camera_coremedia.m             | 10 +++++-----
+ src/camera/dummy/SDL_camera_dummy.c                     |  2 +-
+ src/camera/emscripten/SDL_camera_emscripten.c           |  2 +-
+ src/camera/mediafoundation/SDL_camera_mediafoundation.c |  4 ++--
+ src/camera/pipewire/SDL_camera_pipewire.c               |  2 +-
+ src/camera/v4l2/SDL_camera_v4l2.c                       |  2 +-
+ src/camera/vita/SDL_camera_vita.c                       |  2 +-
+ test/testcamera.c                                       |  2 +-
+ 12 files changed, 22 insertions(+), 22 deletions(-)
+
+diff --git a/include/SDL3/SDL_surface.h b/include/SDL3/SDL_surface.h
+index 8be939c..e37cb59 100644
+--- a/include/SDL3/SDL_surface.h
++++ b/include/SDL3/SDL_surface.h
+@@ -241,7 +241,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
+  *   left edge of the image, if this surface is being used as a cursor.
+  * - `SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER`: the hotspot pixel offset from the
+  *   top edge of the image, if this surface is being used as a cursor.
+- * - `SDL_PROP_SURFACE_ROTATION_NUMBER`: the number of degrees a surface's
++ * - `SDL_PROP_SURFACE_ROTATION_FLOAT`: the number of degrees a surface's
+  *   data is meant to be rotated clockwise to make the image right-side up.
+  *   Default 0. This is used by the camera API, if a mobile device is oriented
+  *   differently than what its camera provides (i.e. - the camera always
+@@ -263,7 +263,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surfac
+ #define SDL_PROP_SURFACE_TONEMAP_OPERATOR_STRING            "SDL.surface.tonemap"
+ #define SDL_PROP_SURFACE_HOTSPOT_X_NUMBER                   "SDL.surface.hotspot.x"
+ #define SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER                   "SDL.surface.hotspot.y"
+-#define SDL_PROP_SURFACE_ROTATION_NUMBER                    "SDL.surface.rotation"
++#define SDL_PROP_SURFACE_ROTATION_FLOAT                     "SDL.surface.rotation"
+ 
+ /**
+  * Set the colorspace used by a surface.
+diff --git a/src/camera/SDL_camera.c b/src/camera/SDL_camera.c
+index b3c3e5e..b9a11b5 100644
+--- a/src/camera/SDL_camera.c
++++ b/src/camera/SDL_camera.c
+@@ -150,7 +150,7 @@ static size_t GetFrameBufLen(const SDL_CameraSpec *spec)
+     return wxh * SDL_BYTESPERPIXEL(fmt);
+ }
+ 
+-static SDL_CameraFrameResult ZombieAcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
++static SDL_CameraFrameResult ZombieAcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
+ {
+     const SDL_CameraSpec *spec = &device->actual_spec;
+ 
+@@ -832,7 +832,7 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
+     SDL_Surface *output_surface = NULL;
+     SurfaceList *slist = NULL;
+     Uint64 timestampNS = 0;
+-    int rotation = 0;
++    float rotation = 0.0f;
+ 
+     // AcquireFrame SHOULD NOT BLOCK, as we are holding a lock right now. Block in WaitDevice instead!
+     const SDL_CameraFrameResult rc = device->AcquireFrame(device, device->acquire_surface, &timestampNS, &rotation);
+@@ -929,7 +929,7 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
+         acquired->pixels = NULL;
+         acquired->pitch = 0;
+ 
+-        SDL_SetNumberProperty(SDL_GetSurfaceProperties(output_surface), SDL_PROP_SURFACE_ROTATION_NUMBER, rotation);
++        SDL_SetFloatProperty(SDL_GetSurfaceProperties(output_surface), SDL_PROP_SURFACE_ROTATION_FLOAT, rotation);
+ 
+         // make the filled output surface available to the app.
+         SDL_LockMutex(device->lock);
+diff --git a/src/camera/SDL_syscamera.h b/src/camera/SDL_syscamera.h
+index 151f73d..14a6e87 100644
+--- a/src/camera/SDL_syscamera.h
++++ b/src/camera/SDL_syscamera.h
+@@ -99,7 +99,7 @@ struct SDL_Camera
+ 
+     // These are, initially, set from camera_driver, but we might swap them out with Zombie versions on disconnect/failure.
+     bool (*WaitDevice)(SDL_Camera *device);
+-    SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation);
++    SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation);
+     void (*ReleaseFrame)(SDL_Camera *device, SDL_Surface *frame);
+ 
+     // All supported formats/dimensions for this device.
+@@ -178,7 +178,7 @@ typedef struct SDL_CameraDriverImpl
+     bool (*OpenDevice)(SDL_Camera *device, const SDL_CameraSpec *spec);
+     void (*CloseDevice)(SDL_Camera *device);
+     bool (*WaitDevice)(SDL_Camera *device);
+-    SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation); // set frame->pixels, frame->pitch, *timestampNS, and *rotation!
++    SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation); // set frame->pixels, frame->pitch, *timestampNS, and *rotation!
+     void (*ReleaseFrame)(SDL_Camera *device, SDL_Surface *frame); // Reclaim frame->pixels and frame->pitch!
+     void (*FreeDeviceHandle)(SDL_Camera *device); // SDL is done with this device; free the handle from SDL_AddCamera()
+     void (*Deinitialize)(void);
+diff --git a/src/camera/android/SDL_camera_android.c b/src/camera/android/SDL_camera_android.c
+index e52c78f..ed1164c 100644
+--- a/src/camera/android/SDL_camera_android.c
++++ b/src/camera/android/SDL_camera_android.c
+@@ -296,7 +296,7 @@ static bool ANDROIDCAMERA_WaitDevice(SDL_Camera *device)
+     return true;  // this isn't used atm, since we run our own thread via onImageAvailable callbacks.
+ }
+ 
+-static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
++static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
+ {
+     SDL_CameraFrameResult result = SDL_CAMERA_FRAME_READY;
+     media_status_t res;
+@@ -380,7 +380,7 @@ static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_
+         dev_rotation = -dev_rotation;  // we want to subtract this value, instead of add, if back-facing.
+     }
+ 
+-    *rotation = dev_rotation + device->hidden->rotation;   // current phone orientation, static camera orientation in relation to phone.
++    *rotation = (float) (dev_rotation + device->hidden->rotation);   // current phone orientation, static camera orientation in relation to phone.
+ 
+     return result;
+ }
+diff --git a/src/camera/coremedia/SDL_camera_coremedia.m b/src/camera/coremedia/SDL_camera_coremedia.m
+index b50ceba..f02c4ac 100644
+--- a/src/camera/coremedia/SDL_camera_coremedia.m
++++ b/src/camera/coremedia/SDL_camera_coremedia.m
+@@ -157,7 +157,7 @@ static bool COREMEDIA_WaitDevice(SDL_Camera *device)
+     return true;  // this isn't used atm, since we run our own thread out of Grand Central Dispatch.
+ }
+ 
+-static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
++static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
+ {
+     SDL_CameraFrameResult result = SDL_CAMERA_FRAME_READY;
+     SDLPrivateCameraData *hidden = (__bridge SDLPrivateCameraData *) device->hidden;
+@@ -243,21 +243,21 @@ static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surf
+     // there is probably math for this, but this is easy to slap into a table.
+     // rotation = rotations[uiorientation-1][devorientation-1];
+     if (device->position == SDL_CAMERA_POSITION_BACK_FACING) {
+-        static const int back_rotations[4][4] = {
++        static const Uint16 back_rotations[4][4] = {
+             {   90,  90,  90,  90 },  // ui portrait
+             {  270, 270, 270, 270 },  // ui portait upside down
+             {    0,   0,   0,   0 },  // ui landscape left
+             {  180, 180, 180, 180 }   // ui landscape right
+         };
+-        *rotation = back_rotations[ui_orientation - 1][device_orientation - 1];
++        *rotation = (float) back_rotations[ui_orientation - 1][device_orientation - 1];
+     } else {
+-        static const int front_rotations[4][4] = {
++        static const Uint16 front_rotations[4][4] = {
+             {   90,  90, 270, 270 },  // ui portrait
+             {  270, 270,  90,  90 },  // ui portait upside down
+             {    0,   0, 180, 180 },  // ui landscape left
+             {  180, 180,   0,   0 }   // ui landscape right
+         };
+-        *rotation = front_rotations[ui_orientation - 1][device_orientation - 1];
++        *rotation = (float) front_rotations[ui_orientation - 1][device_orientation - 1];
+     }
+     #endif
+ 
+diff --git a/src/camera/dummy/SDL_camera_dummy.c b/src/camera/dummy/SDL_camera_dummy.c
+index 981c2ce..8de3194 100644
+--- a/src/camera/dummy/SDL_camera_dummy.c
++++ b/src/camera/dummy/SDL_camera_dummy.c
+@@ -38,7 +38,7 @@ static bool DUMMYCAMERA_WaitDevice(SDL_Camera *device)
+     return SDL_Unsupported();
+ }
+ 
+-static SDL_CameraFrameResult DUMMYCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
++static SDL_CameraFrameResult DUMMYCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
+ {
+     SDL_Unsupported();
+     return SDL_CAMERA_FRAME_ERROR;
+diff --git a/src/camera/emscripten/SDL_camera_emscripten.c b/src/camera/emscripten/SDL_camera_emscripten.c
+index 8eb67b7..f5096bf 100644
+--- a/src/camera/emscripten/SDL_camera_emscripten.c
++++ b/src/camera/emscripten/SDL_camera_emscripten.c
+@@ -39,7 +39,7 @@ static bool EMSCRIPTENCAMERA_WaitDevice(SDL_Camera *device)
+     return false;
+ }
+ 
+-static SDL_CameraFrameResult EMSCRIPTENCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
++static SDL_CameraFrameResult EMSCRIPTENCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
+ {
+     void *rgba = SDL_malloc(device->actual_spec.width * device->actual_spec.height * 4);
+     if (!rgba) {
+diff --git a/src/camera/mediafoundation/SDL_camera_mediafoundation.c b/src/camera/mediafoundation/SDL_camera_mediafoundation.c
+index 4abe229..c57ff63 100644
+--- a/src/camera/mediafoundation/SDL_camera_mediafoundation.c
++++ b/src/camera/mediafoundation/SDL_camera_mediafoundation.c
+@@ -430,7 +430,7 @@ static void SDLCALL CleanupIMFMediaBuffer(void *userdata, void *value)
+     SDL_free(objs);
+ }
+ 
+-static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
++static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
+ {
+     SDL_assert(device->hidden->current_sample != NULL);
+ 
+@@ -562,7 +562,7 @@ static SDL_CameraFrameResult MEDIAFOUNDATION_CopyFrame(SDL_Surface *frame, const
+     return SDL_CAMERA_FRAME_READY;
+ }
+ 
+-static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
++static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
+ {
+     SDL_assert(device->hidden->current_sample != NULL);
+ 
+diff --git a/src/camera/pipewire/SDL_camera_pipewire.c b/src/camera/pipewire/SDL_camera_pipewire.c
+index 610cd71..b2aae04 100644
+--- a/src/camera/pipewire/SDL_camera_pipewire.c
++++ b/src/camera/pipewire/SDL_camera_pipewire.c
+@@ -577,7 +577,7 @@ static bool PIPEWIRECAMERA_WaitDevice(SDL_Camera *device)
+     return true;
+ }
+ 
+-static SDL_CameraFrameResult PIPEWIRECAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
++static SDL_CameraFrameResult PIPEWIRECAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
+ {
+     struct pw_buffer *b;
+ 
+diff --git a/src/camera/v4l2/SDL_camera_v4l2.c b/src/camera/v4l2/SDL_camera_v4l2.c
+index fbaf4e1..ead44c8 100644
+--- a/src/camera/v4l2/SDL_camera_v4l2.c
++++ b/src/camera/v4l2/SDL_camera_v4l2.c
+@@ -125,7 +125,7 @@ static bool V4L2_WaitDevice(SDL_Camera *device)
+     return false;
+ }
+ 
+-static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
++static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
+ {
+     const int fd = device->hidden->fd;
+     const io_method io = device->hidden->io;
+diff --git a/src/camera/vita/SDL_camera_vita.c b/src/camera/vita/SDL_camera_vita.c
+index ff492b3..3badeae 100644
+--- a/src/camera/vita/SDL_camera_vita.c
++++ b/src/camera/vita/SDL_camera_vita.c
+@@ -190,7 +190,7 @@ static bool VITACAMERA_WaitDevice(SDL_Camera *device)
+     return true;
+ }
+ 
+-static SDL_CameraFrameResult VITACAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
++static SDL_CameraFrameResult VITACAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
+ {
+     SceCameraRead read = {0};
+     read.size = sizeof(SceCameraRead);
+diff --git a/test/testcamera.c b/test/testcamera.c
+index 9858525..941a071 100644
+--- a/test/testcamera.c
++++ b/test/testcamera.c
+@@ -364,7 +364,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
+         // device might be rotated to a different one (like an iPhone providing portrait images even if you hold
+         // the phone in landscape mode). The rotation is how far to rotate the image clockwise to put it right-side
+         // up, for how the user would expect it to be for how they are holding the device.
+-        const int rotation = (int) SDL_GetNumberProperty(SDL_GetSurfaceProperties(frame_current), SDL_PROP_SURFACE_ROTATION_NUMBER, 0);
++        const float rotation = SDL_GetFloatProperty(SDL_GetSurfaceProperties(frame_current), SDL_PROP_SURFACE_ROTATION_FLOAT, 0.0f);
+         SDL_GetRenderOutputSize(renderer, &win_w, &win_h);
+         d.x = ((win_w - texture->w) / 2.0f);
+         d.y = ((win_h - texture->h) / 2.0f);

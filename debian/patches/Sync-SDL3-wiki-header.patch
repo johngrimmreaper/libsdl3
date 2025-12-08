@@ -1,0 +1,28 @@
+From: SDL Wiki Bot <icculus-sdlwikibot@icculus.org>
+Date: Mon, 8 Dec 2025 03:26:26 +0000
+Subject: Sync SDL3 wiki -> header
+
+[ci skip]
+
+Origin: upstream, 3.3.6, commit:b428c1834f555c21b0f0efa52fa1937dc1005e45
+---
+ include/SDL3/SDL_surface.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/include/SDL3/SDL_surface.h b/include/SDL3/SDL_surface.h
+index 437eeac..852f477 100644
+--- a/include/SDL3/SDL_surface.h
++++ b/include/SDL3/SDL_surface.h
+@@ -241,9 +241,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
+  *   left edge of the image, if this surface is being used as a cursor.
+  * - `SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER`: the hotspot pixel offset from the
+  *   top edge of the image, if this surface is being used as a cursor.
+- * - `SDL_PROP_SURFACE_ROTATION_FLOAT`: the number of degrees a surface's
+- *   data is meant to be rotated clockwise to make the image right-side up.
+- *   Default 0. This is used by the camera API, if a mobile device is oriented
++ * - `SDL_PROP_SURFACE_ROTATION_FLOAT`: the number of degrees a surface's data
++ *   is meant to be rotated clockwise to make the image right-side up. Default
++ *   0. This is used by the camera API, if a mobile device is oriented
+  *   differently than what its camera provides (i.e. - the camera always
+  *   provides portrait images but the phone is being held in landscape
+  *   orientation). Since SDL 3.4.0.

@@ -1,0 +1,408 @@
+From: "Ryan C. Gordon" <icculus@icculus.org>
+Date: Sun, 7 Dec 2025 14:42:18 -0500
+Subject: emscripten: Move fill-document from hint/property to a window flag.
+
+Fixes #14617.
+
+Origin: upstream, 3.3.6, commit:9918d6cb5e0dcc4d255f9a7f5de9d95d0f6875fe
+---
+ include/SDL3/SDL_hints.h                   | 26 ---------------
+ include/SDL3/SDL_video.h                   | 47 +++++++++++++++++++--------
+ src/dynapi/SDL_dynapi.sym                  |  1 +
+ src/dynapi/SDL_dynapi_overrides.h          |  1 +
+ src/dynapi/SDL_dynapi_procs.h              |  1 +
+ src/test/SDL_test_common.c                 |  9 ++++++
+ src/video/SDL_sysvideo.h                   |  1 +
+ src/video/SDL_video.c                      | 25 ++++++++++++++-
+ src/video/emscripten/SDL_emscriptenvideo.c | 51 ++++++++++--------------------
+ 9 files changed, 86 insertions(+), 76 deletions(-)
+
+diff --git a/include/SDL3/SDL_hints.h b/include/SDL3/SDL_hints.h
+index 44cc91c..42627c8 100644
+--- a/include/SDL3/SDL_hints.h
++++ b/include/SDL3/SDL_hints.h
+@@ -787,32 +787,6 @@ extern "C" {
+  */
+ #define SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT "SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"
+ 
+-/**
+- * Dictate that windows on Emscripten will fill the whole browser window.
+- *
+- * When enabled, the canvas element fills the entire document. Resize events
+- * will be generated as the browser window is resized, as that will adjust the
+- * canvas size as well. The canvas will cover anything else on the page,
+- * including any controls provided by Emscripten in its generated HTML file
+- * (in fact, any elements on the page that aren't the canvas will be moved
+- * into a hidden `div` element).
+- *
+- * Often times this is desirable for a browser-based game, but it means
+- * several things that we expect of an SDL window on other platforms might not
+- * work as expected, such as minimum window sizes and aspect ratios.
+- *
+- * This hint overrides SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN
+- * properties when creating an SDL window.
+- *
+- * This hint only applies to the Emscripten platform.
+- *
+- * This hint can be set at any time (before creating the window, or to toggle
+- * its state later). Only one window can fill the document at a time.
+- *
+- * \since This hint is available since SDL 3.4.0.
+- */
+-#define SDL_HINT_EMSCRIPTEN_FILL_DOCUMENT "SDL_EMSCRIPTEN_FILL_DOCUMENT"
+-
+ /**
+  * A variable that controls whether the on-screen keyboard should be shown
+  * when text input is active.
+diff --git a/include/SDL3/SDL_video.h b/include/SDL3/SDL_video.h
+index b35d801..2d08c9d 100644
+--- a/include/SDL3/SDL_video.h
++++ b/include/SDL3/SDL_video.h
+@@ -215,6 +215,7 @@ typedef Uint64 SDL_WindowFlags;
+ #define SDL_WINDOW_TOOLTIP              SDL_UINT64_C(0x0000000000040000)    /**< window should be treated as a tooltip and does not get mouse or keyboard focus, requires a parent window */
+ #define SDL_WINDOW_POPUP_MENU           SDL_UINT64_C(0x0000000000080000)    /**< window should be treated as a popup menu, requires a parent window */
+ #define SDL_WINDOW_KEYBOARD_GRABBED     SDL_UINT64_C(0x0000000000100000)    /**< window has grabbed keyboard input */
++#define SDL_WINDOW_FILL_DOCUMENT        SDL_UINT64_C(0x0000000000200000)    /**< window is in fill-document mode (Emscripten only), since SDL 3.4.0 */
+ #define SDL_WINDOW_VULKAN               SDL_UINT64_C(0x0000000010000000)    /**< window usable for Vulkan surface */
+ #define SDL_WINDOW_METAL                SDL_UINT64_C(0x0000000020000000)    /**< window usable for Metal view */
+ #define SDL_WINDOW_TRANSPARENT          SDL_UINT64_C(0x0000000040000000)    /**< window with transparent buffer */
+@@ -1370,15 +1371,6 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
+  *
+  * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING`: the id given to the
+  *   canvas element. This should start with a '#' sign
+- * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN`: true to make
+- *   the canvas element fill the entire document. Resize events will be
+- *   generated as the browser window is resized, as that will adjust the
+- *   canvas size as well. The canvas will cover anything else on the page,
+- *   including any controls provided by Emscripten in its generated HTML file.
+- *   Often times this is desirable for a browser-based game, but it means
+- *   several things that we expect of an SDL window on other platforms might
+- *   not work as expected, such as minimum window sizes and aspect ratios.
+- *   Default false.
+  * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING`: override the
+  *   binding element for keyboard inputs for this canvas. The variable can be
+  *   one of:
+@@ -1453,7 +1445,6 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
+ #define SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER     "SDL.window.create.win32.pixel_format_hwnd"
+ #define SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER                   "SDL.window.create.x11.window"
+ #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING         "SDL.window.create.emscripten.canvas_id"
+-#define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN    "SDL.window.create.emscripten.fill_document"
+ #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING  "SDL.window.create.emscripten.keyboard_element"
+ 
+ /**
+@@ -1623,9 +1614,6 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
+  *
+  * - `SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING`: the id the canvas element
+  *   will have
+- * - `SDL_PROP_WINDOW_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN`: true if the canvas is
+- *   set to consume the entire browser window, bypassing some SDL window
+- *   functionality.
+  * - `SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING`: the keyboard
+  *   element that associates keyboard events to this window
+  *
+@@ -1675,7 +1663,6 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window
+ #define SDL_PROP_WINDOW_X11_SCREEN_NUMBER                           "SDL.window.x11.screen"
+ #define SDL_PROP_WINDOW_X11_WINDOW_NUMBER                           "SDL.window.x11.window"
+ #define SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING                 "SDL.window.emscripten.canvas_id"
+-#define SDL_PROP_WINDOW_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN            "SDL.window.emscripten.fill_document"
+ #define SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING          "SDL.window.emscripten.keyboard_element"
+ 
+ /**
+@@ -1694,6 +1681,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window
+  * \sa SDL_MinimizeWindow
+  * \sa SDL_SetWindowFullscreen
+  * \sa SDL_SetWindowMouseGrab
++ * \sa SDL_SetWindowFillDocument
+  * \sa SDL_ShowWindow
+  */
+ extern SDL_DECLSPEC SDL_WindowFlags SDLCALL SDL_GetWindowFlags(SDL_Window *window);
+@@ -2163,6 +2151,37 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowResizable(SDL_Window *window, bool
+  */
+ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowAlwaysOnTop(SDL_Window *window, bool on_top);
+ 
++/**
++ * Set the window to fill the current document space (Emscripten only).
++ *
++ * This will add or remove the window's `SDL_WINDOW_FILL_DOCUMENT` flag.
++ *
++ * Currently this flag only applies to the Emscripten target.
++ *
++ * When enabled, the canvas element fills the entire document. Resize events
++ * will be generated as the browser window is resized, as that will adjust the
++ * canvas size as well. The canvas will cover anything else on the page,
++ * including any controls provided by Emscripten in its generated HTML file
++ * (in fact, any elements on the page that aren't the canvas will be moved
++ * into a hidden `div` element).
++ *
++ * Often times this is desirable for a browser-based game, but it means
++ * several things that we expect of an SDL window on other platforms might not
++ * work as expected, such as minimum window sizes and aspect ratios.
++ *
++ * \param window the window of which to change the fill-document state.
++ * \param fill true to set the window to fill the document, false to disable.
++ * \returns true on success or false on failure; call SDL_GetError() for more
++ *          information.
++ *
++ * \threadsafety This function should only be called on the main thread.
++ *
++ * \since This function is available since SDL 3.4.0.
++ *
++ * \sa SDL_GetWindowFlags
++ */
++extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowFillDocument(SDL_Window *window, bool fill);
++
+ /**
+  * Show a window.
+  *
+diff --git a/src/dynapi/SDL_dynapi.sym b/src/dynapi/SDL_dynapi.sym
+index de64a3e..ec2e97b 100644
+--- a/src/dynapi/SDL_dynapi.sym
++++ b/src/dynapi/SDL_dynapi.sym
+@@ -1270,6 +1270,7 @@ SDL3_0.0.0 {
+     SDL_RotateSurface;
+     SDL_LoadSurface_IO;
+     SDL_LoadSurface;
++    SDL_SetWindowFillDocument;
+     # extra symbols go here (don't modify this line)
+   local: *;
+ };
+diff --git a/src/dynapi/SDL_dynapi_overrides.h b/src/dynapi/SDL_dynapi_overrides.h
+index cc53044..3d1dc26 100644
+--- a/src/dynapi/SDL_dynapi_overrides.h
++++ b/src/dynapi/SDL_dynapi_overrides.h
+@@ -1296,3 +1296,4 @@
+ #define SDL_RotateSurface SDL_RotateSurface_REAL
+ #define SDL_LoadSurface_IO SDL_LoadSurface_IO_REAL
+ #define SDL_LoadSurface SDL_LoadSurface_REAL
++#define SDL_SetWindowFillDocument SDL_SetWindowFillDocument_REAL
+diff --git a/src/dynapi/SDL_dynapi_procs.h b/src/dynapi/SDL_dynapi_procs.h
+index 9e3c9cd..d867476 100644
+--- a/src/dynapi/SDL_dynapi_procs.h
++++ b/src/dynapi/SDL_dynapi_procs.h
+@@ -1304,3 +1304,4 @@ SDL_DYNAPI_PROC(SDL_Cursor*,SDL_CreateAnimatedCursor,(SDL_CursorFrameInfo *a,int
+ SDL_DYNAPI_PROC(SDL_Surface*,SDL_RotateSurface,(SDL_Surface *a,float b),(a,b),return)
+ SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadSurface_IO,(SDL_IOStream *a,bool b),(a,b),return)
+ SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadSurface,(const char *a),(a),return)
++SDL_DYNAPI_PROC(bool,SDL_SetWindowFillDocument,(SDL_Window *a,bool b),(a,b),return)
+diff --git a/src/test/SDL_test_common.c b/src/test/SDL_test_common.c
+index aab79b3..081dfd4 100644
+--- a/src/test/SDL_test_common.c
++++ b/src/test/SDL_test_common.c
+@@ -2497,6 +2497,15 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
+                 }
+             }
+             break;
++        case SDLK_D:
++            if (withControl) {
++                /* Ctrl-D toggle fill-document */
++                SDL_Window *window = SDL_GetWindowFromEvent(event);
++                if (window) {
++                    SDL_SetWindowFillDocument(window, !((SDL_GetWindowFlags(window) & SDL_WINDOW_FILL_DOCUMENT) != 0));
++                }
++            }
++            break;
+         case SDLK_P:
+             if (withAlt) {
+                 /* Alt-P cycle through progress states */
+diff --git a/src/video/SDL_sysvideo.h b/src/video/SDL_sysvideo.h
+index 06b88b3..3e6ff06 100644
+--- a/src/video/SDL_sysvideo.h
++++ b/src/video/SDL_sysvideo.h
+@@ -312,6 +312,7 @@ struct SDL_VideoDevice
+     bool (*FlashWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
+     bool (*ApplyWindowProgress)(SDL_VideoDevice *_this, SDL_Window *window);
+     bool (*SetWindowFocusable)(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
++    bool (*SetWindowFillDocument)(SDL_VideoDevice *_this, SDL_Window *window, bool fill);
+     bool (*SyncWindow)(SDL_VideoDevice *_this, SDL_Window *window);
+     bool (*ReconfigureWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_WindowFlags flags);
+ 
+diff --git a/src/video/SDL_video.c b/src/video/SDL_video.c
+index 2bae47e..4aea9f6 100644
+--- a/src/video/SDL_video.c
++++ b/src/video/SDL_video.c
+@@ -2199,7 +2199,7 @@ SDL_PixelFormat SDL_GetWindowPixelFormat(SDL_Window *window)
+ }
+ 
+ #define CREATE_FLAGS \
+-    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN | SDL_WINDOW_MINIMIZED | SDL_WINDOW_METAL | SDL_WINDOW_TRANSPARENT | SDL_WINDOW_NOT_FOCUSABLE)
++    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN | SDL_WINDOW_MINIMIZED | SDL_WINDOW_METAL | SDL_WINDOW_TRANSPARENT | SDL_WINDOW_NOT_FOCUSABLE | SDL_WINDOW_FILL_DOCUMENT)
+ 
+ static SDL_INLINE bool IsAcceptingDragAndDrop(void)
+ {
+@@ -2557,6 +2557,10 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
+     window->external_graphics_context = external_graphics_context;
+     window->constrain_popup = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_CONSTRAIN_POPUP_BOOLEAN, true);
+ 
++    if (!_this->SetWindowFillDocument) {
++        window->flags &= ~SDL_WINDOW_FILL_DOCUMENT;  // not an error, just unsupported here, so remove the flag.
++    }
++
+     if (_this->windows) {
+         _this->windows->prev = window;
+     }
+@@ -3914,6 +3918,25 @@ bool SDL_SetWindowFocusable(SDL_Window *window, bool focusable)
+     return true;
+ }
+ 
++bool SDL_SetWindowFillDocument(SDL_Window *window, bool fill)
++{
++    CHECK_WINDOW_MAGIC(window, false);
++
++    const bool want = (fill != false); // normalize the flag.
++    const bool have = ((window->flags & SDL_WINDOW_FILL_DOCUMENT) != 0);
++    if ((want != have) && (_this->SetWindowFillDocument)) {
++        if (!_this->SetWindowFillDocument(_this, window, want)) {
++            return false;
++        } else if (want) {
++            window->flags |= SDL_WINDOW_FILL_DOCUMENT;
++        } else {
++            window->flags &= ~SDL_WINDOW_FILL_DOCUMENT;
++        }
++    }
++
++    return true;
++}
++
+ void SDL_UpdateWindowGrab(SDL_Window *window)
+ {
+     bool keyboard_grabbed, mouse_grabbed;
+diff --git a/src/video/emscripten/SDL_emscriptenvideo.c b/src/video/emscripten/SDL_emscriptenvideo.c
+index e2b6a56..b6f41b8 100644
+--- a/src/video/emscripten/SDL_emscriptenvideo.c
++++ b/src/video/emscripten/SDL_emscriptenvideo.c
+@@ -50,6 +50,7 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
+ static void Emscripten_PumpEvents(SDL_VideoDevice *_this);
+ static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
+ static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
++static bool Emscripten_SetWindowFillDocument(SDL_VideoDevice *_this, SDL_Window *window, bool fill);
+ 
+ SDL_Window *Emscripten_fill_document_window = NULL;
+ 
+@@ -58,11 +59,8 @@ static int pending_swap_interval = -1;
+ 
+ // Emscripten driver bootstrap functions
+ 
+-static void SDLCALL Emscripten_FillDocHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint);
+-
+ static void Emscripten_DeleteDevice(SDL_VideoDevice *device)
+ {
+-    SDL_RemoveHintCallback(SDL_HINT_EMSCRIPTEN_FILL_DOCUMENT, Emscripten_FillDocHintChanged, device);
+     SDL_free(device);
+ }
+ 
+@@ -177,6 +175,7 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
+     device->GetWindowSizeInPixels = Emscripten_GetWindowSizeInPixels;
+     device->DestroyWindow = Emscripten_DestroyWindow;
+     device->SetWindowFullscreen = Emscripten_SetWindowFullscreen;
++    device->SetWindowFillDocument = Emscripten_SetWindowFillDocument;
+ 
+     device->CreateWindowFramebuffer = Emscripten_CreateWindowFramebuffer;
+     device->UpdateWindowFramebuffer = Emscripten_UpdateWindowFramebuffer;
+@@ -197,8 +196,6 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
+     Emscripten_ListenSystemTheme();
+     device->system_theme = Emscripten_GetSystemTheme();
+ 
+-    SDL_AddHintCallback(SDL_HINT_EMSCRIPTEN_FILL_DOCUMENT, Emscripten_FillDocHintChanged, device);
+-
+     return device;
+ }
+ 
+@@ -463,14 +460,16 @@ EMSCRIPTEN_KEEPALIVE void requestFullscreenThroughSDL(SDL_Window *window)
+     SDL_SetWindowFullscreen(window, true);
+ }
+ 
+-static void Emscripten_SetWindowFillDocState(SDL_Window *window, bool enable)
++static bool Emscripten_SetWindowFillDocument(SDL_VideoDevice *_this, SDL_Window *window, bool fill)
+ {
+     SDL_WindowData *wdata = window->internal;
+ 
+-    SDL_assert(!Emscripten_fill_document_window || !enable); // one at a time, sorry.
++    if (fill && Emscripten_fill_document_window && (Emscripten_fill_document_window != window)) {
++        return SDL_SetError("Only one fill-document window allowed at a time.");
++    }
+ 
+     // fill_document takes up the entire page and resizes as the browser window resizes.
+-    if (enable) {
++    if (fill) {
+         Emscripten_fill_document_window = window;
+ 
+         const int w = MAIN_THREAD_EM_ASM_INT({ return window.innerWidth; });
+@@ -558,20 +557,8 @@ static void Emscripten_SetWindowFillDocState(SDL_Window *window, bool enable)
+             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, wdata->non_fill_document_width, wdata->non_fill_document_height);
+         }
+     }
+-}
+ 
+-static void SDLCALL Emscripten_FillDocHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+-{
+-    const bool enabled = SDL_GetStringBoolean(hint, false);
+-    if (Emscripten_fill_document_window && !enabled) {
+-        Emscripten_SetWindowFillDocState(Emscripten_fill_document_window, false);
+-    } else if (!Emscripten_fill_document_window && enabled) {
+-        /// there's currently only ever one canvas, but if this changes later, we can choose the one with keyboard focus or something.
+-        SDL_VideoDevice *device = (SDL_VideoDevice *) userdata;
+-        if (device && device->windows) {  // take first window in the list for now.
+-            Emscripten_SetWindowFillDocState(device->windows, true);
+-        }
+-    }
++    return true;
+ }
+ 
+ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
+@@ -580,6 +567,12 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window,
+     double css_w, css_h;
+     const char *selector;
+ 
++    bool fill_document = ((window->flags & SDL_WINDOW_FILL_DOCUMENT) != 0);
++    if (fill_document && Emscripten_fill_document_window) {
++        fill_document = false;  // only one allowed at a time.
++        window->flags &= ~SDL_WINDOW_FILL_DOCUMENT;   // !!! FIXME: should this fail instead?
++    }
++
+     // Allocate window internal data
+     wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
+     if (!wdata) {
+@@ -598,15 +591,6 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window,
+     }
+     wdata->keyboard_element = SDL_strdup(selector);
+ 
+-    bool fill_document;
+-    if (Emscripten_fill_document_window) {
+-        fill_document = false;  // only one allowed at a time.
+-    } else if (SDL_GetHint(SDL_HINT_EMSCRIPTEN_FILL_DOCUMENT)) {
+-        fill_document = SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_FILL_DOCUMENT, false);
+-    } else {
+-        fill_document = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN, false);
+-    }
+-
+     if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
+         wdata->pixel_ratio = emscripten_get_device_pixel_ratio();
+     } else {
+@@ -629,7 +613,7 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window,
+ 
+     wdata->non_fill_document_width = window->w;
+     wdata->non_fill_document_height = window->h;
+-    Emscripten_SetWindowFillDocState(window, fill_document);
++    Emscripten_SetWindowFillDocument(_this, window, fill_document);
+ 
+     // One window, it always has focus
+     SDL_SetMouseFocus(window);
+@@ -647,7 +631,6 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window,
+     // Ensure various things are added to the window's properties
+     SDL_SetStringProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING, wdata->canvas_id);
+     SDL_SetStringProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING, wdata->keyboard_element);
+-    SDL_SetBooleanProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN, fill_document);
+ 
+     // Window has been successfully created
+     return true;
+@@ -695,9 +678,7 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
+ {
+     SDL_WindowData *data;
+ 
+-    if (Emscripten_fill_document_window == window) {
+-        Emscripten_SetWindowFillDocState(window, false);
+-    }
++    Emscripten_SetWindowFillDocument(_this, window, false);
+ 
+     if (window->internal) {
+         data = window->internal;
