@@ -1,2 +1,2 @@
-# Not applicable while we're packaging git snapshots and not formal releases
-debian-watch-could-verify-download debian/upstream/signing-key.asc [debian/watch]
+# https://bugs.debian.org/1115463
+debian-watch-not-mangling-version
