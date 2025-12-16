@@ -15,10 +15,10 @@ Tested-by: Pino Toscano
  1 file changed, 3 insertions(+)
 
 diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
-index 8b93e75..ff5a056 100644
+index b126f72..f274ea6 100644
 --- a/test/CMakeLists.txt
 +++ b/test/CMakeLists.txt
-@@ -312,6 +312,9 @@ add_sdl_test_executable(testmultiaudio NEEDS_RESOURCES TESTUTILS SOURCES testmul
+@@ -327,6 +327,9 @@ add_sdl_test_executable(testmultiaudio NEEDS_RESOURCES TESTUTILS SOURCES testmul
  add_sdl_test_executable(testaudiohotplug NEEDS_RESOURCES TESTUTILS SOURCES testaudiohotplug.c)
  add_sdl_test_executable(testaudiorecording MAIN_CALLBACKS SOURCES testaudiorecording.c)
  add_sdl_test_executable(testatomic NONINTERACTIVE DISABLE_THREADS_ARGS "--no-threads" SOURCES testatomic.c)
