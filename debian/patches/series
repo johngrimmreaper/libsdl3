@@ -1,6 +1,1 @@
-Fix-loop-variable-bug-in-V4L2-camera-format-enumeration.patch
-emscripten-Move-fill-document-from-hint-property-to-a-win.patch
-surface-Surface-rotation-property-should-be-float-not-int.patch
-surface-SDL_RotateSurface-should-update-SDL_PROP_SURFACE_.patch
-Sync-SDL3-wiki-header.patch
 test-Set-a-much-longer-timeout-for-testatomic-on-GNU-Hurd.patch

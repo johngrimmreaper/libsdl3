@@ -1,3 +1,14 @@
+libsdl3 (3.3.6+ds-1) experimental; urgency=medium
+
+  * New upstream preview release
+  * d/patches: Drop patches that were included in the release
+  * d/libsdl3-0.symbols: Bump required version for
+    SDL_SetWindowFillDocument.
+    This was added in Debian as a patch in 3.3.4+ds-1, but only officially
+    added upstream in 3.3.6.
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 16 Dec 2025 20:46:34 +0000
+
 libsdl3 (3.3.4+ds-1) experimental; urgency=medium
 
   * d/watch, d/source/lintian-overrides: Look for formal prereleases
