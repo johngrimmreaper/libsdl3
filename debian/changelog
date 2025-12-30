@@ -5,6 +5,7 @@ libsdl3 (3.3.6+git20251229~95ac0ff+ds-1) UNRELEASED; urgency=medium
       (Closes: #1123953)
     - Please note API changes for SDL_ELF_NOTE_DLOPEN since preview
       release 3.3.6
+  * Merge packaging changes from unstable
 
  -- Simon McVittie <smcv@debian.org>  Tue, 30 Dec 2025 16:16:20 +0000
 
@@ -182,6 +183,40 @@ libsdl3 (3.3~git20250903.1+ds-1) experimental; urgency=medium
   * Merge packaging changes from unstable
 
  -- Simon McVittie <smcv@debian.org>  Wed, 03 Sep 2025 20:54:18 +0100
+
+libsdl3 (3.2.28+ds-2) unstable; urgency=medium
+
+  * d/p/build-scripts-Include-SDL-prefix-in-SDL_REVISION-when-bui.patch:
+    Mark as applied upstream
+  * d/p/Added-Keychron-V5-System-Control-to-the-controller-blackl.patch,
+    d/p/testver-Assert-that-SDL_GetRevision-starts-with-SDL.patch,
+    d/p/GPU-Remove-erroneous-buffer-usage-flag-from-defrag-proces.patch,
+    d/p/log-Fix-unlikely-out-of-bounds-issue.patch,
+    d/p/Fix-loop-variable-bug-in-V4L2-camera-format-enumeration.patch,
+    d/p/WhatsNew.txt-Moved-some-missing-entries-over-to-the-relea.patch,
+    d/p/stb_image.h-apply-patches-from-mainstream-PRs-1839-1862-a.patch,
+    d/p/GPU-Fix-crash-on-Android-upon-returning-from-the-backgrou.patch,
+    d/p/cmake-add-reftable-ref-storage-support-to-GetGitRevisionD.patch,
+    d/p/Pass-the-window-along-with-evdev-touch-events.patch,
+    d/p/Fix-SDL_EnumerateDirectory-failing-on-POSIX-and-Windows.patch,
+    d/p/x11-Don-t-poll-the-map-state-when-the-window-was-unmapped.patch,
+    d/p/wayland-Update-the-HDR-data-on-placeholder-displays.patch,
+    d/p/Fix-for-13094.patch,
+    d/p/egl-Better-attempt-at-retrying-surface-creation-w-o-EGL_E.patch,
+    d/p/video-Unload-GL-Vulkan-when-shutting-down-the-video-subsy.patch,
+    d/p/Allow-the-offscreen-and-dummy-drivers-to-be-used-as-fallb.patch,
+    d/p/wayland-Use-the-implicit-grab-serial-when-clearing-the-cl.patch,
+    d/p/Document-SDL-s-policy-on-setuid-setgid-executables.patch:
+    Update to upstream commit release-3.2.28-27-g888104f5a from the
+    release-3.2.x branch, excluding commits specific to upstream CI or
+    non-Debian platforms
+  * d/p/unix-Add-internal-function-SDL_CanUseGtk.patch,
+    d/p/unix-If-setuid-or-setgid-don-t-use-GTK.patch,
+    d/p/wayland-If-GTK-is-disabled-try-to-avoid-libdecor-s-GTK-pl.patch:
+    Work around some SDL 1.2 and SDL 2 games being setgid
+    (Closes: #1123953)
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 30 Dec 2025 17:33:59 +0000
 
 libsdl3 (3.2.28+ds-1) unstable; urgency=medium
 
