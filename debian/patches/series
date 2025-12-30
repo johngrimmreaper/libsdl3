@@ -17,8 +17,6 @@ egl-Better-attempt-at-retrying-surface-creation-w-o-EGL_E.patch
 video-Unload-GL-Vulkan-when-shutting-down-the-video-subsy.patch
 Allow-the-offscreen-and-dummy-drivers-to-be-used-as-fallb.patch
 wayland-Use-the-implicit-grab-serial-when-clearing-the-cl.patch
-GPU-Add-bounds-validation-for-slot-bindings-and-uniform-d.patch
-Revert-GPU-Add-bounds-validation-for-slot-bindings-and-un.patch
 Document-SDL-s-policy-on-setuid-setgid-executables.patch
 Add-GNU-Hurd-as-platform.patch
 cmake-detect-RISCOS-platform-before-GNU-Hurd.patch

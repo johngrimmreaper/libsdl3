@@ -9,31 +9,32 @@ Forwarded: https://github.com/libsdl-org/SDL/pull/14726
 Bug: https://github.com/libsdl-org/sdl2-compat/issues/564
 Bug-Debian: https://bugs.debian.org/1123953
 ---
- src/{misc/dummy/SDL_sysurl.c => core/unix/SDL_gtk.c}          | 11 +++++++----
- src/{thread/pthread/SDL_systhread_c.h => core/unix/SDL_gtk.h} |  8 ++++++--
- 2 files changed, 13 insertions(+), 6 deletions(-)
- copy src/{misc/dummy/SDL_sysurl.c => core/unix/SDL_gtk.c} (86%)
+ src/{misc/android/SDL_sysurl.c => core/unix/SDL_gtk.c}       | 12 +++++++-----
+ .../pthread/SDL_systhread_c.h => core/unix/SDL_gtk.h}        |  8 ++++++--
+ 2 files changed, 13 insertions(+), 7 deletions(-)
+ copy src/{misc/android/SDL_sysurl.c => core/unix/SDL_gtk.c} (86%)
  copy src/{thread/pthread/SDL_systhread_c.h => core/unix/SDL_gtk.h} (91%)
 
-diff --git a/src/misc/dummy/SDL_sysurl.c b/src/core/unix/SDL_gtk.c
+diff --git a/src/misc/android/SDL_sysurl.c b/src/core/unix/SDL_gtk.c
 similarity index 86%
-copy from src/misc/dummy/SDL_sysurl.c
+copy from src/misc/android/SDL_sysurl.c
 copy to src/core/unix/SDL_gtk.c
-index 64dcfa9..f1ffce6 100644
---- a/src/misc/dummy/SDL_sysurl.c
+index d79f1e0..f1ffce6 100644
+--- a/src/misc/android/SDL_sysurl.c
 +++ b/src/core/unix/SDL_gtk.c
-@@ -19,10 +19,13 @@
+@@ -19,11 +19,13 @@
    3. This notice may not be removed or altered from any source distribution.
  */
  #include "SDL_internal.h"
 +#include "SDL_gtk.h"
  
 -#include "../SDL_sysurl.h"
+-#include "../../core/android/SDL_android.h"
 -
 -bool SDL_SYS_OpenURL(const char *url)
 +bool SDL_CanUseGtk(void)
  {
--    return SDL_Unsupported();
+-    return Android_JNI_OpenURL(url);
 +    if (!SDL_GetHintBoolean("SDL_ENABLE_GTK", true)) {
 +        return false;
 +    }
