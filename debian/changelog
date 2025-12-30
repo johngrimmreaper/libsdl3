@@ -20,11 +20,10 @@ libsdl3 (3.2.28+ds-2) UNRELEASED; urgency=medium
     d/p/video-Unload-GL-Vulkan-when-shutting-down-the-video-subsy.patch,
     d/p/Allow-the-offscreen-and-dummy-drivers-to-be-used-as-fallb.patch,
     d/p/wayland-Use-the-implicit-grab-serial-when-clearing-the-cl.patch,
-    d/p/GPU-Add-bounds-validation-for-slot-bindings-and-uniform-d.patch,
-    d/p/Revert-GPU-Add-bounds-validation-for-slot-bindings-and-un.patch,
     d/p/Document-SDL-s-policy-on-setuid-setgid-executables.patch:
     Update to upstream commit release-3.2.28-27-g888104f5a from the
-    release-3.2.x branch
+    release-3.2.x branch, excluding commits specific to upstream CI or
+    non-Debian platforms
   * d/p/unix-Add-internal-function-SDL_CanUseGtk.patch,
     d/p/unix-If-setuid-or-setgid-don-t-use-GTK.patch,
     d/p/wayland-If-GTK-is-disabled-try-to-avoid-libdecor-s-GTK-pl.patch:
