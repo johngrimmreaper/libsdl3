@@ -116,31 +116,31 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for OpenGL",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_OGL, ALT_OGL
-);
+)
 SDL_ELF_NOTE_DLOPEN(
     "egl-egl",
     "Support for EGL",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_EGL
-);
+)
 SDL_ELF_NOTE_DLOPEN(
     "egl-es2",
     "Support for EGL ES2",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_OGL_ES2
-);
+)
 SDL_ELF_NOTE_DLOPEN(
     "egl-es-pvr",
     "Support for EGL ES PVR",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_OGL_ES_PVR
-);
+)
 SDL_ELF_NOTE_DLOPEN(
     "egl-ogl-es",
     "Support for OpenGL ES",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_OGL_ES
-);
+)
 #endif // SDL_VIDEO_DRIVER_RPI
 
 #if defined(SDL_VIDEO_OPENGL) && !defined(SDL_VIDEO_VITA_PVR_OGL)
@@ -1144,7 +1144,7 @@ SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surfa
         }
     }
 
-    SDL_GL_SetSwapInterval(0);  // EGL tends to default to vsync=1. To make this consistent with the rest of SDL, we force it off at startup. Apps can explicitly enable it afterwards.
+    SDL_EGL_SetSwapInterval(_this, 0);  // EGL tends to default to vsync=1. To make this consistent with the rest of SDL, we force it off at startup. Apps can explicitly enable it afterwards.
 
     return (SDL_GLContext)egl_context;
 }
