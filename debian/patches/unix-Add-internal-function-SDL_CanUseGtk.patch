@@ -1,0 +1,64 @@
+From: Simon McVittie <smcv@debian.org>
+Date: Tue, 30 Dec 2025 14:50:09 +0000
+Subject: unix: Add internal function SDL_CanUseGtk()
+
+Necessary for a backport of #14712 to the 3.2.x branch.
+
+Signed-off-by: Simon McVittie <smcv@debian.org>
+Forwarded: https://github.com/libsdl-org/SDL/pull/14726
+Bug: https://github.com/libsdl-org/sdl2-compat/issues/564
+Bug-Debian: https://bugs.debian.org/1123953
+---
+ src/{misc/dummy/SDL_sysurl.c => core/unix/SDL_gtk.c}          | 11 +++++++----
+ src/{thread/pthread/SDL_systhread_c.h => core/unix/SDL_gtk.h} |  8 ++++++--
+ 2 files changed, 13 insertions(+), 6 deletions(-)
+ copy src/{misc/dummy/SDL_sysurl.c => core/unix/SDL_gtk.c} (86%)
+ copy src/{thread/pthread/SDL_systhread_c.h => core/unix/SDL_gtk.h} (91%)
+
+diff --git a/src/misc/dummy/SDL_sysurl.c b/src/core/unix/SDL_gtk.c
+similarity index 86%
+copy from src/misc/dummy/SDL_sysurl.c
+copy to src/core/unix/SDL_gtk.c
+index 64dcfa9..f1ffce6 100644
+--- a/src/misc/dummy/SDL_sysurl.c
++++ b/src/core/unix/SDL_gtk.c
+@@ -19,10 +19,13 @@
+   3. This notice may not be removed or altered from any source distribution.
+ */
+ #include "SDL_internal.h"
++#include "SDL_gtk.h"
+ 
+-#include "../SDL_sysurl.h"
+-
+-bool SDL_SYS_OpenURL(const char *url)
++bool SDL_CanUseGtk(void)
+ {
+-    return SDL_Unsupported();
++    if (!SDL_GetHintBoolean("SDL_ENABLE_GTK", true)) {
++        return false;
++    }
++
++    return true;
+ }
+diff --git a/src/thread/pthread/SDL_systhread_c.h b/src/core/unix/SDL_gtk.h
+similarity index 91%
+copy from src/thread/pthread/SDL_systhread_c.h
+copy to src/core/unix/SDL_gtk.h
+index bdfcd68..0fc9aaf 100644
+--- a/src/thread/pthread/SDL_systhread_c.h
++++ b/src/core/unix/SDL_gtk.h
+@@ -18,8 +18,12 @@
+      misrepresented as being the original software.
+   3. This notice may not be removed or altered from any source distribution.
+ */
++
+ #include "SDL_internal.h"
+ 
+-#include <pthread.h>
++#ifndef SDL_gtk_h_
++#define SDL_gtk_h_
++
++extern bool SDL_CanUseGtk(void);
+ 
+-typedef pthread_t SYS_ThreadHandle;
++#endif // SDL_gtk_h_

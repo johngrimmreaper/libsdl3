@@ -23,5 +23,8 @@ Document-SDL-s-policy-on-setuid-setgid-executables.patch
 Add-GNU-Hurd-as-platform.patch
 cmake-detect-RISCOS-platform-before-GNU-Hurd.patch
 wikiheaders-Escape-backslash-in-man-pages.patch
+unix-Add-internal-function-SDL_CanUseGtk.patch
+unix-If-setuid-or-setgid-don-t-use-GTK.patch
+wayland-If-GTK-is-disabled-try-to-avoid-libdecor-s-GTK-pl.patch
 test-Set-a-much-longer-timeout-for-testatomic-on-GNU-Hurd.patch
 dist/SDL_revision.h-Include-SDL-prefix-in-SDL_REVISION.patch
