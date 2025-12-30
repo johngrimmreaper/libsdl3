@@ -1,13 +1,13 @@
-libsdl3 (3.3.6+git20251229~95ac0ff+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.3.6+git20251229~95ac0ff+ds-1) experimental; urgency=medium
 
   * New upstream snapshot
     - Works around some SDL 1.2 and SDL 2 games being setgid
       (Closes: #1123953)
     - Please note API changes for SDL_ELF_NOTE_DLOPEN since preview
       release 3.3.6
-  * Merge packaging changes from unstable
+  * Merge packaging changes from unstable (no functional change)
 
- -- Simon McVittie <smcv@debian.org>  Tue, 30 Dec 2025 16:16:20 +0000
+ -- Simon McVittie <smcv@debian.org>  Tue, 30 Dec 2025 17:38:34 +0000
 
 libsdl3 (3.3.6+ds-1) experimental; urgency=medium
 
