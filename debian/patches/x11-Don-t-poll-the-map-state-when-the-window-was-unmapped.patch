@@ -1,0 +1,29 @@
+From: Frank Praznik <frank.praznik@gmail.com>
+Date: Mon, 15 Dec 2025 11:43:49 -0500
+Subject: x11: Don't poll the map state when the window was unmapped and
+ borders are toggled
+
+An event flush while a window is being hidden may try to toggle the window borders. Don't poll the mapping state when toggling borders if the window is in the process of being hidden, or the window may already be unmapped, and the wait loop will hang forever.
+
+(cherry picked from commit 78d008fcd27142d54ceafe8dd0190fbdb4047620)
+
+Origin: upstream, 3.2.30, commit:1f216da1e69e8db58a2c71ccafbe933d01114352
+---
+ src/video/x11/SDL_x11window.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/video/x11/SDL_x11window.c b/src/video/x11/SDL_x11window.c
+index 85a91eb..d288194 100644
+--- a/src/video/x11/SDL_x11window.c
++++ b/src/video/x11/SDL_x11window.c
+@@ -1438,8 +1438,8 @@ bool X11_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal)
+ 
+ void X11_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, bool bordered)
+ {
+-    const bool focused = (window->flags & SDL_WINDOW_INPUT_FOCUS) ? true : false;
+-    const bool visible = (!(window->flags & SDL_WINDOW_HIDDEN)) ? true : false;
++    const bool focused = (window->flags & SDL_WINDOW_INPUT_FOCUS) != 0;
++    const bool visible = !(window->flags & SDL_WINDOW_HIDDEN) && !window->is_hiding;
+     SDL_WindowData *data = window->internal;
+     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
+     Display *display = data->videodata->display;

@@ -1,0 +1,38 @@
+From: Edgar J San Martin <29460583+ej-sanmartin@users.noreply.github.com>
+Date: Mon, 15 Dec 2025 18:33:03 -0500
+Subject: Fix SDL_EnumerateDirectory(/) failing on POSIX and Windows.
+
+(cherry picked from commit 09a2283b53d541c57ded373a0954b1e2f8a8428a)
+
+Origin: upstream, 3.2.30, commit:99cbedd66297a40be84f64f27fcd24776e203574
+---
+ src/filesystem/posix/SDL_sysfsops.c   | 2 +-
+ src/filesystem/windows/SDL_sysfsops.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/filesystem/posix/SDL_sysfsops.c b/src/filesystem/posix/SDL_sysfsops.c
+index 015b8d4..127ef0f 100644
+--- a/src/filesystem/posix/SDL_sysfsops.c
++++ b/src/filesystem/posix/SDL_sysfsops.c
+@@ -45,7 +45,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
+ 
+     // trim down to a single path separator at the end, in case the caller added one or more.
+     pathwithseplen--;
+-    while ((pathwithseplen >= 0) && (pathwithsep[pathwithseplen] == '/')) {
++    while ((pathwithseplen > 0) && (pathwithsep[pathwithseplen] == '/')) {
+         pathwithsep[pathwithseplen--] = '\0';
+     }
+ 
+diff --git a/src/filesystem/windows/SDL_sysfsops.c b/src/filesystem/windows/SDL_sysfsops.c
+index 9c48ba9..a6f9997 100644
+--- a/src/filesystem/windows/SDL_sysfsops.c
++++ b/src/filesystem/windows/SDL_sysfsops.c
+@@ -53,7 +53,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
+ 
+         // trim down to a single path separator at the end, in case the caller added one or more.
+         patternlen--;
+-        while ((patternlen >= 0) && ((pattern[patternlen] == '\\') || (pattern[patternlen] == '/'))) {
++        while ((patternlen > 0) && ((pattern[patternlen] == '\\') || (pattern[patternlen] == '/'))) {
+             pattern[patternlen--] ='\0';
+         }
+         pattern[++patternlen] = '\\';

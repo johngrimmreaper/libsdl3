@@ -1,0 +1,54 @@
+From: Sam Lantinga <slouken@libsdl.org>
+Date: Sun, 21 Dec 2025 16:17:38 -0800
+Subject: Allow the offscreen and dummy drivers to be used as fallback
+
+(cherry picked from commit efc33633e3c4363989b467a1a6ab267f413cd016)
+
+Origin: upstream, 3.2.30, commit:9b1843c8da8fe961a82df12ee20a81a22d23d029
+---
+ src/video/dummy/SDL_nullvideo.c          | 8 +++-----
+ src/video/offscreen/SDL_offscreenvideo.c | 8 +++-----
+ 2 files changed, 6 insertions(+), 10 deletions(-)
+
+diff --git a/src/video/dummy/SDL_nullvideo.c b/src/video/dummy/SDL_nullvideo.c
+index 7be4ae1..87fd35e 100644
+--- a/src/video/dummy/SDL_nullvideo.c
++++ b/src/video/dummy/SDL_nullvideo.c
+@@ -68,13 +68,11 @@ static void DUMMY_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
+ 
+ // DUMMY driver bootstrap functions
+ 
+-static bool DUMMY_Available(const char *enable_hint)
++static bool DUMMY_Available(const char *drivername)
+ {
+     const char *hint = SDL_GetHint(SDL_HINT_VIDEO_DRIVER);
+-    if (hint) {
+-        if (SDL_strcmp(hint, enable_hint) == 0) {
+-            return true;
+-        }
++    if (hint && SDL_strstr(hint, drivername) != NULL) {
++        return true;
+     }
+     return false;
+ }
+diff --git a/src/video/offscreen/SDL_offscreenvideo.c b/src/video/offscreen/SDL_offscreenvideo.c
+index 1ef0f9e..c490cb2 100644
+--- a/src/video/offscreen/SDL_offscreenvideo.c
++++ b/src/video/offscreen/SDL_offscreenvideo.c
+@@ -51,13 +51,11 @@ static void OFFSCREEN_DeleteDevice(SDL_VideoDevice *device)
+     SDL_free(device);
+ }
+ 
+-static bool OFFSCREEN_Available(const char *enable_hint)
++static bool OFFSCREEN_Available(const char *drivername)
+ {
+     const char *hint = SDL_GetHint(SDL_HINT_VIDEO_DRIVER);
+-    if (hint) {
+-        if (SDL_strcmp(hint, enable_hint) == 0) {
+-            return true;
+-        }
++    if (hint && SDL_strstr(hint, drivername) != NULL) {
++        return true;
+     }
+     return false;
+ }

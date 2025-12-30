@@ -1,0 +1,74 @@
+From: Simon McVittie <smcv@debian.org>
+Date: Sun, 28 Dec 2025 17:51:38 +0000
+Subject: Document SDL's policy on setuid/setgid executables
+
+Stated briefly, the policy is: don't.
+
+Bug: https://github.com/libsdl-org/SDL/issues/14717
+Signed-off-by: Simon McVittie <smcv@debian.org>
+(cherry picked from commit 76352f2931e7eca6e596ea290a227314e7248ba7)
+Origin: upstream, 3.2.30, commit:888104f5ad70434adbdc5a0379c108e909909e8e
+---
+ docs/README-bsd.md       |  1 +
+ docs/README-linux.md     |  1 +
+ docs/README-macos.md     |  2 ++
+ docs/README-platforms.md | 15 +++++++++++++++
+ 4 files changed, 19 insertions(+)
+
+diff --git a/docs/README-bsd.md b/docs/README-bsd.md
+index d823060..0f94470 100644
+--- a/docs/README-bsd.md
++++ b/docs/README-bsd.md
+@@ -4,3 +4,4 @@ SDL is fully supported on BSD platforms, and is built using [CMake](README-cmake
+ 
+ If you want to run on the console, you can take a look at [KMSDRM support on BSD](README-kmsbsd.md)
+ 
++SDL is [not designed to be used in setuid or setgid executables](README-platforms.md#setuid).
+diff --git a/docs/README-linux.md b/docs/README-linux.md
+index 3f2d2c0..afdfbad 100644
+--- a/docs/README-linux.md
++++ b/docs/README-linux.md
+@@ -8,6 +8,7 @@ system does not have the XRandR libraries installed, it will be disabled
+ at runtime, and you won't get a missing library error, at least with the
+ default configuration parameters.
+ 
++SDL is [not designed to be used in setuid or setgid executables](README-platforms.md#setuid).
+ 
+ Build Dependencies
+ --------------------------------------------------------------------------------
+diff --git a/docs/README-macos.md b/docs/README-macos.md
+index e5c75c1..147174c 100644
+--- a/docs/README-macos.md
++++ b/docs/README-macos.md
+@@ -73,6 +73,8 @@ NSApplicationDelegate implementation:
+ }
+ ```
+ 
++SDL is [not designed to be used in setuid or setgid executables](README-platforms.md#setuid).
++
+ # Using the Simple DirectMedia Layer with a traditional Makefile
+ 
+ An existing build system for your SDL app has good chances to work almost
+diff --git a/docs/README-platforms.md b/docs/README-platforms.md
+index 46a054a..eb75ff7 100644
+--- a/docs/README-platforms.md
++++ b/docs/README-platforms.md
+@@ -38,3 +38,18 @@ All of these still work with [SDL2](/SDL2), which is an incompatible API, but an
+ - QNX
+ - WinPhone
+ - WinRT/UWP
++
++## General notes for Unix platforms
++
++Some aspects of SDL functionality are common to all Unix-based platforms.
++
++### <a name=setuid></a>Privileged processes (setuid, setgid, setcap)
++
++SDL is not designed to be used in programs with elevated privileges,
++such as setuid (`chmod u+s`) or setgid (`chmod g+s`) executables,
++or executables with file-based capabilities
++(`setcap cap_sys_nice+ep` or similar).
++It does not make any attempt to avoid trusting environment variables
++or other aspects of the inherited execution environment.
++Programs running with elevated privileges in an attacker-controlled
++execution environment should not call SDL functions.

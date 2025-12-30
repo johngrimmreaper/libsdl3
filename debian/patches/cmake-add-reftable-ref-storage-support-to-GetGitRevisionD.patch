@@ -1,0 +1,73 @@
+From: Fredrik Foss-Indrehus <fredrik@ffoss.net>
+Date: Thu, 11 Dec 2025 14:30:12 +0100
+Subject: cmake: add reftable ref storage support to GetGitRevisionDescription
+
+The script assumed Git's traditional loose refs or packed-refs format.
+When cloning with extensions.refstorage=reftable, neither .git/refs/*
+nor .git/packed-refs exist, causing cmake configuration to fail.
+
+Fall back to git rev-parse when file-based ref lookup fails.
+
+(cherry picked from commit bdb72bb3f051de32c91f5deb439a50bfd51499dc)
+
+Origin: upstream, 3.2.30, commit:51786880f478a6ae33d84918ec830ea52dcdc649
+---
+ cmake/GetGitRevisionDescription.cmake    | 16 ++++++++++++++++
+ cmake/GetGitRevisionDescription.cmake.in |  6 ++++--
+ 2 files changed, 20 insertions(+), 2 deletions(-)
+
+diff --git a/cmake/GetGitRevisionDescription.cmake b/cmake/GetGitRevisionDescription.cmake
+index a08895c..70c554e 100644
+--- a/cmake/GetGitRevisionDescription.cmake
++++ b/cmake/GetGitRevisionDescription.cmake
+@@ -164,6 +164,22 @@ function(get_git_head_revision _refspecvar _hashvar)
+                    "${GIT_DATA}/grabRef.cmake" @ONLY)
+     include("${GIT_DATA}/grabRef.cmake")
+ 
++    # Fallback for reftable or other storage formats
++    if(NOT HEAD_HASH OR HEAD_HASH STREQUAL "")
++        find_package(Git QUIET)
++        if(GIT_FOUND)
++            execute_process(
++                COMMAND "${GIT_EXECUTABLE}" rev-parse HEAD
++                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
++                RESULT_VARIABLE res
++                OUTPUT_VARIABLE HEAD_HASH
++                ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
++            if(NOT res EQUAL 0)
++                set(HEAD_HASH "")
++            endif()
++        endif()
++    endif()
++
+     set(${_refspecvar}
+         "${HEAD_REF}"
+         PARENT_SCOPE)
+diff --git a/cmake/GetGitRevisionDescription.cmake.in b/cmake/GetGitRevisionDescription.cmake.in
+index 116efc4..81b4213 100644
+--- a/cmake/GetGitRevisionDescription.cmake.in
++++ b/cmake/GetGitRevisionDescription.cmake.in
+@@ -25,19 +25,21 @@ if(HEAD_CONTENTS MATCHES "ref")
+ 	string(REPLACE "ref: " "" HEAD_REF "${HEAD_CONTENTS}")
+ 	if(EXISTS "@GIT_DIR@/${HEAD_REF}")
+ 		configure_file("@GIT_DIR@/${HEAD_REF}" "@GIT_DATA@/head-ref" COPYONLY)
+-	else()
++	elseif(EXISTS "@GIT_DIR@/packed-refs")
+ 		configure_file("@GIT_DIR@/packed-refs" "@GIT_DATA@/packed-refs" COPYONLY)
+ 		file(READ "@GIT_DATA@/packed-refs" PACKED_REFS)
+ 		if(${PACKED_REFS} MATCHES "([0-9a-z]*) ${HEAD_REF}")
+ 			set(HEAD_HASH "${CMAKE_MATCH_1}")
+ 		endif()
++	elseif(EXISTS "@GIT_DIR@/reftable/tables.list")
++		configure_file("@GIT_DIR@/reftable/tables.list" "@GIT_DATA@/reftable-tables.list" COPYONLY)
+ 	endif()
+ else()
+ 	# detached HEAD
+ 	configure_file("@GIT_DIR@/HEAD" "@GIT_DATA@/head-ref" COPYONLY)
+ endif()
+ 
+-if(NOT HEAD_HASH)
++if(NOT HEAD_HASH AND EXISTS "@GIT_DATA@/head-ref")
+ 	file(READ "@GIT_DATA@/head-ref" HEAD_HASH LIMIT 1024)
+ 	string(STRIP "${HEAD_HASH}" HEAD_HASH)
+ endif()
