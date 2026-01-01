@@ -147,6 +147,13 @@ VideoBootStrap DUMMY_evdev_bootstrap = {
     false
 };
 
+#else
+
+static bool DUMMY_SetRelativeMouseMode(bool enabled)
+{
+    return true;
+}
+
 #endif // SDL_INPUT_LINUXEV
 
 bool DUMMY_VideoInit(SDL_VideoDevice *_this)
@@ -164,6 +171,8 @@ bool DUMMY_VideoInit(SDL_VideoDevice *_this)
 
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Init();
+#else
+    SDL_GetMouse()->SetRelativeMouseMode = DUMMY_SetRelativeMouseMode;
 #endif
 
     // We're done!
