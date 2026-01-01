@@ -1,3 +1,9 @@
+libsdl3 (3.3.6+git20251229~95ac0ff+ds-2) UNRELEASED; urgency=medium
+
+  * d/control, d/gbp.conf, d/watch*: Follow stable releases
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 01 Jan 2026 12:20:31 +0000
+
 libsdl3 (3.3.6+git20251229~95ac0ff+ds-1) experimental; urgency=medium
 
   * New upstream snapshot
