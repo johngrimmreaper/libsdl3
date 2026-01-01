@@ -1,3 +1,10 @@
+libsdl3 (3.2.30+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream release
+  * Drop most patches, applied upstream
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 01 Jan 2026 10:58:14 +0000
+
 libsdl3 (3.2.28+ds-2) unstable; urgency=medium
 
   * d/p/build-scripts-Include-SDL-prefix-in-SDL_REVISION-when-bui.patch:
