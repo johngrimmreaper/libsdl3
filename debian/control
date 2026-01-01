@@ -1,6 +1,5 @@
 Source: libsdl3
 X-Style: black
-Priority: optional
 Section: libs
 Maintainer: Debian SDL packages maintainers <pkg-sdl-maintainers@lists.alioth.debian.org>
 Uploaders:
