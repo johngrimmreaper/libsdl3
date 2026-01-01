@@ -1,9 +1,13 @@
-libsdl3 (3.4.0+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.4.0+ds-1) unstable; urgency=medium
 
   * d/control, d/gbp.conf, d/watch*: Follow stable releases
   * New upstream stable release
+  * d/libsdl3-0.symbols: Generate dependencies on 3.4.0 for post-3.2 symbols
+  * d/control: Standards-Version: 4.7.3 (no changes required)
+  * d/control: Remove unnecessary Priority field
+  * d/control: Remove kFreeBSD support
 
- -- Simon McVittie <smcv@debian.org>  Thu, 01 Jan 2026 12:20:31 +0000
+ -- Simon McVittie <smcv@debian.org>  Thu, 01 Jan 2026 12:30:32 +0000
 
 libsdl3 (3.3.6+git20251229~95ac0ff+ds-1) experimental; urgency=medium
 
