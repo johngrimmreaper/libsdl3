@@ -13,7 +13,7 @@ export SDL_VIDEO_DRIVER=dummy
 # Keep the timeout reasonably short for architectures where interactive
 # debugging is more likely, but extend it a lot on architectures that might
 # be very slow or using qemu for buildds.
-ifneq ($(filter amd64 i386,$(DEB_HOST_ARCH_CPU)),)
+ifneq ($(filter amd64 i386,$(DEB_HOST_ARCH)),)
 test_timeout_multiplier = 3
 else
 test_timeout_multiplier = 20
@@ -22,11 +22,13 @@ endif
 confflags = \
 	-DCMAKE_BUILD_RPATH_USE_ORIGIN=ON \
 	-DSDL_ALSA_SHARED=OFF \
-	-DSDL_DEPS_SHARED=OFF \
+	-DSDL_DEPS_SHARED=ON \
 	-DSDL_EXAMPLES=ON \
+	-DSDL_FRIBIDI=ON \
+	-DSDL_FRIBIDI_SHARED=OFF \
 	-DSDL_HIDAPI_LIBUSB_SHARED=OFF \
 	-DSDL_JACK=OFF \
-	-DSDL_JACK_SHARED=OFF \
+	-DSDL_JACK_SHARED=ON \
 	-DSDL_KMSDRM_SHARED=OFF \
 	-DSDL_OSS=OFF \
 	-DSDL_PULSEAUDIO_SHARED=OFF \
@@ -74,24 +76,26 @@ else
   confflags += -DSDL_WAYLAND=OFF
 endif
 
-#ifeq ($(DEB_VERSION_UPSTREAM),3.2.14~git20250513+ds)
-#  confflags += -DSDL_REVISION=release-3.2.12-30-gc038d6f7f
-#endif
+ifeq ($(DEB_VERSION_UPSTREAM),3.3.6+git20251229~95ac0ff+ds)
+  # git describe --tags <hash>
+  confflags += -DSDL_REVISION=SDL-prerelease-3.3.6-51-g95ac0ff4d6
+endif
 
 %:
 	dh $@ -Scmake+ninja -Bbuild
 
 override_dh_auto_configure:
-	set -e; for bmp in test/icon.bmp test/gamepad_*.bmp test/glass.bmp; do \
-		python3 cmake/xxd.py -i "$${bmp}" -o "$${bmp%.bmp}.h"; \
+	set -e; for png in test/icon.png test/gamepad_*.png test/glass.png; do \
+		python3 cmake/xxd.py -i "$${png}" -o "$${png%.png}.h"; \
 	done
 	cd build-scripts && ./makecasefoldhashtable.pl > ../src/stdlib/SDL_casefolding.h
-	cd src/render/gpu/shaders && LC_ALL=C bash -ex ./build-shaders.sh
+	set -e; for dir in src/render/gpu/shaders test test/testgpu; do \
+		PATH=$(CURDIR)/debian/mini-shadercross:$$PATH env -C "$$dir" $(CURDIR)/$$dir/build-shaders.sh; \
+	done
 	# This is intended as a Windows batch file, but at the time of writing
 	# it's so simple that it's also a valid shell script
 	cd src/render/vulkan && sh -ex ./compile_shaders.bat
-	cd test/testgpu && OSTYPE=$(DEB_HOST_ARCH_OS) bash -ex ./build-shaders.sh
-	cp debian/placeholders/testgpu_*.h test/testgpu/
+	sed -i -e 's/^const uint32_t/static &/' src/render/vulkan/VULKAN_*.h
 	dh_auto_configure -- $(confflags)
 
 execute_after_dh_auto_build:

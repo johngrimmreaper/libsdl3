@@ -1,3 +1,189 @@
+libsdl3 (3.3.6+git20251229~95ac0ff+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot
+    - Works around some SDL 1.2 and SDL 2 games being setgid
+      (Closes: #1123953)
+    - Please note API changes for SDL_ELF_NOTE_DLOPEN since preview
+      release 3.3.6
+  * Merge packaging changes from unstable (no functional change)
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 30 Dec 2025 17:38:34 +0000
+
+libsdl3 (3.3.6+ds-1) experimental; urgency=medium
+
+  * New upstream preview release
+  * d/patches: Drop patches that were included in the release
+  * d/libsdl3-0.symbols: Bump required version for
+    SDL_SetWindowFillDocument.
+    This was added in Debian as a patch in 3.3.4+ds-1, but only officially
+    added upstream in 3.3.6.
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 16 Dec 2025 20:46:34 +0000
+
+libsdl3 (3.3.4+ds-1) experimental; urgency=medium
+
+  * d/watch, d/source/lintian-overrides: Look for formal prereleases
+  * New upstream preview release
+  * d/patches: Add post-release bug fixes up to commit
+    prerelease-3.3.4-11-gb428c1834f
+  * d/libsdl3-0.symbols: Generate dependencies on 3.3.4 rather than
+    intermediate git snapshots
+  * d/libsdl3-0.symbols: Add a new symbol
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 08 Dec 2025 13:23:30 +0000
+
+libsdl3 (3.3.2+git20251204~c61497b+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot, commit preview-3.3.2-354-gc61497b744
+  * d/control: Build-depend on libthai-dev, libxtst-dev
+  * d/control: -dev package now depends on libxtst-dev
+  * d/libsdl3-0.symbols: Update
+  * Merge packaging changes from unstable (no functional change)
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 04 Dec 2025 12:14:42 +0000
+
+libsdl3 (3.3.2+git20251103~dc5b136+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot, commit preview-3.3.2-89-gdc5b136930
+  * Merge packaging changes from unstable (no functional change)
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 03 Nov 2025 16:57:25 +0000
+
+libsdl3 (3.3.2+git20251031~446fb65+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot, commit preview-3.3.2-60-g446fb65ca6
+  * d/p/wayland-Fix-compile-with-libdecor-0.2-and-SDL_WAYLAND_LIB.patch:
+    Drop patch, included in the new snapshot
+  * d/source/lintian-overrides:
+    Add a Lintian override for git snapshots not being signed
+  * Merge packaging changes from unstable (no functional change)
+
+ -- Simon McVittie <smcv@debian.org>  Fri, 31 Oct 2025 18:15:10 +0000
+
+libsdl3 (3.3.2+git20251029~d9ca045+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot, commit preview-3.3.2-50-gd9ca0457b5
+  * d/watch.git, d/watch: Look for git snapshots again
+  * d/copyright: Exclude .github/ from git snapshots to reduce the diff vs.
+    official tarball releases
+  * d/source/lintian-overrides: Remove unused lintian override
+  * d/patches: Drop patches that were taken from upstream git
+  * d/rules: Apply staticness fix when regenerating Vulkan shader headers
+  * d/p/wayland-Fix-compile-with-libdecor-0.2-and-SDL_WAYLAND_LIB.patch:
+    Add proposed patch to fix FTBFS with libdecor 0.2.x
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 30 Oct 2025 13:36:47 +0000
+
+libsdl3 (3.3.2+ds-1) experimental; urgency=medium
+
+  * New upstream preview release
+  * d/watch: Download preview releases for this branch
+  * d/patches: Update to upstream commit preview-3.3.2-26-g5ad12c47dc,
+    excluding Emscripten-, FreeBSD-, iOS-, macOS-, Windows-specific
+    changes.
+  * d/libsdl3-doc: Install SDLMAIN_DECLSPEC(3).
+    If other SDLMAIN_-namespaced man pages are added in future, we'll
+    want to install those too, so use a wildcard.
+  * d/copyright: Update
+  * d/libsdl3-0.symbols: Update
+  * d/rules: Test image resources are now PNGs
+  * d/control: Add dlopen dependencies to libsdl3-tests
+  * d/source/lintian-overrides: Update
+  * Correct an inaccuracy in the previous changelog entry.
+    The JACK audio backend is not currently enabled, dynamically or
+    otherwise.
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 27 Oct 2025 15:14:46 +0000
+
+libsdl3 (3.3~git20251006~f90c179+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot, commit release-3.2.6-1409-gf90c179c5d
+  * d/control, d/rules: Enable fribidi dependency, for the new support for
+    bidirectional text in X11 dialogs
+  * d/rules: Switch on SDL_DEPS_SHARED.
+    For anything that can either be dlopen'd or a hard dependency,
+    setting this option forces it to be a hard dependency, so the only
+    way we can have any such library be dynamically loaded is to turn
+    this option off.
+    This turns libpipewire-0.3-0 and libsndio7.0 into weak dependencies.
+    - d/control: libsdl3-dev no longer needs libpipewire-0.3-dev on Linux
+    - d/control: libsdl3-dev no longer needs libsndio-dev
+  * Merge packaging changes from unstable
+    - Reformat packaging files using debputy
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 06 Oct 2025 16:35:31 +0100
+
+libsdl3 (3.3~git20251002~a864dca+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot, commit release-3.2.6-1356-ga864dcac25
+  * d/rules: Include SDL- prefix in SDL_REVISION.
+    This allows it to be retrieved from the binary with strings(1)
+    and grep(1).
+  * Revert "d/libsdl3-0.symbols: Mark Linux symbols as such".
+    It was correct at the time it was added, but in the latest snapshots
+    the platform-specific symbols exist as ABI on all platforms: they
+    just don't do anything on platforms where they aren't relevant.
+  * d/copyright: Update list of excluded files
+  * d/libsdl3-0.symbols: Update.
+    Note that there is an ABI break since the previous snapshot:
+    SDL_SetRenderGPUState() is now named SDL_SetGPURenderState().
+    This only affects development snapshots and experimental, so the SONAME
+    has not been changed.
+  * Update regeneration of shader files, replacing d/build-shaders.sh with
+    a script implementing a small subset of shadercross' interface
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 02 Oct 2025 11:11:44 +0100
+
+libsdl3 (3.3~git20250930~fd4c2f8+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot, commit release-3.2.6-1342-gfd4c2f8cfd
+  * d/build-shaders.sh: Update naming scheme for test shaders
+  * d/libsdl3-0.symbols: Update
+  * d/control, d/rules: Build using ninja-build
+  * d/rules: Do the build in a directory covered by upstream's .gitignore
+  * d/control: Remove Rules-Requires-Root, no longer needed since Debian 13
+  * Reformat packaging files using debputy
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 30 Sep 2025 17:40:35 +0100
+
+libsdl3 (3.3~git20250925~ed2cdce+ds-1) experimental; urgency=medium
+
+  [ Simon McVittie ]
+  * New upstream snapshot, commit release-3.2.6-1294-ged2cdceb66
+  * d/libsdl3-0.symbols: Update
+  * d/control: Add Build-Depends on libopengl-dev,
+    so that dh_dlopenlibdeps can find libOpenGL.so.0
+  * d/watch*: Convert to uscan format v5
+  * d/watch*: Include the short commit hash in versions from upstream git
+  * d/watch.devel, d/upstream/signing-key.asc: Check signatures before
+    repacking.
+    Upstream tarball releases are signed again. This is only a 1024-bit
+    DSA key but it's better than nothing.
+  * d/p/test-Set-a-much-longer-timeout-for-testatomic-on-GNU-Hurd.patch:
+    Add patch to extend the timeout of testatomic on Hurd.
+    Based on discussion with Pino Toscano on sdl-team/libsdl3!3.
+  * d/source/lintian-overrides: Ignore d/watch-related false positives
+
+  [ Pino Toscano ]
+  * d/libsdl3-0.symbols: Mark Linux-specific symbols as such
+
+ -- Simon McVittie <smcv@debian.org>  Fri, 26 Sep 2025 10:15:20 +0100
+
+libsdl3 (3.3~git20250903.1+ds-2) experimental; urgency=medium
+
+  * d/p/progress-Correct-calls-to-dbus_message_iter_open_containe.patch:
+    Add proposed patch to fix uses of libdbus on big-endian architectures
+    (Closes: #1115705, hopefully)
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 23 Sep 2025 11:02:55 +0100
+
+libsdl3 (3.3~git20250903.1+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot from the 3.3.x development branch
+  * Merge packaging changes from unstable
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 03 Sep 2025 20:54:18 +0100
+
 libsdl3 (3.2.30+ds-1) unstable; urgency=medium
 
   * New upstream release
@@ -116,6 +302,44 @@ libsdl3 (3.2.22+ds-1) unstable; urgency=medium
   * d/rules: Only enable Pipewire on Linux
 
  -- Simon McVittie <smcv@debian.org>  Wed, 03 Sep 2025 13:13:49 +0100
+
+libsdl3 (3.3~git20250829+ds-1) experimental; urgency=medium
+
+  [ Simon McVittie ]
+  * New upstream snapshot from the 3.3.x development branch
+  * Use dh-sequence-dlopenlibdeps to add dlopen()'d dependencies
+    - Keep Suggests on libayatana-appindicator3-1.
+      This hasn't been set up with dlopen notes upstream yet.
+    - Restore Recommends on libegl1, libgl1.
+      The dlopen metadata makes these Suggests, but that seems too weak
+      in practice - most SDL games will want working GL.
+  * d/libsdl3-0.symbols: Update.
+    Note that SDL_CreateGPURenderState has broken ABI since the previous
+    snapshot. (It was not present in 3.2.x, so this is not an ABI break
+    in stable releases.)
+  * d/copyright: Update
+  * d/rules: Treat non-Linux kernels as potentially slow to run tests.
+    The FIFO part of testatomic is apparently rather slow on Hurd,
+    for whatever reason. Let's see whether this is enough.
+
+  [ Pino Toscano ]
+  * d/control: Enable EGL, OpenGL|ES and Vulkan on any OS
+  * d/rules: Only enable Pipewire on Linux
+
+ -- Simon McVittie <smcv@debian.org>  Sat, 30 Aug 2025 16:55:26 +0100
+
+libsdl3 (3.3~git20250806+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot from the 3.3.x development branch
+  * d/control, d/gbp.conf, d/watch: Switch branch for snapshots
+  * d/build-shaders.sh, d/rules:
+    Rebuild more SPIR-V shaders from their HLSL source using
+    glslangValidator, avoiding a dependency on shadercross (RFP: #1095081)
+  * d/copyright, d/clean: Exclude more precompiled shaders
+  * d/patches: Drop patch, applied upstream
+  * d/libsdl3-0.symbols: Update
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 07 Aug 2025 10:53:53 +0100
 
 libsdl3 (3.2.20+ds-2) unstable; urgency=medium
 
