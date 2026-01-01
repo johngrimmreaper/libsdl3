@@ -1,13 +1,12 @@
 Source: libsdl3
 X-Style: black
-Priority: optional
 Section: libs
 Maintainer: Debian SDL packages maintainers <pkg-sdl-maintainers@lists.alioth.debian.org>
 Uploaders:
  Manuel A. Fernandez Montecelo <mafm@debian.org>,
  Felix Geyer <fgeyer@debian.org>,
  Simon McVittie <smcv@debian.org>,
-Standards-Version: 4.7.2
+Standards-Version: 4.7.3
 Build-Depends:
  debhelper-compat (= 13),
  dh-sequence-dlopenlibdeps,
@@ -31,8 +30,6 @@ Build-Depends:
  libthai-dev,
  libudev-dev [linux-any],
  liburing-dev [linux-any],
- libusb2-dev [kfreebsd-any],
- libusbhid-dev [kfreebsd-any],
  libvulkan-dev,
  libwayland-dev [linux-any],
  libx11-dev,
@@ -55,7 +52,7 @@ Build-Depends:
 Build-Depends-Indep:
  doxygen <!nodoc>,
  graphviz <!nodoc>,
-Vcs-Git: https://salsa.debian.org/sdl-team/libsdl3.git -b debian/snapshots
+Vcs-Git: https://salsa.debian.org/sdl-team/libsdl3.git
 Vcs-Browser: https://salsa.debian.org/sdl-team/libsdl3
 Homepage: https://www.libsdl.org/
 
@@ -100,8 +97,6 @@ Depends:
  libpulse-dev,
  libsdl3-0 (= ${binary:Version}),
  libudev-dev [linux-any],
- libusb2-dev [kfreebsd-any],
- libusbhid-dev [kfreebsd-any],
  libwayland-dev [linux-any],
  libx11-dev,
  libxcursor-dev,
