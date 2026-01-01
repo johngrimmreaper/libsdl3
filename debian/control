@@ -7,7 +7,7 @@ Uploaders:
  Manuel A. Fernandez Montecelo <mafm@debian.org>,
  Felix Geyer <fgeyer@debian.org>,
  Simon McVittie <smcv@debian.org>,
-Standards-Version: 4.7.2
+Standards-Version: 4.7.3
 Build-Depends:
  debhelper-compat (= 13),
  dh-sequence-dlopenlibdeps,
