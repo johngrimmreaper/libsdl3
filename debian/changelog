@@ -1,4 +1,4 @@
-libsdl3 (3.4.0+git20260125~4431c5f+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.4.0+git20260125~4431c5f+ds-1) experimental; urgency=medium
 
   * d/gbp.conf: Branch for experimental
   * d/watch, d/source/lintian-overrides: Update for git snapshots
@@ -45,7 +45,7 @@ libsdl3 (3.4.0+git20260125~4431c5f+ds-1) UNRELEASED; urgency=medium
       (Android, OpenBSD, Windows, etc.)
   * d/copyright: Update
 
- -- Simon McVittie <smcv@debian.org>  Mon, 26 Jan 2026 14:33:39 +0000
+ -- Simon McVittie <smcv@debian.org>  Mon, 26 Jan 2026 14:34:15 +0000
 
 libsdl3 (3.4.0+ds-1) unstable; urgency=medium
 
