@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1162,10 +1162,14 @@ static void HIDAPI_DriverSwitch2_HandleStatePacket(SDL_HIDAPI_Device *device, SD
                 ctx->sensor_ts_coeff = 10000;
                 ctx->gyro_coeff = 34.8f;
                 ctx->sensors_ready = true;
-            } else {
+            } else if (coeff != 0) {
                 ctx->sensor_ts_coeff = 10000000000 / coeff;
                 ctx->gyro_coeff = 40.0f;
                 ctx->sensors_ready = true;
+            } else {
+                // Didn't get a valid reading, try again
+                ctx->first_sensor_timestamp = 0;
+                ctx->sample_count = 0;
             }
 
             if (ctx->sensors_ready && !ctx->sensors_enabled) {

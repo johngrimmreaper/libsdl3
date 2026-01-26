@@ -1,7 +1,7 @@
 Version: 5
 
 Source: https://github.com/libsdl-org/SDL.git
-Matching-Pattern: HEAD
+Matching-Pattern: heads/release-3.4.x
 Compression: xz
 Dversion-Mangle: s/[+~](?:ds|dfsg)[0-9]*$//;s/\+(?:git)?[0-9]+(?:\+g[0-9a-f]*)?$//
 Mode: git
