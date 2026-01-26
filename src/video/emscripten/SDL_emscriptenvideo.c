@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -604,6 +604,8 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     wdata->external_size = SDL_floor(css_w) != 1 || SDL_floor(css_h) != 1;
     if (wdata->external_size) {
         fill_document = false;  // can't be resizable if something else is controlling it.
+        window->w = (int) css_w;
+        window->h = (int) css_h;
     }
 
     wdata->window = window;
@@ -792,11 +794,9 @@ static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window,
 
     // Pass PNG data to JavaScript
     MAIN_THREAD_EM_ASM({
-        var pngData = HEAPU8.subarray($0, $0 + $1);
-        if (pngData.buffer instanceof SharedArrayBuffer) {
-            // explicitly create a copy
-            pngData = new Uint8Array(pngData);
-        }
+        // Use `.slice` to make a copy of the data if we are dealing with a SharedArrayBuffer, or `.subarray` to create a
+        // view into the existing buffer if its non-shared.
+        var pngData = HEAPU8.buffer instanceof ArrayBuffer ? HEAPU8.subarray($0, $0 + $1) : HEAPU8.slice($0, $0 + $1);
 
         var blob = new Blob([pngData], {type: 'image/png'});
         var url = URL.createObjectURL(blob);

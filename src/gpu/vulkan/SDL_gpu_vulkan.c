@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,7 @@
 #include <SDL3/SDL_vulkan.h>
 
 #include "../SDL_sysgpu.h"
+#include "../../events/SDL_windowevents_c.h"
 
 // Global Vulkan Loader Entry Points
 
@@ -4167,9 +4168,8 @@ static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
             renderer->logicalDevice,
             buffer->buffer,
             NULL);
-
         SDL_free(buffer);
-        return NULL;
+        SET_STRING_ERROR_AND_RETURN("Failed to bind memory for buffer!", NULL);
     }
 
     buffer->usedRegion->vulkanBuffer = buffer; // lol
@@ -9815,7 +9815,7 @@ static bool VULKAN_ClaimWindow(
             renderer->claimedWindowCount += 1;
             SDL_UnlockMutex(renderer->windowLock);
 
-            SDL_AddEventWatch(VULKAN_INTERNAL_OnWindowResize, window);
+            SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, VULKAN_INTERNAL_OnWindowResize, window);
 
             return true;
         } else if (createSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
@@ -9880,7 +9880,7 @@ static void VULKAN_ReleaseWindow(
     SDL_free(windowData);
 
     SDL_ClearProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA);
-    SDL_RemoveEventWatch(VULKAN_INTERNAL_OnWindowResize, window);
+    SDL_RemoveWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, VULKAN_INTERNAL_OnWindowResize, window);
 }
 
 static Uint32 VULKAN_INTERNAL_RecreateSwapchain(
@@ -11653,9 +11653,9 @@ static void VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, Vulkan
             features->usesCustomVulkanOptions = true;
             features->desiredApiVersion = options->vulkan_api_version;
 
-            SDL_memset(&features->desiredVulkan11DeviceFeatures, 0, sizeof(VkPhysicalDeviceVulkan11Features));
-            SDL_memset(&features->desiredVulkan12DeviceFeatures, 0, sizeof(VkPhysicalDeviceVulkan12Features));
-            SDL_memset(&features->desiredVulkan13DeviceFeatures, 0, sizeof(VkPhysicalDeviceVulkan13Features));
+            SDL_zero(features->desiredVulkan11DeviceFeatures);
+            SDL_zero(features->desiredVulkan12DeviceFeatures);
+            SDL_zero(features->desiredVulkan13DeviceFeatures);
             features->desiredVulkan11DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
             features->desiredVulkan12DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
             features->desiredVulkan13DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
@@ -12278,13 +12278,58 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     VkPhysicalDeviceFeatures2 featureList;
     int minor = VK_VERSION_MINOR(features->desiredApiVersion);
 
+    struct {
+        VkPhysicalDevice16BitStorageFeatures storage;
+        VkPhysicalDeviceMultiviewFeatures multiview;
+        VkPhysicalDeviceProtectedMemoryFeatures protectedMem;
+        VkPhysicalDeviceSamplerYcbcrConversionFeatures ycbcr;
+        VkPhysicalDeviceShaderDrawParametersFeatures drawParams;
+        VkPhysicalDeviceVariablePointersFeatures varPointers;
+    } legacyFeatures;
+
     if (features->usesCustomVulkanOptions && minor > 0) {
         featureList.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
         featureList.features = features->desiredVulkan10DeviceFeatures;
-        featureList.pNext = minor > 1 ? &features->desiredVulkan11DeviceFeatures : NULL;
-        features->desiredVulkan11DeviceFeatures.pNext = &features->desiredVulkan12DeviceFeatures;
-        features->desiredVulkan12DeviceFeatures.pNext = minor > 2 ? &features->desiredVulkan13DeviceFeatures : NULL;
-        features->desiredVulkan13DeviceFeatures.pNext = NULL;
+        if (minor > 1) {
+            featureList.pNext = &features->desiredVulkan11DeviceFeatures;
+            features->desiredVulkan11DeviceFeatures.pNext = &features->desiredVulkan12DeviceFeatures;
+            features->desiredVulkan12DeviceFeatures.pNext = minor > 2 ? &features->desiredVulkan13DeviceFeatures : NULL;
+            features->desiredVulkan13DeviceFeatures.pNext = NULL;
+        } else {
+            // Break VkPhysicalDeviceVulkan11Features into pre 1.2 structures for Vulkan 1.1 Support
+            SDL_zero(legacyFeatures);
+
+            legacyFeatures.storage.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES;
+            legacyFeatures.storage.storageBuffer16BitAccess = features->desiredVulkan11DeviceFeatures.storageBuffer16BitAccess;
+            legacyFeatures.storage.storageInputOutput16 = features->desiredVulkan11DeviceFeatures.storageInputOutput16;
+            legacyFeatures.storage.storagePushConstant16 = features->desiredVulkan11DeviceFeatures.storagePushConstant16;
+            legacyFeatures.storage.uniformAndStorageBuffer16BitAccess = features->desiredVulkan11DeviceFeatures.uniformAndStorageBuffer16BitAccess;
+
+            legacyFeatures.multiview.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+            legacyFeatures.multiview.multiview = features->desiredVulkan11DeviceFeatures.multiview;
+            legacyFeatures.multiview.multiviewGeometryShader = features->desiredVulkan11DeviceFeatures.multiviewGeometryShader;
+            legacyFeatures.multiview.multiviewTessellationShader = features->desiredVulkan11DeviceFeatures.multiviewTessellationShader;
+
+            legacyFeatures.protectedMem.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES;
+            legacyFeatures.protectedMem.protectedMemory = features->desiredVulkan11DeviceFeatures.protectedMemory;
+
+            legacyFeatures.ycbcr.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES;
+            legacyFeatures.ycbcr.samplerYcbcrConversion = features->desiredVulkan11DeviceFeatures.samplerYcbcrConversion;
+
+            legacyFeatures.drawParams.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES;
+            legacyFeatures.drawParams.shaderDrawParameters = features->desiredVulkan11DeviceFeatures.shaderDrawParameters;
+
+            legacyFeatures.varPointers.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES;
+            legacyFeatures.varPointers.variablePointers = features->desiredVulkan11DeviceFeatures.variablePointers;
+            legacyFeatures.varPointers.variablePointersStorageBuffer = features->desiredVulkan11DeviceFeatures.variablePointersStorageBuffer;
+
+            featureList.pNext = &legacyFeatures.storage;
+            legacyFeatures.storage.pNext = &legacyFeatures.multiview;
+            legacyFeatures.multiview.pNext = &legacyFeatures.protectedMem;
+            legacyFeatures.protectedMem.pNext = &legacyFeatures.ycbcr;
+            legacyFeatures.ycbcr.pNext = &legacyFeatures.drawParams;
+            legacyFeatures.drawParams.pNext = &legacyFeatures.varPointers;
+        }
         deviceCreateInfo.pEnabledFeatures = NULL;
         deviceCreateInfo.pNext = &featureList;
     } else {

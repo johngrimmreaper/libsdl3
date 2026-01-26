@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1216,34 +1216,29 @@ void X11_GetBorderValues(SDL_WindowData *data)
 
 void X11_EmitConfigureNotifyEvents(SDL_WindowData *data, XConfigureEvent *xevent)
 {
-    if (xevent->x != data->last_xconfigure.x ||
-        xevent->y != data->last_xconfigure.y) {
-        if (!data->size_move_event_flags) {
-            SDL_Window *w;
-            int x = xevent->x;
-            int y = xevent->y;
+    if (!data->size_move_event_flags) {
+        int x = xevent->x;
+        int y = xevent->y;
 
+        if (xevent->x != data->last_xconfigure.x ||
+            xevent->y != data->last_xconfigure.y) {
             data->pending_operation &= ~X11_PENDING_OP_MOVE;
-            SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
+        }
+        SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
+        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
 
-            for (w = data->window->first_child; w; w = w->next_sibling) {
-                // Don't update hidden child popup windows, their relative position doesn't change
-                if (SDL_WINDOW_IS_POPUP(w) && !(w->flags & SDL_WINDOW_HIDDEN)) {
-                    X11_UpdateWindowPosition(w, true);
-                }
+        for (SDL_Window *w = data->window->first_child; w; w = w->next_sibling) {
+            // Don't update hidden child popup windows, their relative position doesn't change
+            if (SDL_WINDOW_IS_POPUP(w) && !(w->flags & SDL_WINDOW_HIDDEN)) {
+                X11_UpdateWindowPosition(w, true);
             }
         }
-    }
 
-    if (xevent->width != data->last_xconfigure.width ||
-        xevent->height != data->last_xconfigure.height) {
-        if (!data->size_move_event_flags) {
+        if (xevent->width != data->last_xconfigure.width ||
+            xevent->height != data->last_xconfigure.height) {
             data->pending_operation &= ~X11_PENDING_OP_RESIZE;
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED,
-                                xevent->width,
-                                xevent->height);
         }
+        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, xevent->width, xevent->height);
     }
 
     SDL_copyp(&data->last_xconfigure, xevent);
@@ -1736,7 +1731,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             }
 
             // reply with status
-            SDL_memset(&m, 0, sizeof(XClientMessageEvent));
+            SDL_zero(m);
             m.type = ClientMessage;
             m.display = xevent->xclient.display;
             m.window = xevent->xclient.data.l[0];
@@ -1753,7 +1748,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         } else if (xevent->xclient.message_type == videodata->atoms.XdndDrop) {
             if (data->xdnd_req == None) {
                 // say again - not interested!
-                SDL_memset(&m, 0, sizeof(XClientMessageEvent));
+                SDL_zero(m);
                 m.type = ClientMessage;
                 m.display = xevent->xclient.display;
                 m.window = xevent->xclient.data.l[0];
@@ -2150,7 +2145,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             X11_XFree(p.data);
 
             // send reply
-            SDL_memset(&m, 0, sizeof(XClientMessageEvent));
+            SDL_zero(m);
             m.type = ClientMessage;
             m.display = display;
             m.window = data->xdnd_source;
@@ -2218,7 +2213,7 @@ void X11_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
     Window xwindow = window->internal->xwindow;
     XClientMessageEvent event;
 
-    SDL_memset(&event, 0, sizeof(XClientMessageEvent));
+    SDL_zero(event);
     event.type = ClientMessage;
     event.display = req_display;
     event.send_event = True;

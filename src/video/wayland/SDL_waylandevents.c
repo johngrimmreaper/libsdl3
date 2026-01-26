@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -871,7 +871,7 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
 
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
     seat->pointer.focus = NULL;
-    for (int i = 0; seat->pointer.buttons_pressed; ++i) {
+    for (int i = 1; seat->pointer.buttons_pressed; ++i) {
         if (seat->pointer.buttons_pressed & SDL_BUTTON_MASK(i)) {
             SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, i, false);
             seat->pointer.buttons_pressed &= ~SDL_BUTTON_MASK(i);
@@ -1187,19 +1187,21 @@ static void pointer_handle_axis_relative_direction(void *data, struct wl_pointer
 static void pointer_dispatch_relative_motion(SDL_WaylandSeat *seat)
 {
     SDL_WindowData *window = seat->pointer.focus;
-    SDL_Mouse *mouse = SDL_GetMouse();
 
-    double dx;
-    double dy;
-    if (mouse->InputTransform || !mouse->enable_relative_system_scale) {
-        dx = wl_fixed_to_double(seat->pointer.pending_frame.relative.dx_unaccel);
-        dy = wl_fixed_to_double(seat->pointer.pending_frame.relative.dy_unaccel);
-    } else {
-        dx = wl_fixed_to_double(seat->pointer.pending_frame.relative.dx) * window->pointer_scale.x;
-        dy = wl_fixed_to_double(seat->pointer.pending_frame.relative.dy) * window->pointer_scale.y;
+    if (window) {
+        SDL_Mouse *mouse = SDL_GetMouse();
+        double dx;
+        double dy;
+        if (mouse->InputTransform || !mouse->enable_relative_system_scale) {
+            dx = wl_fixed_to_double(seat->pointer.pending_frame.relative.dx_unaccel);
+            dy = wl_fixed_to_double(seat->pointer.pending_frame.relative.dy_unaccel);
+        } else {
+            dx = wl_fixed_to_double(seat->pointer.pending_frame.relative.dx) * window->pointer_scale.x;
+            dy = wl_fixed_to_double(seat->pointer.pending_frame.relative.dy) * window->pointer_scale.y;
+        }
+
+        SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window->sdlwindow, seat->pointer.sdl_id, true, (float)dx, (float)dy);
     }
-
-    SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window->sdlwindow, seat->pointer.sdl_id, true, (float)dx, (float)dy);
 }
 
 static void pointer_dispatch_axis(SDL_WaylandSeat *seat)
@@ -2480,7 +2482,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum w
 
     if ((capabilities & WL_SEAT_CAPABILITY_POINTER) && !seat->pointer.wl_pointer) {
         seat->pointer.wl_pointer = wl_seat_get_pointer(wl_seat);
-        SDL_memset(&seat->pointer.pending_frame.axis, 0, sizeof(seat->pointer.pending_frame.axis));
+        SDL_zero(seat->pointer.pending_frame.axis);
 
         Wayland_SeatCreateCursorShape(seat);
 
@@ -2898,8 +2900,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
         bool drop_handled = false;
 #ifdef SDL_USE_LIBDBUS
         if (Wayland_data_offer_has_mime(data_device->drag_offer, FILE_PORTAL_MIME)) {
-            void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
-                                                      FILE_PORTAL_MIME, &length);
+            void *buffer = Wayland_data_offer_receive(data_device->drag_offer, FILE_PORTAL_MIME, &length, false);
             if (buffer) {
                 SDL_DBusContext *dbus = SDL_DBus_GetContext();
                 if (dbus) {
@@ -2925,7 +2926,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
          * non paths that are not visible to the application
          */
         if (!drop_handled) {
-            void *buffer = Wayland_data_offer_receive(data_device->drag_offer, data_device->mime_type, &length);
+            void *buffer = Wayland_data_offer_receive(data_device->drag_offer, data_device->mime_type, &length, false);
             if (data_device->has_mime_file) {
                 if (buffer) {
                     char *saveptr = NULL;
