@@ -379,7 +379,7 @@ dep_option(SDL_DUMMYCAMERA         "Support the dummy camera driver" ON SDL_CAME
 option_string(SDL_BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal or 'OFF'" OFF)
 option_string(SDL_FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" OFF)
 dep_option(SDL_HIDAPI              "Enable the HIDAPI subsystem" ON "NOT VISIONOS" OFF)
-dep_option(SDL_HIDAPI_LIBUSB       "Use libusb for low level joystick drivers" ON SDL_HIDAPI_LIBUSB_AVAILABLE OFF)
+dep_option(SDL_HIDAPI_LIBUSB       "Use libusb for low level joystick drivers" ON "SDL_HIDAPI;SDL_HIDAPI_LIBUSB_AVAILABLE" OFF)
 dep_option(SDL_HIDAPI_LIBUSB_SHARED "Dynamically load libusb support" ON "SDL_HIDAPI_LIBUSB;SDL_DEPS_SHARED" OFF)
 dep_option(SDL_HIDAPI_JOYSTICK     "Use HIDAPI for low level joystick drivers" ON SDL_HIDAPI OFF)
 dep_option(SDL_VIRTUAL_JOYSTICK    "Enable the virtual-joystick driver" ON SDL_HIDAPI OFF)
@@ -659,12 +659,7 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
     endif()
   endif()
 
-  if(APPLE)
-    check_linker_flag(C "-Wl,-undefined,error" LINKER_SUPPORTS_WL_UNDEFINED_ERROR)
-    if(LINKER_SUPPORTS_WL_UNDEFINED_ERROR)
-      sdl_shared_link_options("-Wl,-undefined,error")
-    endif()
-  elseif(NOT OPENBSD)
+  if(NOT OPENBSD)
     cmake_push_check_state()
     check_linker_flag(C "-Wl,--no-undefined" LINKER_SUPPORTS_WL_NO_UNDEFINED)
     #FIXME: originally this if had an additional "AND NOT (USE_CLANG AND WINDOWS)"
@@ -1770,6 +1765,7 @@ elseif(EMSCRIPTEN)
 
 elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
 
+  set(SDL_DISABLE_DLOPEN_NOTES TRUE)
   if(SDL_DLOPEN_NOTES)
     set(CHECK_ELF_DLNOTES_SRC [==[
     #ifndef __ELF__
@@ -1782,10 +1778,10 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       return argc + dlnote.hdr.a;
     }
     ]==])
-    set(SDL_DISABLE_DLOPEN_NOTES FALSE)
     check_c_source_compiles("${CHECK_ELF_DLNOTES_SRC}" COMPILER_SUPPORTS_ELFNOTES)
-    if(NOT COMPILER_SUPPORTS_ELFNOTES)
-      set(SDL_DISABLE_DLOPEN_NOTES TRUE)
+    if(COMPILER_SUPPORTS_ELFNOTES)
+      set(SDL_DISABLE_DLOPEN_NOTES FALSE)
+      set(HAVE_DLOPEN_NOTES TRUE)
     endif()
   endif()
 
