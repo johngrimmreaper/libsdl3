@@ -1,5 +1,8 @@
-libsdl3 (3.4.0+ds-2) UNRELEASED; urgency=medium
+libsdl3 (3.4.2+ds-1) UNRELEASED; urgency=medium
 
+  * New upstream stable release
+  * Revert "d/watch, d/source/lintian-overrides: Update for git snapshots"
+  * Revert "d/watch, d/watch.git: Only watch the v3.4.x stable-branch"
   * d/upstream-signing-key.asc: Accept Sam's new signing key
   * Correct bug number for debian-watch-not-mangling-version Lintian
     override
