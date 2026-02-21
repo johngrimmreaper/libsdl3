@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -769,8 +769,8 @@ static bool PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
             verts->col.b = (Uint8)SDL_roundf(SDL_clamp(col_->b * color_scale, 0.0f, 1.0f) * 255.0f);
             verts->col.a = (Uint8)SDL_roundf(SDL_clamp(col_->a, 0.0f, 1.0f) * 255.0f);
 
-            verts->u = uv_[0] * psp_texture->textureWidth;
-            verts->v = uv_[1] * psp_texture->textureHeight;
+            verts->u = uv_[0] * (float) psp_texture->width;
+            verts->v = uv_[1] * (float) psp_texture->height;
 
             verts++;
         }

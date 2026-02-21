@@ -6,6 +6,62 @@ libsdl3 (3.4.0+ds-2) UNRELEASED; urgency=medium
 
  -- Simon McVittie <smcv@debian.org>  Wed, 04 Feb 2026 18:20:31 +0000
 
+libsdl3 (3.4.0+git20260203~8107d5b+ds-1) experimental; urgency=medium
+
+  * New upstream snapshot from the release-3.4.x branch,
+    commit release-3.4.0-109-g8107d5b042
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 04 Feb 2026 19:44:46 +0000
+
+libsdl3 (3.4.0+git20260125~4431c5f+ds-1) experimental; urgency=medium
+
+  * d/gbp.conf: Branch for experimental
+  * d/watch, d/source/lintian-overrides: Update for git snapshots
+  * d/watch, d/watch.git: Only watch the v3.4.x stable-branch
+  * New upstream snapshot from the release-3.4.x branch,
+    commit release-3.4.0-72-g4431c5f8ba
+    - Treat Razer Raiju v5 Pro as a PS5-compatible controller, and apply
+      the necessary device quirks
+    - Fix a conflict when linking both SDL and HIDAPI statically
+    - Fix a memory leak when creating a mutex
+    - Fix a possible crash when parsing bitmap images
+    - Fix a possible crash when using a Nintendo Switch 2 gamepad
+    - Fix use-after-free issues when communicating with ibus or upower
+      via D-Bus
+    - Maintain an array of possible haptic events
+    - More reliably send key-up messages when keyboard focus is lost
+    - Only send a quit event when the top-level window is destroyed
+    - On Wayland, avoid a possible hang during interactive resizing
+    - On Wayland, avoid a crash if relative motion events occur in the
+      same frame as the focus leaving our window
+    - On Wayland, fix the mouse button index when the pointer leaves
+      our window with buttons held down
+    - On Wayland, extend the timeout when reading clipboard data
+    - On Wayland, ensure the cursor remains visible after leaving the window
+    - On Wayland with pen devices, free tool-specific cursors where
+      appropriate
+    - On Wayland, Add a hint allowing use of libdecor to be disabled
+    - Use a flexible array member to avoid undefined behaviour in the
+      implementation of thread-local storage
+    - Improve FlyDigi controller support via raw HID
+    - Improve Horipad gyroscope support via raw HID
+    - Set a proper error message for some Vulkan errors
+    - Set the NO_REPLY flag when no reply is expected to a D-Bus method
+      call, improving efficiency
+    - SDL_CreateGPURenderState takes a const pointer for its second argument
+    - Cast to the intended type when allocating keyboard and mouse IDs
+    - More consistently use type-aware wrappers for memset()
+    - Fix compatibility with Vulkan drivers that only support v1.1 API
+    - Silence spurious error messages when using the dummy video driver,
+      which caused the pysdl2 tests to regress when using sdl2-compat
+    - Manual test improvements
+    - Documentation improvements
+    - Various platform-specific changes not relevant to Debian
+      (Android, OpenBSD, Windows, etc.)
+  * d/copyright: Update
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 26 Jan 2026 14:34:15 +0000
+
 libsdl3 (3.4.0+ds-1) unstable; urgency=medium
 
   * d/control, d/gbp.conf, d/watch*: Follow stable releases

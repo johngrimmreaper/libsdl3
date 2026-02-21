@@ -1,2 +1,2 @@
-# https://bugs.debian.org/1125489
-debian-watch-not-mangling-version
+# not applicable while we're using git snapshots
+debian-watch-could-verify-download

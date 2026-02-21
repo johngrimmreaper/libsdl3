@@ -40,7 +40,7 @@ Files-Excluded: Android.mk
 
 Files: *
 Copyright:
- 1997-2025 Sam Lantinga
+ 1997-2026 Sam Lantinga
  2001-2007 Red Hat, Inc.
  2012 Raspberry Pi Foundation
  2012-2018 RISC OS Open Ltd
