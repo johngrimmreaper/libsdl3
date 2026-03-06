@@ -1,3 +1,21 @@
+libsdl3 (3.5~git20260304~c20a058+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream snapshot from the main branch, commit
+    release-3.4.0-391-gc20a058ff4
+  * Switch packaging for 3.5.x snapshots
+    - Reapply "d/gbp.conf: Branch for experimental"
+    - Reapply "d/source/lintian-overrides: Update for git snapshots"
+    - d/watch: Watch for git snapshots
+    - d/watch, d/watch.git: Expect to download 3.5.x snaphots
+    - d/control: Refer to the debian/snapshots branch
+  * d/control: Use ${source:Synopsis} and ${source:Extended-Description}
+    to reduce duplication
+  * d/copyright: Exclude .github/ while we're repacking tarballs anyway.
+    This reduces the delta between git snapshots (which would normally
+    have .github/) and upstream tarball releases (which don't).
+
+ -- Simon McVittie <smcv@debian.org>  Fri, 06 Mar 2026 15:24:48 +0000
+
 libsdl3 (3.4.2+ds-1) unstable; urgency=medium
 
   * New upstream stable release
