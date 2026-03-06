@@ -13,8 +13,14 @@ libsdl3 (3.5~git20260304~c20a058+ds-1) UNRELEASED; urgency=medium
   * d/copyright: Exclude .github/ while we're repacking tarballs anyway.
     This reduces the delta between git snapshots (which would normally
     have .github/) and upstream tarball releases (which don't).
+  * d/libsdl3-0.symbols: Update
+  * d/control, d/rules: Use system copy of Vulkan-Headers.
+    The bundled copy is still present in the source package, for use in
+    backports.
+  * d/control: Build-depend on libopenxr-dev
+  * d/control, d/rules: Use system copy of OpenXR headers
 
- -- Simon McVittie <smcv@debian.org>  Fri, 06 Mar 2026 15:24:48 +0000
+ -- Simon McVittie <smcv@debian.org>  Fri, 06 Mar 2026 17:40:05 +0000
 
 libsdl3 (3.4.2+ds-1) unstable; urgency=medium
 
