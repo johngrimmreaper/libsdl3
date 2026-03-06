@@ -24,7 +24,7 @@ Build-Depends:
  libgles-dev,
  libibus-1.0-dev,
  libopengl-dev,
- libopenxr-dev,
+ libopenxr-dev (>= 1.1.45),
  libpipewire-0.3-dev (>= 0.3.44) [linux-any],
  libpulse-dev,
  libsndio-dev,
