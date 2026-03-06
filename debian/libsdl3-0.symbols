@@ -102,6 +102,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_CreateGPUShader@SDL3_0.0.0 3.2.0
  SDL_CreateGPUTexture@SDL3_0.0.0 3.2.0
  SDL_CreateGPUTransferBuffer@SDL3_0.0.0 3.2.0
+ SDL_CreateGPUXRSession@SDL3_0.0.0 3.5~git20260304~
+ SDL_CreateGPUXRSwapchain@SDL3_0.0.0 3.5~git20260304~
  SDL_CreateHapticEffect@SDL3_0.0.0 3.2.0
  SDL_CreateMutex@SDL3_0.0.0 3.2.0
  SDL_CreatePalette@SDL3_0.0.0 3.2.0
@@ -127,6 +129,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_CreateTray@SDL3_0.0.0 3.2.0
  SDL_CreateTrayMenu@SDL3_0.0.0 3.2.0
  SDL_CreateTraySubmenu@SDL3_0.0.0 3.2.0
+ SDL_CreateTrayWithProperties@SDL3_0.0.0 3.5~git20260304~
  SDL_CreateWindow@SDL3_0.0.0 3.2.0
  SDL_CreateWindowAndRenderer@SDL3_0.0.0 3.2.0
  SDL_CreateWindowWithProperties@SDL3_0.0.0 3.2.0
@@ -143,6 +146,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_DestroyEnvironment@SDL3_0.0.0 3.2.0
  SDL_DestroyGPUDevice@SDL3_0.0.0 3.2.0
  SDL_DestroyGPURenderState@SDL3_0.0.0 3.4.0
+ SDL_DestroyGPUXRSwapchain@SDL3_0.0.0 3.5~git20260304~
  SDL_DestroyHapticEffect@SDL3_0.0.0 3.2.0
  SDL_DestroyMutex@SDL3_0.0.0 3.2.0
  SDL_DestroyPalette@SDL3_0.0.0 3.2.0
@@ -319,6 +323,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetGPUShaderFormats@SDL3_0.0.0 3.2.0
  SDL_GetGPUSwapchainTextureFormat@SDL3_0.0.0 3.2.0
  SDL_GetGPUTextureFormatFromPixelFormat@SDL3_0.0.0 3.4.0
+ SDL_GetGPUXRSwapchainFormats@SDL3_0.0.0 3.5~git20260304~
  SDL_GetGamepadAppleSFSymbolsNameForAxis@SDL3_0.0.0 3.2.0
  SDL_GetGamepadAppleSFSymbolsNameForButton@SDL3_0.0.0 3.2.0
  SDL_GetGamepadAxis@SDL3_0.0.0 3.2.0
@@ -723,6 +728,9 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_OpenTitleStorage@SDL3_0.0.0 3.2.0
  SDL_OpenURL@SDL3_0.0.0 3.2.0
  SDL_OpenUserStorage@SDL3_0.0.0 3.2.0
+ SDL_OpenXR_GetXrGetInstanceProcAddr@SDL3_0.0.0 3.5~git20260304~
+ SDL_OpenXR_LoadLibrary@SDL3_0.0.0 3.5~git20260304~
+ SDL_OpenXR_UnloadLibrary@SDL3_0.0.0 3.5~git20260304~
  SDL_OutOfMemory@SDL3_0.0.0 3.2.0
  SDL_PauseAudioDevice@SDL3_0.0.0 3.2.0
  SDL_PauseAudioStreamDevice@SDL3_0.0.0 3.2.0
@@ -879,6 +887,9 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_SetGPUBufferName@SDL3_0.0.0 3.2.0
  SDL_SetGPURenderState@SDL3_0.0.0 3.4.0
  SDL_SetGPURenderStateFragmentUniforms@SDL3_0.0.0 3.4.0
+ SDL_SetGPURenderStateSamplerBindings@SDL3_0.0.0 3.5~git20260304~
+ SDL_SetGPURenderStateStorageBuffers@SDL3_0.0.0 3.5~git20260304~
+ SDL_SetGPURenderStateStorageTextures@SDL3_0.0.0 3.5~git20260304~
  SDL_SetGPUScissor@SDL3_0.0.0 3.2.0
  SDL_SetGPUStencilReference@SDL3_0.0.0 3.2.0
  SDL_SetGPUSwapchainParameters@SDL3_0.0.0 3.2.0
@@ -1020,6 +1031,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_TimeFromWindows@SDL3_0.0.0 3.2.0
  SDL_TimeToDateTime@SDL3_0.0.0 3.2.0
  SDL_TimeToWindows@SDL3_0.0.0 3.2.0
+ SDL_TryLockJoysticks@SDL3_0.0.0 3.5~git20260304~
  SDL_TryLockMutex@SDL3_0.0.0 3.2.0
  SDL_TryLockRWLockForReading@SDL3_0.0.0 3.2.0
  SDL_TryLockRWLockForWriting@SDL3_0.0.0 3.2.0
