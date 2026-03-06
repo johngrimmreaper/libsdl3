@@ -547,11 +547,13 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
 
     X11_XQueryKeymap(display, keys);
 
+    const bool *keystate = SDL_GetKeyboardState(NULL);
     for (Uint32 keycode = 0; keycode < SDL_arraysize(videodata->keyboard.key_layout); ++keycode) {
         const SDL_Scancode scancode = videodata->keyboard.key_layout[keycode];
         const bool x11KeyPressed = (keys[keycode / 8] & (1 << (keycode % 8))) != 0;
+        const bool sdlKeyPressed = keystate[scancode];
 
-        if (x11KeyPressed) {
+        if (x11KeyPressed && !sdlKeyPressed) {
             // Only update modifier state for keys that are pressed in another application
             switch (SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, false)) {
             case SDLK_LCTRL:
@@ -570,12 +572,15 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
             default:
                 break;
             }
+        } else if (!x11KeyPressed && sdlKeyPressed) {
+            X11_HandleModifierKeys(videodata, scancode, false);
+            SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, false);
         }
     }
 
     // Update the latched/locked state for modifiers other than Caps, Num, and Scroll lock.
     X11_UpdateSystemKeyModifiers(videodata);
-    X11_ReconcileModifiers(videodata, false);
+    X11_ReconcileModifiers(videodata, true);
 }
 
 static void X11_DispatchFocusIn(SDL_VideoDevice *_this, SDL_WindowData *data)
@@ -1388,13 +1393,12 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             SDL_Log("window 0x%lx: KeymapNotify!", xevent->xany.window);
 #endif
-            if (!videodata->keyboard.xkb_enabled) {
-                if (SDL_GetKeyboardFocus() != NULL) {
+            if (SDL_GetKeyboardFocus() != NULL) {
+                if (!videodata->keyboard.xkb_enabled) {
                     X11_UpdateKeymap(_this, true);
                 }
+                X11_ReconcileKeyboardState(_this);
             }
-
-            X11_ReconcileKeyboardState(_this);
         } else if (xevent->type == MappingNotify) {
             const int request = xevent->xmapping.request;
 
@@ -2084,6 +2088,36 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             }
             if (changed & SDL_WINDOW_OCCLUDED) {
                 SDL_SendWindowEvent(data->window, (flags & SDL_WINDOW_OCCLUDED) ? SDL_EVENT_WINDOW_OCCLUDED : SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+            }
+        } else if (xevent->xproperty.atom == videodata->atoms.WM_STATE) {
+            /* Support for ICCCM-compliant window managers (like i3) that change
+               WM_STATE to WithdrawnState without sending UnmapNotify or updating
+               _NET_WM_STATE when moving windows to invisible workspaces. */
+            Atom type;
+            int format;
+            unsigned long nitems, bytes_after;
+            unsigned char *prop_data = NULL;
+
+            if (X11_XGetWindowProperty(display, data->xwindow, videodata->atoms.WM_STATE,
+                                       0L, 2L, False, videodata->atoms.WM_STATE,
+                                       &type, &format, &nitems, &bytes_after, &prop_data) == Success) {
+                if (nitems > 0) {
+                    // WM_STATE: 0=Withdrawn, 1=Normal, 3=Iconic
+                    Uint32 state = *(Uint32 *)prop_data;
+
+                    if (state == 0 || state == 3) { // Withdrawn or Iconic
+                        if (!(data->window->flags & SDL_WINDOW_MINIMIZED)) {
+                            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
+                            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_OCCLUDED, 0, 0);
+                        }
+                    } else if (state == 1) { // NormalState
+                        if (data->window->flags & SDL_WINDOW_MINIMIZED) {
+                            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+                            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+                        }
+                    }
+                }
+                X11_XFree(prop_data);
             }
         } else if (xevent->xproperty.atom == videodata->atoms.XKLAVIER_STATE) {
             /* Hack for Ubuntu 12.04 (etc) that doesn't send MappingNotify

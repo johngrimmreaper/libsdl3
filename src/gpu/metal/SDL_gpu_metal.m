@@ -26,6 +26,12 @@
 #include <Metal/Metal.h>
 #include <QuartzCore/CoreAnimation.h>
 
+#ifdef HAVE_GPU_OPENXR
+#define XR_USE_GRAPHICS_API_METAL 1
+#include "../xr/SDL_openxr_internal.h"
+#include "../xr/SDL_openxrdyn.h"
+#endif
+
 #include "../SDL_sysgpu.h"
 
 // Defines
@@ -1436,10 +1442,10 @@ static MetalTexture *METAL_INTERNAL_CreateTexture(
     // This format isn't natively supported so let's swizzle!
     if (createinfo->format == SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM) {
         if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
-            textureDescriptor.swizzle = MTLTextureSwizzleChannelsMake(MTLTextureSwizzleBlue,
-                                                                      MTLTextureSwizzleGreen,
-                                                                      MTLTextureSwizzleRed,
-                                                                      MTLTextureSwizzleAlpha);
+            textureDescriptor.swizzle = MTLTextureSwizzleChannelsMake(MTLTextureSwizzleGreen,
+                                                                      MTLTextureSwizzleBlue,
+                                                                      MTLTextureSwizzleAlpha,
+                                                                      MTLTextureSwizzleRed);
         } else {
             SET_STRING_ERROR_AND_RETURN("SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM is not supported", NULL);
         }
@@ -4337,6 +4343,10 @@ static bool METAL_SupportsTextureFormat(
 
 static bool METAL_PrepareDriver(SDL_VideoDevice *this, SDL_PropertiesID props)
 {
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN, false)) {
+        return false;
+    }
+
     if (!SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN, false) &&
         !SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN, false)) {
         return false;
@@ -4497,6 +4507,45 @@ static void METAL_INTERNAL_DestroyBlitResources(
         METAL_ReleaseGraphicsPipeline(driverData, renderer->blitPipelines[i].pipeline);
     }
     SDL_free(renderer->blitPipelines);
+}
+
+static XrResult METAL_DestroyXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSwapchain swapchain,
+    SDL_GPUTexture **swapchainImages)
+{
+    SDL_SetError("The metal backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
+static SDL_GPUTextureFormat* METAL_GetXRSwapchainFormats(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    int *num_formats)
+{
+    SDL_SetError("The metal backend does not currently support OpenXR");
+    return NULL;
+}
+
+static XrResult METAL_CreateXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    const XrSwapchainCreateInfo *oldCreateInfo,
+    SDL_GPUTextureFormat format,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+    SDL_SetError("The metal backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
+static XrResult METAL_CreateXRSession(
+    SDL_GPURenderer *driverData,
+    const XrSessionCreateInfo *createinfo,
+    XrSession *session)
+{
+    SDL_SetError("The metal backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
 }
 
 static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SDL_PropertiesID props)
