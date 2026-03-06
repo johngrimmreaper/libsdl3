@@ -1,1 +1,3 @@
 extend-diff-ignore = "debian/gbp.conf$"
+extend-diff-ignore = "src/video/khronos/vk_video.*"
+extend-diff-ignore = "src/video/khronos/vulkan.*"

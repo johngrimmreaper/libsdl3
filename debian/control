@@ -31,7 +31,7 @@ Build-Depends:
  libthai-dev,
  libudev-dev [linux-any],
  liburing-dev [linux-any],
- libvulkan-dev,
+ libvulkan-dev (>= 1.4.282),
  libwayland-dev [linux-any],
  libx11-dev,
  libxcursor-dev,
