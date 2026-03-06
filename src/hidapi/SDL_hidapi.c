@@ -388,18 +388,20 @@ static void HIDAPI_UpdateDiscovery(void)
     }
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-#if 0 // just let the usual SDL_PumpEvents loop dispatch these, fixing bug 4286. --ryan.
-    // We'll only get messages on the same thread that created the window
-    if (SDL_GetCurrentThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
-        MSG msg;
-        while (PeekMessage(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0, PM_NOREMOVE)) {
-            if (GetMessageA(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0) != 0) {
-                TranslateMessage(&msg);
-                DispatchMessage(&msg);
+    if (SDL_IsVideoThread()) {
+        // just let the usual SDL_PumpEvents loop dispatch these, fixing bug 2998. --ryan.
+    } else {
+        // We'll only get messages on the same thread that created the window
+        if (SDL_GetCurrentThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
+            MSG msg;
+            while (PeekMessage(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0, PM_NOREMOVE)) {
+                if (GetMessageA(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0) != 0) {
+                    TranslateMessage(&msg);
+                    DispatchMessage(&msg);
+                }
             }
         }
     }
-#endif
 #endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
 #ifdef SDL_PLATFORM_MACOS
@@ -836,6 +838,8 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
 
 #endif // HAVE_LIBUSB
 
+#endif // !SDL_HIDAPI_DISABLED
+
 /* If the platform has any backend other than libusb, try to avoid using
  * libusb as the main backend for devices, since it detaches drivers and
  * therefore makes devices inaccessible to the rest of the OS.
@@ -865,8 +869,6 @@ static bool RequiresLibUSB(Uint16 vendor, Uint16 product)
     }
     return false;
 }
-
-#endif // !SDL_HIDAPI_DISABLED
 
 #if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND)
 // We have another way to get HID devices, so use the whitelist to get devices where libusb is preferred
