@@ -589,7 +589,7 @@ static void process_pending_events(void)
             *dst = 0x03;
             break;
         case TRITON_BLE_PID:
-            *dst = 0x42;
+            *dst = 0x45;
             break;
         default:
             abort();
@@ -798,7 +798,7 @@ static void process_pending_events(void)
                 cbElem = 19;
                 break;
             case TRITON_BLE_PID:
-                cbElem = 53;
+                cbElem = 45;
                 break;
             default:
                 abort();
@@ -858,7 +858,7 @@ static void process_pending_events(void)
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
-	NSLog( @"didUpdateNotificationStateForCharacteristic %@ (%@)", characteristic, error );
+	//NSLog( @"didUpdateNotificationStateForCharacteristic %@ (%@)", characteristic, error );
 }
 
 @end

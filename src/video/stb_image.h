@@ -791,11 +791,13 @@ typedef unsigned char validate_uint32[sizeof(stbi__uint32)==4 ? 1 : -1];
 #endif
 
 #if !defined(STBI_NO_SIMD) && (defined(STBI__X86_TARGET) || defined(STBI__X64_TARGET))
+#ifdef SDL_SSE2_INTRINSICS /* SDL change */
 #define STBI_SSE2
 #include <emmintrin.h>
 
 #ifdef _MSC_VER
 
+#if 0 /* SDL change (unused due to using SDL_HasSSE2) */
 #if _MSC_VER >= 1400  // not VC6
 #include <intrin.h> // __cpuid
 static int stbi__cpuid3(void)
@@ -816,14 +818,14 @@ static int stbi__cpuid3(void)
    return res;
 }
 #endif
+#endif /* SDL change */
 
 #define STBI_SIMD_ALIGN(type, name) __declspec(align(16)) type name
 
 #if !defined(STBI_NO_JPEG) && defined(STBI_SSE2)
 static int stbi__sse2_available(void)
 {
-   int info3 = stbi__cpuid3();
-   return ((info3 >> 26) & 1) != 0;
+   return SDL_HasSSE2(); /* SDL change */
 }
 #endif
 
@@ -836,11 +838,12 @@ static int stbi__sse2_available(void)
    // If we're even attempting to compile this on GCC/Clang, that means
    // -msse2 is on, which means the compiler is allowed to use SSE2
    // instructions at will, and so are we.
-   return 1;
+   return SDL_HasSSE2(); /* SDL change */
 }
 #endif
 
 #endif
+#endif /* SDL change (SDL_SSE2_INTRINSICS) */
 #endif
 
 // ARM NEON
@@ -2315,7 +2318,7 @@ stbi_inline static int stbi__extend_receive(stbi__jpeg *j, int n)
    unsigned int k;
    int sgn;
    if (j->code_bits < n) stbi__grow_buffer_unsafe(j);
-   if (j->code_bits < n) return 0; // ran out of bits from stream, return 0s intead of continuing
+   if (j->code_bits < n) return 0; // ran out of bits from stream, return 0s instead of continuing
 
    sgn = j->code_buffer >> 31; // sign bit always in MSB; 0 if MSB clear (positive), 1 if MSB set (negative)
    k = stbi_lrot(j->code_buffer, n);
@@ -2330,7 +2333,7 @@ stbi_inline static int stbi__jpeg_get_bits(stbi__jpeg *j, int n)
 {
    unsigned int k;
    if (j->code_bits < n) stbi__grow_buffer_unsafe(j);
-   if (j->code_bits < n) return 0; // ran out of bits from stream, return 0s intead of continuing
+   if (j->code_bits < n) return 0; // ran out of bits from stream, return 0s instead of continuing
    k = stbi_lrot(j->code_buffer, n);
    j->code_buffer = k & ~stbi__bmask[n];
    k &= stbi__bmask[n];
@@ -2342,7 +2345,7 @@ stbi_inline static int stbi__jpeg_get_bit(stbi__jpeg *j)
 {
    unsigned int k;
    if (j->code_bits < 1) stbi__grow_buffer_unsafe(j);
-   if (j->code_bits < 1) return 0; // ran out of bits from stream, return 0s intead of continuing
+   if (j->code_bits < 1) return 0; // ran out of bits from stream, return 0s instead of continuing
    k = j->code_buffer;
    j->code_buffer <<= 1;
    --j->code_bits;
@@ -3691,7 +3694,7 @@ static stbi_uc *stbi__resample_row_hv_2(stbi_uc *out, stbi_uc *in_near, stbi_uc 
 #define TARGETING_SSE2 SDL_TARGETING("sse2") /* Added by SDL */
 #else
 #define TARGETING_SSE2
-#endif /* Added by SDL */
+#endif // STBI_SSE2 /* Added by SDL */
 static stbi_uc *TARGETING_SSE2 stbi__resample_row_hv_2_simd(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs) /* Changed by SDL: TARGETING_SSE2 */
 {
    // need to generate 2x2 samples for every one in input
@@ -5190,7 +5193,7 @@ static int stbi__expand_png_palette(stbi__png *a, stbi_uc *palette, int len, int
    p = (stbi_uc *) stbi__malloc_mad2(pixel_count, pal_img_n, 0);
    if (p == NULL) return stbi__err("outofmem", "Out of memory");
 
-   // between here and free(out) below, exitting would leak
+   // between here and free(out) below, exiting would leak
    temp_out = p;
 
    if (pal_img_n == 3) {
@@ -7104,7 +7107,7 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
          // 0:  not specified.
       }
 
-      // background is what out is after the undoing of the previou frame;
+      // background is what out is after the undoing of the previous frame;
       memcpy( g->background, g->out, 4 * g->w * g->h );
    }
 
@@ -8144,7 +8147,7 @@ STBIDEF int stbi_is_16_bit_from_callbacks(stbi_io_callbacks const *c, void *user
       1.31  (2011-06-20)
               a few more leak fixes, bug in PNG handling (SpartanJ)
       1.30  (2011-06-11)
-              added ability to load files via callbacks to accomidate custom input streams (Ben Wenger)
+              added ability to load files via callbacks to accommodate custom input streams (Ben Wenger)
               removed deprecated format-specific test/load functions
               removed support for installable file formats (stbi_loader) -- would have been broken for IO callbacks anyway
               error cases in bmp and tga give messages and don't leak (Raymond Barbiero, grisha)

@@ -66,7 +66,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(void);
 
 extern SDL_DECLSPEC void SDLCALL JNI_OnLoad(void);
 
-const static struct {
+#include <SDL3/SDL_openxr.h>
+
+static const struct {
     const char *name;
     SDL_FunctionPointer address;
 } sdl_symbols[] = {

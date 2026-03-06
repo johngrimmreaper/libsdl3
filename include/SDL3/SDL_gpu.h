@@ -1398,12 +1398,12 @@ typedef struct SDL_GPUViewport
  * SDL_DownloadFromGPUTexture are used as default values respectively and data
  * is considered to be tightly packed.
  *
- * **WARNING**: On some older/integrated hardware, Direct3D 12 requires texture
- * data row pitch to be 256 byte aligned, and offsets to be aligned to 512 bytes.
- * If they are not, SDL will make a temporary copy of the data that is properly
- * aligned, but this adds overhead to the transfer process. Apps can avoid this
- * by aligning their data appropriately, or using a different GPU backend than
- * Direct3D 12.
+ * **WARNING**: On some older/integrated hardware, Direct3D 12 requires
+ * texture data row pitch to be 256 byte aligned, and offsets to be aligned to
+ * 512 bytes. If they are not, SDL will make a temporary copy of the data that
+ * is properly aligned, but this adds overhead to the transfer process. Apps
+ * can avoid this by aligning their data appropriately, or using a different
+ * GPU backend than Direct3D 12.
  *
  * \since This struct is available since SDL 3.2.0.
  *
@@ -2381,6 +2381,20 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN "SDL.gpu.device.create.vulkan.requirehardwareacceleration"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER                       "SDL.gpu.device.create.vulkan.options"
 #define SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN               "SDL.gpu.device.create.metal.allowmacfamily1"
+
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN                            "SDL.gpu.device.create.xr.enable"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_POINTER                          "SDL.gpu.device.create.xr.instance_out"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_POINTER                         "SDL.gpu.device.create.xr.system_id_out"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_VERSION_NUMBER                            "SDL.gpu.device.create.xr.version"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR_NUMBER                        "SDL.gpu.device.create.xr.form_factor"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_COUNT_NUMBER                    "SDL.gpu.device.create.xr.extensions.count"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_NAMES_POINTER                   "SDL.gpu.device.create.xr.extensions.names"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_COUNT_NUMBER                        "SDL.gpu.device.create.xr.layers.count"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_NAMES_POINTER                       "SDL.gpu.device.create.xr.layers.names"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_NAME_STRING                   "SDL.gpu.device.create.xr.application.name"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_VERSION_NUMBER                "SDL.gpu.device.create.xr.application.version"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_NAME_STRING                        "SDL.gpu.device.create.xr.engine.name"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_VERSION_NUMBER                     "SDL.gpu.device.create.xr.engine.version"
 
 
 /**
