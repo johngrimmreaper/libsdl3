@@ -1,3 +1,12 @@
+libsdl3 (3.5~git20260309~6ccf3d0+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream snapshot from the main branch, commit
+    release-3.4.0-412-g6ccf3d097e
+  * d/copyright: Don't use # comments.
+    The syntax doesn't actually allow these, although perhaps it should.
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 09 Mar 2026 23:00:28 +0000
+
 libsdl3 (3.5~git20260304~c20a058+ds-1) experimental; urgency=medium
 
   * New upstream snapshot from the main branch, commit
