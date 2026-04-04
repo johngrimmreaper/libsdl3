@@ -197,8 +197,10 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_FlushIO@SDL3_0.0.0 3.2.0
  SDL_FlushRenderer@SDL3_0.0.0 3.2.0
  SDL_GDKResumeGPU@SDL3_0.0.0 3.4.0
+ SDL_GDKResumeRenderer@SDL3_0.0.0 3.5~git20260404~
  SDL_GDKSuspendComplete@SDL3_0.0.0 3.2.0
  SDL_GDKSuspendGPU@SDL3_0.0.0 3.4.0
+ SDL_GDKSuspendRenderer@SDL3_0.0.0 3.5~git20260404~
  SDL_GL_CreateContext@SDL3_0.0.0 3.2.0
  SDL_GL_DestroyContext@SDL3_0.0.0 3.2.0
  SDL_GL_ExtensionSupported@SDL3_0.0.0 3.2.0
