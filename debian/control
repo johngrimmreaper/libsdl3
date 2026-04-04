@@ -55,6 +55,9 @@ Build-Depends-Indep:
 Vcs-Git: https://salsa.debian.org/sdl-team/libsdl3.git
 Vcs-Browser: https://salsa.debian.org/sdl-team/libsdl3
 Homepage: https://www.libsdl.org/
+Description: Simple DirectMedia Layer, version 3
+ SDL is a cross-platform library designed to make it easy to write
+ multimedia software such as games and emulators.
 
 Package: libsdl3-0
 Architecture: any
@@ -73,9 +76,8 @@ Suggests:
  libayatana-appindicator3-1 | libappindicator3-1,
  xdg-utils,
  ${dlopen:Suggests},
-Description: Simple DirectMedia Layer, version 3
- SDL is a cross-platform library designed to make it easy to write
- multimedia software such as games and emulators.
+Description: ${source:Synopsis}
+ ${source:Extended-Description}
  .
  This package contains the shared library.
 
@@ -113,9 +115,8 @@ Depends:
  libxxf86vm-dev,
  ${misc:Depends},
  ${shlibs:Depends},
-Description: Simple DirectMedia Layer, version 3 development files
- SDL is a cross-platform library designed to make it easy to write
- multimedia software such as games and emulators.
+Description: ${source:Synopsis} (development files)
+ ${source:Extended-Description}
  .
  This package contains the files needed to compile and link programs which
  use SDL.
@@ -131,9 +132,8 @@ Breaks:
  libsdl1.2-dev (<< 1.2.64),
 Replaces:
  libsdl1.2-dev (<< 1.2.64),
-Description: Reference manual for SDL 3
- SDL is a cross-platform library designed to make it easy to write
- multimedia software such as games and emulators.
+Description: ${source:Synopsis} (documentation)
+ ${source:Extended-Description}
  .
  This package contains the reference manual and examples.
 
@@ -150,9 +150,8 @@ Recommends:
 Suggests:
  gnome-desktop-testing,
  ${dlopen:Suggests},
-Description: Simple DirectMedia Layer automated and manual tests
- SDL is a cross-platform library designed to make it easy to write
- multimedia software such as games and emulators.
+Description: ${source:Synopsis} (automated and manual tests)
+ ${source:Extended-Description}
  .
  This package contains manual and automated tests. The automated tests can
  be run using ginsttest-runner in the gnome-desktop-testing package,

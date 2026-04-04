@@ -33,9 +33,9 @@
 #cmakedefine SDL_VENDOR_INFO "@SDL_VENDOR_INFO@"
 
 #if defined(SDL_VENDOR_INFO)
-#define SDL_REVISION "SDL-release-3.4.2-0-g683181b47 (" SDL_VENDOR_INFO ")"
+#define SDL_REVISION "SDL-release-3.4.4-0-g5848e584a (" SDL_VENDOR_INFO ")"
 #else
-#define SDL_REVISION "SDL-release-3.4.2-0-g683181b47"
+#define SDL_REVISION "SDL-release-3.4.4-0-g5848e584a"
 #endif
 
 #endif /* SDL_revision_h_ */

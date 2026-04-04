@@ -1,3 +1,13 @@
+libsdl3 (3.4.4+ds-1) unstable; urgency=medium
+
+  * New upstream release
+  * d/control: Use ${source:Synopsis} and ${source:Extended-Description}
+    to reduce boilerplate/duplication
+  * d/copyright: Exclude .github/ while we're repacking tarballs anyway
+  * d/copyright: Don't use # comments
+
+ -- Simon McVittie <smcv@debian.org>  Sat, 04 Apr 2026 15:13:39 +0100
+
 libsdl3 (3.4.2+ds-1) unstable; urgency=medium
 
   * New upstream stable release
