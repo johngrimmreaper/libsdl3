@@ -655,6 +655,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_IsJoystickVirtual@SDL3_0.0.0 3.2.0
  SDL_IsMainThread@SDL3_0.0.0 3.2.0
  SDL_IsMouseHaptic@SDL3_0.0.0 3.2.0
+ SDL_IsPhone@SDL3_0.0.0 3.5~git20260404~
  SDL_IsTV@SDL3_0.0.0 3.2.0
  SDL_IsTablet@SDL3_0.0.0 3.2.0
  SDL_JoystickConnected@SDL3_0.0.0 3.2.0
