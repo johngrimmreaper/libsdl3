@@ -2,8 +2,7 @@ libsdl3 (3.5~git20260404~173adc1+ds-1) UNRELEASED; urgency=medium
 
   * New upstream snapshot from the main branch, commit
     release-3.4.0-508-g173adc1bf6
-  * d/copyright: Don't use # comments.
-    The syntax doesn't actually allow these, although perhaps it should.
+  * Merge packaging from unstable
 
  -- Simon McVittie <smcv@debian.org>  Mon, 09 Mar 2026 23:00:28 +0000
 
