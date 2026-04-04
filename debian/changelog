@@ -1,7 +1,7 @@
-libsdl3 (3.5~git20260309~6ccf3d0+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.5~git20260404~173adc1+ds-1) UNRELEASED; urgency=medium
 
   * New upstream snapshot from the main branch, commit
-    release-3.4.0-412-g6ccf3d097e
+    release-3.4.0-508-g173adc1bf6
   * d/copyright: Don't use # comments.
     The syntax doesn't actually allow these, although perhaps it should.
 
