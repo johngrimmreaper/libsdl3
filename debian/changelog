@@ -1,10 +1,12 @@
-libsdl3 (3.5~git20260404~173adc1+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.5~git20260404~173adc1+ds-1) experimental; urgency=medium
 
   * New upstream snapshot from the main branch, commit
     release-3.4.0-508-g173adc1bf6
   * Merge packaging from unstable
+  * d/libsdl3-0.symbols: Update
+  * Standards-Version: 4.7.4 (no changes required)
 
- -- Simon McVittie <smcv@debian.org>  Mon, 09 Mar 2026 23:00:28 +0000
+ -- Simon McVittie <smcv@debian.org>  Sat, 04 Apr 2026 17:33:06 +0100
 
 libsdl3 (3.5~git20260304~c20a058+ds-1) experimental; urgency=medium
 
