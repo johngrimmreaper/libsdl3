@@ -1,11 +1,11 @@
-libsdl3 (3.4.8+ds-2) UNRELEASED; urgency=medium
+libsdl3 (3.4.8+ds-2) unstable; urgency=medium
 
   * d/p/x11-Disable-the-X-Synchronization-Extension-by-default.patch:
     Cherry-pick a patch recommended by upstream.
     Using XSync doesn't work for all apps/games, so it's better for that
     feature to be opt-in rather than opt-out.
 
- -- Simon McVittie <smcv@debian.org>  Tue, 26 May 2026 18:59:26 +0100
+ -- Simon McVittie <smcv@debian.org>  Tue, 26 May 2026 22:38:57 +0100
 
 libsdl3 (3.4.8+ds-1) unstable; urgency=medium
 
