@@ -1,10 +1,10 @@
-libsdl3 (3.4.10+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.4.10+ds-1) unstable; urgency=medium
 
   * New upstream stable release
   * d/p/x11-Disable-the-X-Synchronization-Extension-by-default.patch:
     Drop patch, included in the release
 
- -- Simon McVittie <smcv@debian.org>  Mon, 01 Jun 2026 11:32:36 +0100
+ -- Simon McVittie <smcv@debian.org>  Mon, 01 Jun 2026 12:07:28 +0100
 
 libsdl3 (3.4.8+ds-2) unstable; urgency=medium
 
