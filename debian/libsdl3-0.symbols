@@ -226,6 +226,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GamepadEventsEnabled@SDL3_0.0.0 3.2.0
  SDL_GamepadHasAxis@SDL3_0.0.0 3.2.0
  SDL_GamepadHasButton@SDL3_0.0.0 3.2.0
+ SDL_GamepadHasCapSense@SDL3_0.0.0 3.5~git20260611~
  SDL_GamepadHasSensor@SDL3_0.0.0 3.2.0
  SDL_GamepadSensorEnabled@SDL3_0.0.0 3.2.0
  SDL_GenerateMipmapsForGPUTexture@SDL3_0.0.0 3.2.0
@@ -335,6 +336,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_GetGamepadButtonFromString@SDL3_0.0.0 3.2.0
  SDL_GetGamepadButtonLabel@SDL3_0.0.0 3.2.0
  SDL_GetGamepadButtonLabelForType@SDL3_0.0.0 3.2.0
+ SDL_GetGamepadCapSense@SDL3_0.0.0 3.5~git20260611~
  SDL_GetGamepadConnectionState@SDL3_0.0.0 3.2.0
  SDL_GetGamepadFirmwareVersion@SDL3_0.0.0 3.2.0
  SDL_GetGamepadFromID@SDL3_0.0.0 3.2.0
@@ -634,6 +636,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_HasSSE41@SDL3_0.0.0 3.2.0
  SDL_HasSSE42@SDL3_0.0.0 3.2.0
  SDL_HasSSE@SDL3_0.0.0 3.2.0
+ SDL_HasSVE2@SDL3_0.0.0 3.5~git20260611~
  SDL_HasScreenKeyboardSupport@SDL3_0.0.0 3.2.0
  SDL_HideCursor@SDL3_0.0.0 3.2.0
  SDL_HideWindow@SDL3_0.0.0 3.2.0
@@ -669,6 +672,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_LoadFileAsync@SDL3_0.0.0 3.2.0
  SDL_LoadFile_IO@SDL3_0.0.0 3.2.0
  SDL_LoadFunction@SDL3_0.0.0 3.2.0
+ SDL_LoadJPG@SDL3_0.0.0 3.5~git20260611~
+ SDL_LoadJPG_IO@SDL3_0.0.0 3.5~git20260611~
  SDL_LoadObject@SDL3_0.0.0 3.2.0
  SDL_LoadPNG@SDL3_0.0.0 3.4.0
  SDL_LoadPNG_IO@SDL3_0.0.0 3.4.0
@@ -792,6 +797,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ReloadGamepadMappings@SDL3_0.0.0 3.2.0
  SDL_RemoveEventWatch@SDL3_0.0.0 3.2.0
  SDL_RemoveHintCallback@SDL3_0.0.0 3.2.0
+ SDL_RemoveNotification@SDL3_0.0.0 3.5~git20260611~
  SDL_RemovePath@SDL3_0.0.0 3.2.0
  SDL_RemoveStoragePath@SDL3_0.0.0 3.2.0
  SDL_RemoveSurfaceAlternateImages@SDL3_0.0.0 3.2.0
@@ -826,6 +832,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_RenderViewportSet@SDL3_0.0.0 3.2.0
  SDL_ReportAssertion@SDL3_0.0.0 3.2.0
  SDL_RequestAndroidPermission@SDL3_0.0.0 3.4.0
+ SDL_RequestNotificationPermission@SDL3_0.0.0 3.5~git20260611~
  SDL_ResetAssertionReport@SDL3_0.0.0 3.2.0
  SDL_ResetHint@SDL3_0.0.0 3.2.0
  SDL_ResetHints@SDL3_0.0.0 3.2.0
@@ -1003,6 +1010,8 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_ShowCursor@SDL3_0.0.0 3.2.0
  SDL_ShowFileDialogWithProperties@SDL3_0.0.0 3.2.0
  SDL_ShowMessageBox@SDL3_0.0.0 3.2.0
+ SDL_ShowNotification@SDL3_0.0.0 3.5~git20260611~
+ SDL_ShowNotificationWithProperties@SDL3_0.0.0 3.5~git20260611~
  SDL_ShowOpenFileDialog@SDL3_0.0.0 3.2.0
  SDL_ShowOpenFolderDialog@SDL3_0.0.0 3.2.0
  SDL_ShowSaveFileDialog@SDL3_0.0.0 3.2.0
@@ -1116,6 +1125,7 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_acos@SDL3_0.0.0 3.2.0
  SDL_acosf@SDL3_0.0.0 3.2.0
  SDL_aligned_alloc@SDL3_0.0.0 3.2.0
+ SDL_aligned_alloc_zero@SDL3_0.0.0 3.5~git20260611~
  SDL_aligned_free@SDL3_0.0.0 3.2.0
  SDL_asin@SDL3_0.0.0 3.2.0
  SDL_asinf@SDL3_0.0.0 3.2.0
@@ -1287,3 +1297,6 @@ libSDL3.so.0 libsdl3-0 #MINVER#
  SDL_wcsnstr@SDL3_0.0.0 3.2.0
  SDL_wcsstr@SDL3_0.0.0 3.2.0
  SDL_wcstol@SDL3_0.0.0 3.2.0
+ SDL_wcstoll@SDL3_0.0.0 3.5~git20260611~
+ SDL_wcstoul@SDL3_0.0.0 3.5~git20260611~
+ SDL_wcstoull@SDL3_0.0.0 3.5~git20260611~
