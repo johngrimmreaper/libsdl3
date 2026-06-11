@@ -1,3 +1,10 @@
+libsdl3 (3.5~git20260611~7c60bcd+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream snapshot from the main branch, commit
+    release-3.4.0-972-g7c60bcd83c
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 11 Jun 2026 23:26:35 +0100
+
 libsdl3 (3.5~git20260404~173adc1+ds-1) experimental; urgency=medium
 
   * New upstream snapshot from the main branch, commit
