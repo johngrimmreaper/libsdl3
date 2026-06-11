@@ -143,6 +143,7 @@ Section: misc
 Architecture: any
 Build-Profiles: <!noinsttest>
 Depends:
+ libudev1,
  ${dlopen:Depends},
  ${misc:Depends},
  ${shlibs:Depends},

@@ -6,6 +6,7 @@ libsdl3 (3.5~git20260611~7c60bcd+ds-1) UNRELEASED; urgency=medium
   * d/control, d/rules: Use vendored Vulkan, OpenXR headers until system
     copy catches up
   * d/libsdl3-0.symbols: Update
+  * Merge packaging from unstable
 
  -- Simon McVittie <smcv@debian.org>  Thu, 11 Jun 2026 23:38:56 +0100
 
@@ -42,6 +43,42 @@ libsdl3 (3.5~git20260304~c20a058+ds-1) experimental; urgency=medium
   * d/control, d/rules: Use system copy of OpenXR headers
 
  -- Simon McVittie <smcv@debian.org>  Fri, 06 Mar 2026 17:42:13 +0000
+
+libsdl3 (3.4.10+ds-1) unstable; urgency=medium
+
+  * New upstream stable release
+  * d/p/x11-Disable-the-X-Synchronization-Extension-by-default.patch:
+    Drop patch, included in the release
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 01 Jun 2026 12:07:28 +0100
+
+libsdl3 (3.4.8+ds-2) unstable; urgency=medium
+
+  * d/p/x11-Disable-the-X-Synchronization-Extension-by-default.patch:
+    Cherry-pick a patch recommended by upstream.
+    Using XSync doesn't work for all apps/games, so it's better for that
+    feature to be opt-in rather than opt-out.
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 26 May 2026 22:38:57 +0100
+
+libsdl3 (3.4.8+ds-1) unstable; urgency=medium
+
+  * New upstream stable release
+
+ -- Simon McVittie <smcv@debian.org>  Sat, 02 May 2026 15:04:33 +0100
+
+libsdl3 (3.4.4+ds-2) unstable; urgency=medium
+
+  [ Alessandro Astone ]
+  * libsdl3-tests: Add dependency on libudev1.
+    One test verifies that SDL_InitSubSystem(SDL_INIT_HAPTIC) succeeds,
+    and that requires libudev to be installed for dlopening.
+    It's a Recommends for libsdl3-0. (LP: #2147605)
+
+  [ Simon McVittie ]
+  * Standards-Version: 4.7.4 (no changes required)
+
+ -- Simon McVittie <smcv@debian.org>  Fri, 10 Apr 2026 17:23:25 +0100
 
 libsdl3 (3.4.4+ds-1) unstable; urgency=medium
 
