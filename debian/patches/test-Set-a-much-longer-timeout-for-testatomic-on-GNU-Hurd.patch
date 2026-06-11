@@ -11,20 +11,21 @@ particular only supports one CPU core, so this can be very slow.
 
 Tested-by: Pino Toscano
 ---
- test/CMakeLists.txt | 3 +++
- 1 file changed, 3 insertions(+)
+ test/CMakeLists.txt | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
-index 2b58fa4..a5aea0a 100644
+index 074c210..d0be29c 100644
 --- a/test/CMakeLists.txt
 +++ b/test/CMakeLists.txt
-@@ -331,6 +331,9 @@ add_sdl_test_executable(testmultiaudio NEEDS_RESOURCES TESTUTILS SOURCES testmul
- add_sdl_test_executable(testaudiohotplug NEEDS_RESOURCES TESTUTILS SOURCES testaudiohotplug.c)
- add_sdl_test_executable(testaudiorecording MAIN_CALLBACKS SOURCES testaudiorecording.c)
- add_sdl_test_executable(testatomic NONINTERACTIVE DISABLE_THREADS_ARGS "--no-threads" SOURCES testatomic.c)
+@@ -377,6 +377,10 @@ add_sdl_test_executable(testdropfile MAIN_CALLBACKS SOURCES testdropfile.c NAME8
+ add_sdl_test_executable(testerror NONINTERACTIVE DISABLE_THREADS_ARGS "--no-threads" SOURCES testerror.c NAME83 error)
+ add_sdl_test_executable(testsymbols NONINTERACTIVE NOTRACKMEM NONINTERACTIVE_ARGS 0 10 20 40 80 160 320 640 SOURCES testsymbols.c NAME83 symbols)
+ 
 +if(HURD)
 +    set_property(TARGET testatomic PROPERTY SDL_NONINTERACTIVE_TIMEOUT 1500)
 +endif()
- add_sdl_test_executable(testintersections SOURCES testintersections.c)
- add_sdl_test_executable(testrelative SOURCES testrelative.c)
- add_sdl_test_executable(testhittesting SOURCES testhittesting.c)
++
+ set(build_options_dependent_tests )
+ 
+ add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE SOURCES testevdev.c NAME83 evdev)
