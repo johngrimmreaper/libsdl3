@@ -94,11 +94,21 @@ Files:
  include/SDL3/SDL_opengles2_gl2.h
  include/SDL3/SDL_opengles2_gl2ext.h
  include/SDL3/SDL_opengles2_khrplatform.h
+ src/video/khronos/GLES/gl.h
+ src/video/khronos/GLES/glext.h
  src/video/khronos/GLES2/gl2.h
  src/video/khronos/GLES2/gl2ext.h
+ src/video/khronos/GLES3/gl3.h
+ src/video/khronos/GLES3/gl31.h
+ src/video/khronos/GLES3/gl32.h
  src/video/khronos/KHR/khrplatform.h
-Copyright: 2013-2024 The Khronos Group Inc.
+Copyright: 2013-2026 The Khronos Group Inc.
 License: Expat and Expat-like
+
+Files:
+ src/video/khronos/openxr/*.h
+Copyright: 2017-2026 The Khronos Group Inc.
+License: Apache-2.0 or Expat
 
 Files:
  include/SDL3/SDL_hidapi.h
@@ -168,11 +178,13 @@ License: Zlib and RSA_Data_Security
 
 Files:
  src/video/khronos/EGL/*.h
+ src/video/khronos/GLES/egl.h
+ src/video/khronos/GLES/glplatform.h
  src/video/khronos/GLES2/gl2platform.h
  src/video/khronos/vk_video/*.h
  src/video/khronos/vulkan/*.h
 Copyright:
- 2014-2024 The Khronos Group Inc.
+ 2014-2026 The Khronos Group Inc.
  2015-2023 Valve Corporation
  2015-2023 LunarG, Inc.
 License: Apache-2.0
