@@ -1,14 +1,18 @@
-libsdl3 (3.5~git20260611~7c60bcd+ds-1) UNRELEASED; urgency=medium
+libsdl3 (3.5~git20260611~7c60bcd+ds-1) experimental; urgency=medium
 
   * New upstream snapshot from the main branch, commit
     release-3.4.0-972-g7c60bcd83c
-  * d/copyright: Update
-  * d/control, d/rules: Use vendored Vulkan, OpenXR headers until system
-    copy catches up
-  * d/libsdl3-0.symbols: Update
   * Merge packaging from unstable
+  * d/copyright: Update
+  * d/libsdl3-0.symbols: Update
+  * d/patches: Refresh
+  * d/control, d/rules: Return to using the vendored Vulkan and OpenXR
+    headers until the system copies catch up
+  * d/control: Remove Suggests: libayatana-appindicator3-1.
+    SDL's API for tray icons now communicates directly with an Appindicator
+    backend using D-Bus messages.
 
- -- Simon McVittie <smcv@debian.org>  Thu, 11 Jun 2026 23:38:56 +0100
+ -- Simon McVittie <smcv@debian.org>  Fri, 12 Jun 2026 11:13:37 +0100
 
 libsdl3 (3.5~git20260404~173adc1+ds-1) experimental; urgency=medium
 
