@@ -1,3 +1,13 @@
+libsdl3 (3.4.14+ds-1) unstable; urgency=medium
+
+  * New upstream stable release
+  * d/libsdl3-0.docs: Rename from d/docs
+  * Use debhelper compat level 14
+    - No longer needs ${shlibs:Depends}, etc.
+    - No longer needs explicit -DCMAKE_BUILD_RPATH_USE_ORIGIN=ON
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 04 Aug 2026 11:44:39 +0100
+
 libsdl3 (3.4.12+ds-1) unstable; urgency=medium
 
   * New upstream stable release

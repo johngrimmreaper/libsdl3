@@ -20,7 +20,6 @@ test_timeout_multiplier = 20
 endif
 
 confflags = \
-	-DCMAKE_BUILD_RPATH_USE_ORIGIN=ON \
 	-DSDL_ALSA_SHARED=OFF \
 	-DSDL_DEPS_SHARED=ON \
 	-DSDL_EXAMPLES=ON \
