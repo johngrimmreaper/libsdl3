@@ -1,3 +1,12 @@
+libsdl3 (3.4.14+ds-2) unstable; urgency=medium
+
+  * d/control: Remove unnecessary B-D on fcitx-libs-dev.
+    SDL doesn't actually use any headers from here, it only communicates
+    with fcitx via D-Bus.
+  * d/control: Request dpkg build API v1
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 18 Aug 2026 20:03:59 +0100
+
 libsdl3 (3.4.14+ds-1) unstable; urgency=medium
 
   * New upstream stable release

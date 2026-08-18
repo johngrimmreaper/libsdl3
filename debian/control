@@ -10,8 +10,8 @@ Standards-Version: 4.7.4
 Build-Depends:
  debhelper-compat (= 14),
  dh-sequence-dlopenlibdeps,
+ dpkg-build-api (= 1),
  cmake,
- fcitx-libs-dev,
  glslang-tools (>= 12),
  libasound2-dev [linux-any],
  libdbus-1-dev,
