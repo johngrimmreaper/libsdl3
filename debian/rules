@@ -92,8 +92,10 @@ endif
 # canonical release, retain all tests but lower reader lock hold time
 # for this single test. Do not change source/ or the canonical orig tarball.
 override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 	cd build && LC_ALL=C.UTF-8 ctest --output-on-failure -E '^testrwlock$$'
 	cd build/test && LC_ALL=C.UTF-8 timeout --signal=TERM --kill-after=5s $(rwlock_test_timeout_seconds)s ./testrwlock --nbthreads 6 --worktime 5 --writerworktime 10 --timeout 10000 --trackmem
+endif
 
 override_dh_auto_configure:
 	set -e; for png in test/icon.png test/gamepad_*.png test/glass.png; do \
